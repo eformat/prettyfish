@@ -107,8 +107,9 @@ export default function App() {
   )
 
   const setMermaidTheme = useCallback((theme: MermaidTheme) => {
-    // When switching themes, clear user overrides so the new theme's defaults take effect
-    setPages((prev) => prev.map((p) => p.id === activePageId ? { ...p, mermaidTheme: theme, configOverrides: {}, diagramConfig: undefined } : p))
+    // Last-man-wins: preserve user overrides when switching themes
+    // Only clear the legacy diagramConfig, keep configOverrides intact
+    setPages((prev) => prev.map((p) => p.id === activePageId ? { ...p, mermaidTheme: theme, diagramConfig: undefined } : p))
   }, [activePageId])
 
   const setDiagramConfig = useCallback((config: DiagramConfig) => {
