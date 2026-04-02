@@ -1,35 +1,38 @@
 import { useEffect, useState } from 'react'
 import { TransformWrapper, TransformComponent } from 'react-zoom-pan-pinch'
 
+function parseHash(): { svg: string | null; bg: string; title: string } {
+  try {
+    const hash = window.location.hash.slice(1)
+    if (!hash) return { svg: null, bg: '#ffffff', title: '' }
+    const data = JSON.parse(decodeURIComponent(escape(atob(hash))))
+    return { svg: data.svg ?? null, bg: data.bg ?? '#ffffff', title: data.title ?? '' }
+  } catch {
+    try {
+      return { svg: atob(window.location.hash.slice(1)), bg: '#ffffff', title: '' }
+    } catch {
+      return { svg: null, bg: '#ffffff', title: '' }
+    }
+  }
+}
+
 /**
  * Standalone presentation view — renders a base64-encoded SVG full-screen
  * with pinch-to-zoom. Opened in a new tab via window.open().
- * URL format: /present#<base64-encoded-svg>
+ * URL format: /present#<base64-encoded-json>
  */
 export function PresentationMode() {
-  const [svg, setSvg] = useState<string | null>(null)
-  const [bg, setBg] = useState('#ffffff')
+  const [parsed] = useState(parseHash)
 
   useEffect(() => {
-    try {
-      const hash = window.location.hash.slice(1)
-      if (!hash) return
-      const data = JSON.parse(atob(hash))
-      setSvg(data.svg)
-      if (data.bg) setBg(data.bg)
-      // Set page title
-      document.title = data.title ? `${data.title} — Pretty Fish` : 'Pretty Fish — Presentation'
-    } catch {
-      // fallback: treat hash as raw base64 SVG
-      try {
-        setSvg(atob(window.location.hash.slice(1)))
-      } catch {
-        /* ignore */
-      }
+    if (parsed.title) {
+      document.title = `${parsed.title} — Pretty Fish`
+    } else {
+      document.title = 'Pretty Fish — Presentation'
     }
-  }, [])
+  }, [parsed.title])
 
-  if (!svg) {
+  if (!parsed.svg) {
     return (
       <div style={{
         display: 'flex', alignItems: 'center', justifyContent: 'center',
@@ -44,7 +47,7 @@ export function PresentationMode() {
   return (
     <div style={{
       width: '100vw', height: '100vh', overflow: 'hidden',
-      background: bg, touchAction: 'none',
+      background: parsed.bg, touchAction: 'none',
     }}>
       <TransformWrapper
         initialScale={1}
@@ -60,13 +63,12 @@ export function PresentationMode() {
           contentStyle={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
         >
           <div
-            dangerouslySetInnerHTML={{ __html: svg }}
+            dangerouslySetInnerHTML={{ __html: parsed.svg }}
             style={{ padding: '10vh 10vw' }}
           />
         </TransformComponent>
       </TransformWrapper>
 
-      {/* Exit hint — fades out after 3 seconds */}
       <ExitHint />
     </div>
   )
@@ -87,7 +89,6 @@ function ExitHint() {
       position: 'fixed', bottom: '24px', left: '50%', transform: 'translateX(-50%)',
       background: 'rgba(0,0,0,0.6)', color: '#fff', padding: '8px 16px',
       borderRadius: '8px', fontSize: '12px', fontFamily: 'system-ui',
-      opacity: visible ? 1 : 0, transition: 'opacity 0.5s',
       pointerEvents: 'none',
     }}>
       Double-click to reset zoom · Close tab to exit
