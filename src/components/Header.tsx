@@ -472,7 +472,7 @@ function PagesDropdown({
                         className="p-0.5 rounded hover:bg-muted text-muted-foreground hover:text-foreground"
                         title="Rename"
                       >
-                        <PencilSimple className="w-2.5 h-2.5" />
+                        <PencilSimple className="w-3.5 h-3.5" />
                       </button>
                       {pages.length > 1 && (
                         <button
@@ -480,7 +480,7 @@ function PagesDropdown({
                           className="p-0.5 rounded hover:bg-destructive/15 text-muted-foreground hover:text-destructive"
                           title="Delete"
                         >
-                          <TrashSimple className="w-2.5 h-2.5" />
+                          <TrashSimple className="w-3.5 h-3.5" />
                         </button>
                       )}
                     </div>

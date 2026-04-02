@@ -231,42 +231,42 @@ export const CUSTOM_THEME_PRESETS: Record<string, ThemePreset> = {
       gantt: { barHeight: 18, barGap: 4, topPadding: 48, axisFormat: '%Y-%m-%d' },
     },
     themeVariables: {
-      // Deep teal primary — border-weight color
-      primaryColor: '#e8f7f7',          // very light teal fill
-      primaryTextColor: '#0d5c5c',      // deep teal text (uppercase mono looks great at this shade)
-      primaryBorderColor: '#0d5c5c',    // deep teal border
-      lineColor: '#1a7a7a',             // medium-deep teal for edges
-      background: '#ffffff',
-      mainBkg: '#e8f7f7',
-      nodeBorder: '#0d5c5c',
-      clusterBkg: '#f0fbfb',
-      edgeLabelBackground: '#f5fffe',
-      titleColor: '#0d5c5c',
+      // Deep blueprint blue — like technical drawing paper
+      primaryColor: '#e8eef8',          // very light blue fill
+      primaryTextColor: '#0a2d6b',      // deep navy text
+      primaryBorderColor: '#0a2d6b',    // deep navy border
+      lineColor: '#1a4a9a',             // medium-deep blue for edges
+      background: '#f5f8ff',
+      mainBkg: '#e8eef8',
+      nodeBorder: '#0a2d6b',
+      clusterBkg: '#eef2fc',
+      edgeLabelBackground: '#f0f4ff',
+      titleColor: '#0a2d6b',
       fontFamily: '"JetBrains Mono", monospace',
-      // Secondary: deep plum
-      secondaryColor: '#f5eef8',
-      secondaryBorderColor: '#5a1a72',
-      secondaryTextColor: '#5a1a72',
-      // Tertiary: deep amber/ochre
-      tertiaryColor: '#fdf6e3',
-      tertiaryBorderColor: '#7a4f00',
-      tertiaryTextColor: '#7a4f00',
+      // Secondary: deep cobalt
+      secondaryColor: '#e8f0ff',
+      secondaryBorderColor: '#1a3a8a',
+      secondaryTextColor: '#1a3a8a',
+      // Tertiary: deep slate blue
+      tertiaryColor: '#edf1fb',
+      tertiaryBorderColor: '#2a4a7a',
+      tertiaryTextColor: '#2a4a7a',
       // Notes
-      noteBkgColor: '#fefdf0',
-      noteTextColor: '#6b5000',
-      noteBorderColor: '#7a5c00',
+      noteBkgColor: '#eef3ff',
+      noteTextColor: '#0a2d6b',
+      noteBorderColor: '#1a4a9a',
       // Sequence actors
-      actorBkg: '#e8f7f7',
-      actorBorder: '#0d5c5c',
-      actorTextColor: '#0d5c5c',
-      signalColor: '#0d5c5c',
-      signalTextColor: '#0d5c5c',
-      labelBoxBkgColor: '#e8f7f7',
-      labelBoxBorderColor: '#0d5c5c',
-      labelTextColor: '#0d5c5c',
-      loopTextColor: '#0d5c5c',
-      activationBkgColor: '#d0f0f0',
-      activationBorderColor: '#0d5c5c',
+      actorBkg: '#e8eef8',
+      actorBorder: '#0a2d6b',
+      actorTextColor: '#0a2d6b',
+      signalColor: '#0a2d6b',
+      signalTextColor: '#0a2d6b',
+      labelBoxBkgColor: '#e8eef8',
+      labelBoxBorderColor: '#0a2d6b',
+      labelTextColor: '#0a2d6b',
+      loopTextColor: '#0a2d6b',
+      activationBkgColor: '#c8d8f0',
+      activationBorderColor: '#0a2d6b',
       sequenceNumberColor: '#ffffff',
     },
   },

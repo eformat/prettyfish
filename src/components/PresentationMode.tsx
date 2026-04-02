@@ -47,15 +47,16 @@ export function PresentationMode() {
   return (
     <div style={{
       width: '100vw', height: '100vh', overflow: 'hidden',
-      background: parsed.bg, touchAction: 'none',
+      background: parsed.bg === 'transparent' ? '#ffffff' : (parsed.bg || '#ffffff'),
+      touchAction: 'none',
     }}>
       <TransformWrapper
         initialScale={1}
         minScale={0.1}
         maxScale={10}
         centerOnInit
-        wheel={{ step: 0.08 }}
-        pinch={{ step: 5 }}
+        wheel={{ step: 0.12 }}
+        pinch={{ step: 20 }}
         doubleClick={{ mode: 'reset' }}
       >
         <TransformComponent

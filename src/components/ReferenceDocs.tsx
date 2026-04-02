@@ -10,9 +10,10 @@
  *   ReferenceDocs     → thin orchestrator (state + imperative handle + layout)
  */
 
-import { useState, useRef, useCallback, useImperativeHandle, forwardRef } from 'react'
+import { useState, useRef, useCallback, useImperativeHandle, forwardRef, useEffect, useMemo } from 'react'
 import { ArrowElbowDownLeft, CaretDown, CaretRight, Copy, Check } from '@phosphor-icons/react'
 import { cn } from '@/lib/utils'
+import { highlightMermaidCode, getHighlightStyle } from '@/lib/highlightCode'
 import { getRef, DIAGRAM_REFS, type RefElement as RefElementData } from '@/lib/reference'
 import { detectDiagramType } from '@/lib/detectDiagram'
 
@@ -107,9 +108,31 @@ interface RefCodePreviewProps {
   isDark: boolean
 }
 
+// Inject highlight CSS once per isDark mode
+const injectedStyles = new Set<string>()
+function useHighlightStyle(isDark: boolean) {
+  useEffect(() => {
+    const key = isDark ? 'dark' : 'light'
+    if (injectedStyles.has(key)) return
+    injectedStyles.add(key)
+    const styleEl = document.getElementById(`ref-highlight-${key}`) ?? document.createElement('style')
+    styleEl.id = `ref-highlight-${key}`
+    styleEl.textContent = getHighlightStyle(isDark)
+    if (!styleEl.parentNode) document.head.appendChild(styleEl)
+  }, [isDark])
+}
+
 function RefCodePreview({ code, isDark }: RefCodePreviewProps) {
   const [copiedLine, setCopiedLine] = useState<string | null>(null)
-  const { codeText } = useTheme(isDark)
+  useHighlightStyle(isDark)
+
+  // Compute highlighted spans per line
+  const lines = useMemo(() => {
+    return code.split('\n').map(line => ({
+      raw: line,
+      spans: line.trim() ? highlightMermaidCode(line, isDark) : [],
+    }))
+  }, [code, isDark])
 
   const copyLine = useCallback((text: string) => {
     navigator.clipboard.writeText(text).then(() => {
@@ -119,19 +142,27 @@ function RefCodePreview({ code, isDark }: RefCodePreviewProps) {
   }, [])
 
   return (
-    <div className={cn('py-1 font-mono text-[10px] leading-relaxed overflow-x-auto', codeText)}>
-      {code.split('\n').map((line, li) => {
-        const isCopied = copiedLine === line && line.trim() !== ''
+    <div className="py-1 font-mono text-[10px] leading-relaxed overflow-x-auto">
+      {lines.map(({ raw, spans }, li) => {
+        const isCopied = copiedLine === raw && raw.trim() !== ''
         return (
           <div
             key={li}
             className={cn(
               'group/line relative flex items-center gap-1 px-2 py-px rounded',
               isDark ? 'hover:bg-white/5' : 'hover:bg-black/4',
-              line.trim() === '' && 'pointer-events-none',
+              raw.trim() === '' && 'pointer-events-none',
             )}
           >
-            <span className="flex-1 whitespace-pre">{line || '\u00A0'}</span>
+            <span className="flex-1 whitespace-pre">
+              {spans.length > 0
+                ? spans.map((s, i) => s.className
+                  ? <span key={i} className={s.className}>{s.text}</span>
+                  : <span key={i}>{s.text}</span>
+                )
+                : (raw || '\u00A0')
+              }
+            </span>
             {line.trim() !== '' && (
               <button
                 onClick={(e) => { e.stopPropagation(); copyLine(line) }}

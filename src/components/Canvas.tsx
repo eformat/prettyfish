@@ -15,7 +15,6 @@ interface CanvasProps {
   sidebarWidth: number | null
   docsOpen?: boolean
   isMobile?: boolean
-  presentBg?: string
   pageName?: string
   transformRef: RefObject<ReactZoomPanPinchRef | null>
 }
@@ -24,7 +23,7 @@ const SIDEBAR_GAP = 16 + 16 // left-4 margin + gap before content
 const DOCS_WIDTH = 288 + 16 + 16 // w-72 + right-4 + gap
 const FIT_PADDING = 48 // px padding around diagram when fitting
 
-export function Canvas({ svg, hasError, mode, sidebarOpen, sidebarWidth, docsOpen, isMobile = false, presentBg, pageName, transformRef }: CanvasProps) {
+export function Canvas({ svg, hasError, mode, sidebarOpen, sidebarWidth, docsOpen, isMobile = false, pageName, transformRef }: CanvasProps) {
   const isDark = mode === 'dark'
   const previewBg = isDark ? '#0f1019' : '#f0f1f5'
   const [isPanning, setIsPanning] = useState(false)
@@ -191,7 +190,7 @@ export function Canvas({ svg, hasError, mode, sidebarOpen, sidebarWidth, docsOpe
                   if (!svg) return
                   const data = JSON.stringify({
                     svg,
-                    bg: presentBg ?? previewBg,
+                    bg: isDark ? '#1a1a2e' : '#ffffff',
                     title: pageName ?? 'Diagram',
                   })
                   const hash = btoa(unescape(encodeURIComponent(data)))

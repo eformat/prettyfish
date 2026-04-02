@@ -7,8 +7,7 @@ import type { TokenRef } from '@/lib/mermaidTokenLookup'
 import { syntaxHighlighting, defaultHighlightStyle } from '@codemirror/language'
 import { githubLight } from '@uiw/codemirror-theme-github'
 import { vscodeDark } from '@uiw/codemirror-theme-vscode'
-import { EditorView, Decoration, type DecorationSet, GutterMarker, gutter, gutterLineClass } from '@codemirror/view'
-import { StateField, StateEffect, RangeSetBuilder, RangeSet } from '@codemirror/state'
+import { EditorView } from '@codemirror/view'
 import { Button } from '@/components/ui/button'
 import { Tooltip, TooltipTrigger, TooltipContent } from '@/components/ui/tooltip'
 import {
@@ -56,91 +55,6 @@ import type { MermaidError } from '../hooks/useMermaidRenderer'
 
 // ── CodeMirror error line highlighting ──
 
-const setErrorLine = StateEffect.define<number | null>()
-
-// Stores the current error line number (1-based, or null)
-const errorLineState = StateField.define<number | null>({
-  create: () => null,
-  update(val, tr) {
-    for (const e of tr.effects) {
-      if (e.is(setErrorLine)) return e.value
-    }
-    return val
-  },
-})
-
-// Full-line background decoration
-const errorLineDecoField = StateField.define<DecorationSet>({
-  create: () => Decoration.none,
-  update(deco, tr) {
-    for (const e of tr.effects) {
-      if (e.is(setErrorLine)) {
-        if (e.value === null) return Decoration.none
-        const lineNum = e.value
-        if (lineNum < 1 || lineNum > tr.state.doc.lines) return Decoration.none
-        const line = tr.state.doc.line(lineNum)
-        return Decoration.set([Decoration.line({ class: 'cm-error-line' }).range(line.from)])
-      }
-    }
-    return deco
-  },
-  provide: (f) => EditorView.decorations.from(f),
-})
-
-// Gutter marker class — red bar in the line number gutter
-class ErrorGutterMarker extends GutterMarker {
-  elementClass = 'cm-error-gutter'
-}
-const errorGutterMarker = new ErrorGutterMarker()
-
-// Gutter that shows error marker on the error line
-const errorGutter = gutter({
-  class: 'cm-error-gutter-col',
-  markers(view) {
-    const lineNum = view.state.field(errorLineState)
-    if (!lineNum || lineNum < 1 || lineNum > view.state.doc.lines) return RangeSet.empty as RangeSet<GutterMarker>
-    const line = view.state.doc.line(lineNum)
-    const builder = new RangeSetBuilder<GutterMarker>()
-    builder.add(line.from, line.from, errorGutterMarker)
-    return builder.finish()
-  },
-})
-
-// Gutter line class singleton (adds class to the existing line number gutter cell)
-class ErrorLineGutterMarker extends GutterMarker {
-  elementClass = 'cm-error-gutter-line'
-}
-const errorLineGutterMarker = new ErrorLineGutterMarker()
-
-const errorGutterLineClass = gutterLineClass.compute([errorLineState], state => {
-  const lineNum = state.field(errorLineState)
-  if (!lineNum || lineNum < 1 || lineNum > state.doc.lines) return RangeSet.empty as RangeSet<GutterMarker>
-  const line = state.doc.line(lineNum)
-  const builder = new RangeSetBuilder<GutterMarker>()
-  builder.add(line.from, line.from, errorLineGutterMarker)
-  return builder.finish()
-})
-
-const errorLineTheme = EditorView.baseTheme({
-  // Full line background — extends across entire width
-  '.cm-error-line': {
-    backgroundColor: 'rgba(239, 68, 68, 0.10) !important',
-  },
-  '&dark .cm-error-line': {
-    backgroundColor: 'rgba(239, 68, 68, 0.14) !important',
-  },
-  // Gutter cell on the error line — red accent bar
-  '.cm-error-gutter-line': {
-    backgroundColor: 'rgba(239, 68, 68, 0.25)',
-    borderRight: '2px solid rgba(239, 68, 68, 0.7)',
-    color: 'rgba(239, 68, 68, 0.9) !important',
-  },
-  '&dark .cm-error-gutter-line': {
-    backgroundColor: 'rgba(239, 68, 68, 0.2)',
-    borderRight: '2px solid rgba(239, 68, 68, 0.6)',
-    color: 'rgba(239, 68, 68, 0.8) !important',
-  },
-})
 
 const EXTENSIONS_BASE = [EditorView.lineWrapping]
 
@@ -195,24 +109,10 @@ export function Sidebar({
   )
 
   const extensions = useMemo(
-    () => [...EXTENSIONS_BASE, langExtension, errorLineState, errorLineDecoField, errorGutter, errorGutterLineClass, errorLineTheme, altClickExt],
+    () => [...EXTENSIONS_BASE, langExtension, altClickExt],
     [langExtension, altClickExt],
   )
 
-  useEffect(() => {
-    const view = editorViewRef.current
-    if (!view) return
-    view.dispatch({ effects: setErrorLine.of(error?.line ?? null) })
-  }, [error])
-
-  useEffect(() => {
-    const view = editorViewRef.current
-    if (!view || !error?.line) return
-    const lineNum = error.line
-    if (lineNum < 1 || lineNum > view.state.doc.lines) return
-    const line = view.state.doc.line(lineNum)
-    view.dispatch({ selection: { anchor: line.from }, scrollIntoView: true })
-  }, [error])
 
 
   const goToErrorLine = () => {
