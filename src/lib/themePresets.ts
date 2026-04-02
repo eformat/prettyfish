@@ -220,6 +220,56 @@ export const CUSTOM_THEME_PRESETS: Record<string, ThemePreset> = {
       sequenceNumberColor: '#ffffff',
     },
   },
+  blueprint: {
+    name: 'Blueprint',
+    configOverrides: {
+      look: 'classic' as const,
+      fontFamily: '"JetBrains Mono", monospace',
+      fontSize: 13,
+      flowchart: { curve: 'linear' as const, nodeSpacing: 48, rankSpacing: 52, padding: 16, diagramPadding: 10 },
+      sequence: { showSequenceNumbers: false, mirrorActors: false, messageMargin: 30, actorMargin: 50, width: 140 },
+      gantt: { barHeight: 18, barGap: 4, topPadding: 48, axisFormat: '%Y-%m-%d' },
+    },
+    themeVariables: {
+      // Deep teal primary — border-weight color
+      primaryColor: '#e8f7f7',          // very light teal fill
+      primaryTextColor: '#0d5c5c',      // deep teal text (uppercase mono looks great at this shade)
+      primaryBorderColor: '#0d5c5c',    // deep teal border
+      lineColor: '#1a7a7a',             // medium-deep teal for edges
+      background: '#ffffff',
+      mainBkg: '#e8f7f7',
+      nodeBorder: '#0d5c5c',
+      clusterBkg: '#f0fbfb',
+      edgeLabelBackground: '#f5fffe',
+      titleColor: '#0d5c5c',
+      fontFamily: '"JetBrains Mono", monospace',
+      // Secondary: deep plum
+      secondaryColor: '#f5eef8',
+      secondaryBorderColor: '#5a1a72',
+      secondaryTextColor: '#5a1a72',
+      // Tertiary: deep amber/ochre
+      tertiaryColor: '#fdf6e3',
+      tertiaryBorderColor: '#7a4f00',
+      tertiaryTextColor: '#7a4f00',
+      // Notes
+      noteBkgColor: '#fefdf0',
+      noteTextColor: '#6b5000',
+      noteBorderColor: '#7a5c00',
+      // Sequence actors
+      actorBkg: '#e8f7f7',
+      actorBorder: '#0d5c5c',
+      actorTextColor: '#0d5c5c',
+      signalColor: '#0d5c5c',
+      signalTextColor: '#0d5c5c',
+      labelBoxBkgColor: '#e8f7f7',
+      labelBoxBorderColor: '#0d5c5c',
+      labelTextColor: '#0d5c5c',
+      loopTextColor: '#0d5c5c',
+      activationBkgColor: '#d0f0f0',
+      activationBorderColor: '#0d5c5c',
+      sequenceNumberColor: '#ffffff',
+    },
+  },
 }
 
 export const CUSTOM_THEME_IDS = Object.keys(CUSTOM_THEME_PRESETS) as (keyof typeof CUSTOM_THEME_PRESETS)[]

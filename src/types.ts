@@ -1,6 +1,6 @@
 export type AppMode = 'light' | 'dark'
 export type MermaidBuiltinTheme = 'default' | 'neutral' | 'dark' | 'forest' | 'base'
-export type MermaidTheme = MermaidBuiltinTheme | 'wireframe' | 'corporate' | 'amethyst' | 'neon'
+export type MermaidTheme = MermaidBuiltinTheme | 'wireframe' | 'corporate' | 'amethyst' | 'neon' | 'blueprint'
 
 /** Deep partial of DiagramConfig — only user-overridden fields */
 export type DiagramConfigOverrides = {
@@ -37,6 +37,7 @@ export const MERMAID_THEMES: { value: MermaidTheme; label: string; group: 'built
   { value: 'corporate', label: 'Corporate', group: 'custom' },
   { value: 'amethyst', label: 'Amethyst', group: 'custom' },
   { value: 'neon', label: 'Neon', group: 'custom' },
+  { value: 'blueprint', label: 'Blueprint', group: 'custom' },
 ]
 
 export const BUILTIN_THEMES = new Set<string>(['default', 'neutral', 'dark', 'forest', 'base'])
