@@ -21,13 +21,14 @@ import type { AppMode, AppState, MermaidTheme, DiagramPage, DiagramFolder } from
 import { MERMAID_THEMES } from '../types'
 import { CUSTOM_THEME_PRESETS } from '@/lib/themePresets'
 
-/** Color swatches for theme preview — [primary, secondary, accent/line] */
+/** Color swatches for theme preview — [primary, secondary, accent/line]
+ * Sourced from mermaid's actual theme defaults */
 const THEME_SWATCHES: Record<string, [string, string, string]> = {
-  default: ['#4f46e5', '#eef2ff', '#6b7280'],
-  neutral: ['#6b7280', '#f3f4f6', '#9ca3af'],
-  dark: ['#1f2937', '#374151', '#9ca3af'],
-  forest: ['#228b22', '#e6f4e6', '#2d8f2d'],
-  base: ['#4f46e5', '#ffffff', '#6b7280'],
+  default: ['#4f46e5', '#ede9fe', '#999'],   // indigo nodes, lavender fill, gray lines
+  neutral: ['#666', '#e5e7eb', '#bbb'],       // gray nodes, light gray fill, silver lines
+  dark:    ['#cdd5e0', '#1e2a3a', '#81909f'], // light text on dark nodes, navy fill, slate lines
+  forest:  ['#157520', '#d4edda', '#3d9e42'], // dark green border, pale green fill, mid green line
+  base:    ['#4f46e5', '#e8e6ff', '#888'],    // same as default but pure base
 }
 // Derive custom theme swatches from their themeVariables
 for (const [key, preset] of Object.entries(CUSTOM_THEME_PRESETS)) {
