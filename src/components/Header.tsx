@@ -31,11 +31,13 @@ const THEME_SWATCHES: Record<string, [string, string, string]> = {
 // Derive custom theme swatches from their themeVariables
 for (const [key, preset] of Object.entries(CUSTOM_THEME_PRESETS)) {
   const tv = preset.themeVariables
-  THEME_SWATCHES[key] = [
-    tv.primaryColor ?? '#4f46e5',
-    tv.secondaryColor ?? tv.mainBkg ?? '#eee',
-    tv.lineColor ?? '#888',
-  ]
+  // For themes like Blueprint where primaryColor is a light fill, use the border color as the swatch
+  const primary = (tv.primaryBorderColor && tv.primaryBorderColor !== tv.primaryColor)
+    ? tv.primaryBorderColor
+    : (tv.primaryColor ?? '#4f46e5')
+  const secondary = tv.secondaryBorderColor ?? tv.secondaryColor ?? tv.mainBkg ?? '#eee'
+  const tertiary = tv.tertiaryBorderColor ?? tv.lineColor ?? '#888'
+  THEME_SWATCHES[key] = [primary, secondary, tertiary]
 }
 
 interface HeaderProps {
