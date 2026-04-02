@@ -376,17 +376,11 @@ export function TemplateGallery({ mode, onSelect }: TemplateGalleryProps) {
       {/* Header */}
       <div className="flex flex-col gap-1.5">
         <h2 className={cn(
-          'text-lg font-semibold tracking-tight font-serif italic',
+          'text-xl font-semibold tracking-tight',
           isDark ? 'text-zinc-100' : 'text-zinc-800',
         )}>
-          Cast your net
+          Choose a diagram type
         </h2>
-        <p className={cn(
-          'text-xs leading-relaxed',
-          isDark ? 'text-zinc-500' : 'text-zinc-400',
-        )}>
-          Pick a diagram type and dive in 🐟
-        </p>
       </div>
 
       {/* Grid */}
