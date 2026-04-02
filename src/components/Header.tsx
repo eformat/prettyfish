@@ -129,7 +129,7 @@ export function Header({ pageName,
     )}>
 
       {/* Left: Logo + Pages pill — combined */}
-      <div className={cn(pillClass, 'gap-0.5')}>
+      <div className={cn(pillClass, 'gap-0.5')} data-testid="header-logo-pill">
         <div className="flex items-center justify-center w-5 h-5 rounded-md bg-primary/15">
           <img src="/favicon.svg" alt="" className="w-4 h-4" />
         </div>

@@ -105,6 +105,7 @@ export function PagesDropdown({
   return (
     <div ref={ref} className="relative flex items-center">
       <button
+        data-testid="pages-dropdown-trigger"
         onClick={() => setOpen(!open)}
         className={cn(
           'flex items-center gap-1.5 h-6 px-2.5 rounded-lg text-xs cursor-pointer transition-colors border',
@@ -128,7 +129,7 @@ export function PagesDropdown({
             : 'bg-white border-black/10',
         )}
         style={{ boxShadow: isDark ? '0 8px 24px rgba(0,0,0,0.5)' : '0 8px 24px rgba(0,0,0,0.12)', minWidth: '240px', maxWidth: '320px' }}>
-          <div className="max-h-80 overflow-y-auto custom-scrollbar py-1">
+          <div className="max-h-80 overflow-y-auto custom-scrollbar py-1" data-testid="pages-dropdown-list">
             {/* Ungrouped pages at top */}
             {ungroupedPages.length > 0 && (
               <>
@@ -330,8 +331,10 @@ export function PagesDropdown({
           </div>
 
           {/* Footer with new diagram and new folder buttons */}
+          {/* data-testid for testing */}
           <div className="border-t border-border/40 px-1 py-1 flex gap-1">
             <button
+              data-testid="pages-new-diagram"
               onClick={handleAddPage}
               className={cn(
                 'flex-1 flex items-center gap-2 px-2.5 py-1.5 rounded-md text-xs cursor-pointer transition-colors',
