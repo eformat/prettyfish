@@ -2,11 +2,19 @@ export type AppMode = 'light' | 'dark'
 export type MermaidBuiltinTheme = 'default' | 'neutral' | 'dark' | 'forest' | 'base'
 export type MermaidTheme = MermaidBuiltinTheme | 'wireframe' | 'corporate' | 'amethyst' | 'neon'
 
+/** Deep partial of DiagramConfig — only user-overridden fields */
+export type DiagramConfigOverrides = {
+  [K in keyof DiagramConfig]?: DiagramConfig[K] extends object ? Partial<DiagramConfig[K]> : DiagramConfig[K]
+}
+
 export interface DiagramPage {
   id: string
   name: string
   code: string
   mermaidTheme?: MermaidTheme
+  /** Only stores user-overridden config fields; rest comes from theme preset + defaults */
+  configOverrides?: DiagramConfigOverrides
+  /** @deprecated — use configOverrides instead. Kept for backward compat with old saved state */
   diagramConfig?: DiagramConfig
 }
 
@@ -39,8 +47,49 @@ export const DEFAULT_DIAGRAM = `flowchart TD
     B -->|No| D[Debug]
     D --> A`
 
-export function createPage(name: string, code: string = DEFAULT_DIAGRAM, mermaidTheme: MermaidTheme = 'default', diagramConfig: DiagramConfig = DEFAULT_DIAGRAM_CONFIG): DiagramPage {
-  return { id: crypto.randomUUID(), name, code, mermaidTheme, diagramConfig }
+export function createPage(name: string, code: string = DEFAULT_DIAGRAM): DiagramPage {
+  return { id: crypto.randomUUID(), name, code, mermaidTheme: 'default', configOverrides: {} }
+}
+
+/** Deep merge: base ← overrides. Only copies defined override keys. */
+export function deepMergeConfig(base: DiagramConfig, overrides: DiagramConfigOverrides): DiagramConfig {
+  const result = { ...base }
+  for (const key of Object.keys(overrides) as (keyof DiagramConfig)[]) {
+    const val = overrides[key]
+    if (val === undefined) continue
+    if (typeof val === 'object' && val !== null && typeof base[key] === 'object') {
+      (result as Record<string, unknown>)[key] = { ...base[key] as object, ...val }
+    } else {
+      (result as Record<string, unknown>)[key] = val
+    }
+  }
+  return result
+}
+
+/** Resolve the effective config: defaults → theme preset config overrides → user overrides.
+ *  presetConfigOverrides comes from CUSTOM_THEME_PRESETS[theme].configOverrides */
+export function resolveConfig(
+  presetConfigOverrides: DiagramConfigOverrides | undefined,
+  userOverrides: DiagramConfigOverrides = {},
+  legacyConfig?: DiagramConfig,
+): DiagramConfig {
+  // If page has a legacy full diagramConfig (old format), use it directly
+  if (legacyConfig && Object.keys(userOverrides).length === 0) {
+    return legacyConfig
+  }
+
+  // Start with defaults
+  let config = { ...DEFAULT_DIAGRAM_CONFIG }
+
+  // Apply theme preset config overrides
+  if (presetConfigOverrides) {
+    config = deepMergeConfig(config, presetConfigOverrides)
+  }
+
+  // Apply user overrides on top
+  config = deepMergeConfig(config, userOverrides)
+
+  return config
 }
 
 // ─── Mermaid diagram config ───────────────────────────────────────────────────

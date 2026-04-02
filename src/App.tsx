@@ -11,8 +11,9 @@ import { useMermaidRenderer } from './hooks/useMermaidRenderer'
 import { useKeyboardShortcuts } from './hooks/useKeyboardShortcuts'
 import { loadFromStorage, saveToStorage, STORAGE_KEYS } from './lib/storage'
 import { decodeStateFromHash } from './lib/share'
-import { DEFAULT_DIAGRAM, createPage, DEFAULT_DIAGRAM_CONFIG } from './types'
-import type { AppMode, AppState, MermaidTheme, DiagramPage, DiagramConfig } from './types'
+import { DEFAULT_DIAGRAM, DEFAULT_DIAGRAM_CONFIG, createPage, resolveConfig } from './types'
+import type { AppMode, AppState, MermaidTheme, DiagramPage, DiagramConfig, DiagramConfigOverrides } from './types'
+import { CUSTOM_THEME_PRESETS } from './lib/themePresets'
 
 function getInitialState() {
   const fromHash = decodeStateFromHash()
@@ -41,9 +42,8 @@ export default function App() {
   const [pages, setPages] = useState<DiagramPage[]>(initial.pages)
   const [activePageId, setActivePageId] = useState<string>(initial.activePageId)
   const [mode, setMode] = useState<AppMode>(initial.mode)
-  // Theme and config are now per-page; global state used only as fallback for legacy pages
+  // Legacy global state — only used as fallback for old saved pages without per-page config
   const [globalMermaidTheme] = useState<MermaidTheme>(initial.mermaidTheme)
-  const [globalDiagramConfig] = useState<DiagramConfig>(initial.diagramConfig)
   const [editorLigatures, setEditorLigatures] = useState<boolean>(initial.editorLigatures)
   const [autoFormat, setAutoFormat] = useState<boolean>(initial.autoFormat)
   const [sidebarOpen, setSidebarOpen] = useState(true)
@@ -93,17 +93,46 @@ export default function App() {
 
   const activePage = pages.find((p) => p.id === activePageId) ?? pages[0]!
 
-  // Per-page theme and config (fall back to global for legacy pages without these fields)
+  // Per-page theme (fall back to global for legacy pages)
   const mermaidTheme = activePage?.mermaidTheme ?? globalMermaidTheme
-  const diagramConfig = activePage?.diagramConfig ?? globalDiagramConfig
+
+  // Resolve effective config: defaults → theme preset → user overrides
+  const themePreset = CUSTOM_THEME_PRESETS[mermaidTheme]
+  const diagramConfig = resolveConfig(
+    themePreset?.configOverrides,
+    activePage?.configOverrides,
+    activePage?.diagramConfig, // legacy compat
+  )
 
   const setMermaidTheme = useCallback((theme: MermaidTheme) => {
-    setPages((prev) => prev.map((p) => p.id === activePageId ? { ...p, mermaidTheme: theme } : p))
+    // When switching themes, clear user overrides so the new theme's defaults take effect
+    setPages((prev) => prev.map((p) => p.id === activePageId ? { ...p, mermaidTheme: theme, configOverrides: {}, diagramConfig: undefined } : p))
   }, [activePageId])
 
   const setDiagramConfig = useCallback((config: DiagramConfig) => {
-    setPages((prev) => prev.map((p) => p.id === activePageId ? { ...p, diagramConfig: config } : p))
-  }, [activePageId])
+    // Compute what the user changed vs. the theme's resolved defaults
+    const baseConfig = resolveConfig(themePreset?.configOverrides)
+    const overrides: DiagramConfigOverrides = {}
+
+    // Top-level primitives
+    if (config.look !== baseConfig.look) overrides.look = config.look
+    if (config.fontFamily !== baseConfig.fontFamily) overrides.fontFamily = config.fontFamily
+    if (config.fontSize !== baseConfig.fontSize) overrides.fontSize = config.fontSize
+
+    // Nested objects — only store changed keys
+    for (const section of ['themeVariables', 'flowchart', 'sequence', 'gantt'] as const) {
+      const base = baseConfig[section] as Record<string, unknown>
+      const curr = config[section] as Record<string, unknown>
+      const diff: Record<string, unknown> = {}
+      let hasDiff = false
+      for (const key of Object.keys(curr)) {
+        if (curr[key] !== base[key]) { diff[key] = curr[key]; hasDiff = true }
+      }
+      if (hasDiff) (overrides as Record<string, unknown>)[section] = diff
+    }
+
+    setPages((prev) => prev.map((p) => p.id === activePageId ? { ...p, configOverrides: overrides, diagramConfig: undefined } : p))
+  }, [activePageId, themePreset])
 
   const isDark = mode === 'dark'
   const previewBg = isDark ? '#0f1019' : '#f0f1f5'
