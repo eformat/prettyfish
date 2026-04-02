@@ -107,42 +107,31 @@ export function useMermaidRenderer(
         return
       }
 
+      // diagramConfig is already fully resolved: defaults → theme preset → user overrides
+      // The renderer only needs to handle theme selection and themeVariables
       const fontSizeStr = `${diagramConfig.fontSize}px`
       const isCustom = !BUILTIN_THEMES.has(theme)
       const customPreset = isCustom ? CUSTOM_THEME_PRESETS[theme] : null
       const effectiveTheme = isCustom ? 'base' : theme
 
-      // Merge config overrides from custom presets
-      const co = customPreset?.configOverrides
-      const effectiveLook = co?.look ?? diagramConfig.look
-      const effectiveFont = co?.fontFamily ?? diagramConfig.fontFamily
-      const effectiveFontSize = co?.fontSize ?? diagramConfig.fontSize
-      const effectiveFontSizeStr = `${effectiveFontSize}px`
-
       mermaid.initialize({
         startOnLoad: false,
         theme: effectiveTheme,
         securityLevel: 'loose',
-        look: effectiveLook,
-        fontFamily: effectiveFont,
-        fontSize: effectiveFontSize,
+        look: diagramConfig.look,
+        fontFamily: diagramConfig.fontFamily,
+        fontSize: diagramConfig.fontSize,
         themeVariables: customPreset
-          // Custom preset: use preset colors + font
-          ? { ...customPreset.themeVariables, fontSize: effectiveFontSizeStr }
+          // Custom preset: use preset colors (user can't override these yet)
+          ? { ...customPreset.themeVariables, fontSize: fontSizeStr }
           // Built-in 'base' theme: user controls colors via config panel
           : effectiveTheme === 'base'
             ? { ...diagramConfig.themeVariables, fontFamily: diagramConfig.fontFamily, fontSize: fontSizeStr }
             // Other built-in themes: only pass font info
             : { fontFamily: diagramConfig.fontFamily, fontSize: fontSizeStr },
-        flowchart: co?.flowchart
-          ? { ...diagramConfig.flowchart, ...co.flowchart }
-          : diagramConfig.flowchart,
-        sequence: co?.sequence
-          ? { ...diagramConfig.sequence, ...co.sequence }
-          : diagramConfig.sequence,
-        gantt: co?.gantt
-          ? { ...diagramConfig.gantt, ...co.gantt }
-          : diagramConfig.gantt,
+        flowchart: diagramConfig.flowchart,
+        sequence: diagramConfig.sequence,
+        gantt: diagramConfig.gantt,
       })
 
       try {
