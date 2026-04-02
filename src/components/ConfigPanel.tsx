@@ -76,20 +76,31 @@ export function ConfigPanel({ config, code, mode, onChange, mermaidTheme, onMerm
   const isBaseTheme = mermaidTheme === 'base'
   const isDark = mode === 'dark'
   const [viewMode, setViewMode] = useState<'visual' | 'json'>('visual')
-  const [jsonText, setJsonText] = useState(() => JSON.stringify(config, null, 2))
+  // In JSON mode: track user-edited text separately; in visual mode: derive from config
+  const [jsonUserText, setJsonUserText] = useState<string | null>(null)
   const [jsonError, setJsonError] = useState<string | null>(null)
 
-  // Keep jsonText in sync when config changes externally or when switching to visual mode
-  useEffect(() => {
-    if (viewMode !== 'visual') return
-    setJsonText(JSON.stringify(config, null, 2))
+  // The effective JSON text shown in the editor:
+  // - visual mode: always reflect latest config (no stale state)
+  // - json mode: user's edits (or latest config if they just switched)
+  const jsonText = viewMode === 'json' && jsonUserText !== null
+    ? jsonUserText
+    : JSON.stringify(config, null, 2)
+
+  const handleSwitchToJson = useCallback(() => {
+    setJsonUserText(JSON.stringify(config, null, 2))
     setJsonError(null)
-    // We deliberately include config+viewMode — this effect is the canonical sync
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [JSON.stringify(config), viewMode])
+    setViewMode('json')
+  }, [config])
+
+  const handleSwitchToVisual = useCallback(() => {
+    setJsonUserText(null)
+    setJsonError(null)
+    setViewMode('visual')
+  }, [])
 
   const handleJsonChange = useCallback((val: string) => {
-    setJsonText(val)
+    setJsonUserText(val)
     try {
       const parsed = JSON.parse(val)
       onChange(parsed as DiagramConfig)
@@ -127,13 +138,7 @@ export function ConfigPanel({ config, code, mode, onChange, mermaidTheme, onMerm
         {(['visual', 'json'] as const).map((m) => (
           <button
             key={m}
-            onClick={() => {
-              if (m === 'json') {
-                setJsonText(JSON.stringify(config, null, 2))
-                setJsonError(null)
-              }
-              setViewMode(m)
-            }}
+            onClick={() => m === 'json' ? handleSwitchToJson() : handleSwitchToVisual()}
             className={cn(
               'flex-1 py-1 rounded-md text-xs font-medium transition-colors cursor-pointer capitalize',
               viewMode === m

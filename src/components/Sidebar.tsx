@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect, useMemo, type RefObject } from 'react'
+import React, { useState, useRef, useEffect, useMemo, useCallback, type RefObject } from 'react'
 import CodeMirror from '@uiw/react-codemirror'
 import { mermaid as mermaidLang } from 'codemirror-lang-mermaid'
 import { mermaidFallbackLanguage } from '@/lib/mermaidHighlight'
@@ -286,7 +286,7 @@ type SidebarTab = 'code' | 'config'
 
 interface SidebarProps {
   code: string
-  insertRef?: React.MutableRefObject<((text: string) => void) | null>
+  onInsertReady?: (fn: (text: string) => void) => void
   onAltClick?: (ref: TokenRef) => void
   mode: AppMode
   pages: DiagramPage[]
@@ -312,8 +312,9 @@ interface SidebarProps {
 export function Sidebar({
   code, mode, pages, activePageId, diagramConfig, error, editorLigatures, autoFormat, mermaidTheme,
   editorFocusRef,
-  onChange, onSelectPage, onAddPage, onRenamePage, onDeletePage, onReorderPages, onConfigChange, onMermaidThemeChange, onLigaturesChange, onAutoFormatChange, insertRef, onAltClick,
+  onChange, onSelectPage, onAddPage, onRenamePage, onDeletePage, onReorderPages, onConfigChange, onMermaidThemeChange, onLigaturesChange, onAutoFormatChange, onInsertReady, onAltClick,
 }: SidebarProps) {
+  'use no memo'
   const [activeTab, setActiveTab] = useState<SidebarTab>('code')
   const [collapsed, setCollapsed] = useState(false)
   const [pagesOpen, setPagesOpen] = useState(false)
@@ -422,7 +423,7 @@ export function Sidebar({
     return target
   }
 
-  const insertAtCursor = (text: string) => {
+  const insertAtCursor = useCallback((text: string) => {
     const view = editorViewRef.current
     if (!view) {
       onChange(text)
@@ -436,13 +437,18 @@ export function Sidebar({
     view.focus()
     setActiveTab('code')
     setCollapsed(false)
-  }
+  }, [onChange])
 
-  // Expose insertAtCursor via ref so parent can call it (e.g. from docs panel)
+  // Register insertAtCursor with parent whenever it changes
   useEffect(() => {
-    if (!insertRef) return
-    insertRef.current = insertAtCursor
-  })
+    onInsertReady?.(insertAtCursor)
+  }, [onInsertReady, insertAtCursor])
+
+  function handleCreateEditor(view: EditorView) {
+    // eslint-disable-next-line react-compiler/react-compiler
+    editorViewRef.current = view
+    editorFocusRef.current = () => view.focus()
+  }
 
   const handleCodeChange = (value: string) => {
     if (autoFormat) {
@@ -761,13 +767,7 @@ export function Sidebar({
                   fontVariantLigatures: editorLigatures ? 'common-ligatures' : 'none',
                   fontFeatureSettings: editorLigatures ? '"liga" 1, "calt" 1' : '"liga" 0, "calt" 0',
                 }}
-                onCreateEditor={(view) => {
-                  editorViewRef.current = view
-                  editorFocusRef.current = () => view.focus()
-                  if (error?.line) {
-                    view.dispatch({ effects: setErrorLine.of(error.line) })
-                  }
-                }}
+                onCreateEditor={handleCreateEditor}
                 basicSetup={{
                   lineNumbers: true,
                   foldGutter: false,

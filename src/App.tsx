@@ -48,6 +48,7 @@ export default function App() {
   const [docsOpen, setDocsOpen] = useState(false)
   const [helpOpen, setHelpOpen] = useState(false)
   const insertRef = useRef<((text: string) => void) | null>(null)
+  const handleInsertReady = useCallback((fn: (text: string) => void) => { insertRef.current = fn }, [])
   const referenceDocsRef = useRef<ReferenceDocsHandle>(null)
   const [sidebarWidth, setSidebarWidth] = useState<number | null>(() => {
     try {
@@ -232,7 +233,7 @@ export default function App() {
             editorLigatures={editorLigatures}
             autoFormat={autoFormat}
             editorFocusRef={editorFocusRef}
-            insertRef={insertRef}
+            onInsertReady={handleInsertReady}
             onAltClick={(ref) => {
               setDocsOpen(true)
               setTimeout(() => referenceDocsRef.current?.scrollToElement(ref.diagramType, ref.elementName), 50)
