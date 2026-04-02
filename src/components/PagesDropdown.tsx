@@ -47,7 +47,6 @@ export function PagesDropdown({
   const [open, setOpen] = useState(false)
   const [renamingId, setRenamingId] = useState<string | null>(null)
   const [renameValue, setRenameValue] = useState('')
-  const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null)
   const [newFolderName, setNewFolderName] = useState('')
   const [creatingFolder, setCreatingFolder] = useState(false)
   const ref = useRef<HTMLDivElement>(null)
@@ -136,20 +135,19 @@ export function PagesDropdown({
                 {ungroupedPages.map((page) => {
                   const isActive = page.id === activePageId
                   const isRenaming = renamingId === page.id
-                  const isConfirmDelete = confirmDeleteId === page.id
                   
                   return (
                     <div
                       key={page.id}
                       className={cn(
                         'group flex items-center gap-2 px-3 py-2 text-[13px] transition-colors select-none',
-                        isRenaming || isConfirmDelete ? 'cursor-default' : 'cursor-pointer',
+                        isRenaming ? 'cursor-default' : 'cursor-pointer',
                         isActive
                           ? cn('font-medium', isDark ? 'bg-white/10 text-white' : 'bg-primary/8 text-foreground')
                           : cn(isDark ? 'text-zinc-200 hover:bg-white/6 hover:text-white' : 'text-zinc-700 hover:bg-black/4 hover:text-foreground'),
                       )}
                       onClick={() => {
-                        if (!isRenaming && !isConfirmDelete) {
+                        if (!isRenaming) {
                           onSelectPage(page.id)
                           setOpen(false)
                         }
@@ -157,19 +155,7 @@ export function PagesDropdown({
                     >
                       <DiagramIcon type={detectDiagramType(page.code)} className={cn('w-3.5 h-3.5 shrink-0', isActive ? 'text-primary' : 'text-muted-foreground')} />
 
-                      {isConfirmDelete ? (
-                        <>
-                          <span className={cn('flex-1 text-xs', isDark ? 'text-red-300' : 'text-red-600')}>Delete "{page.name}"?</span>
-                          <button
-                            onClick={(e) => { e.stopPropagation(); onDeletePage(page.id); setConfirmDeleteId(null) }}
-                            className={cn('px-1.5 py-0.5 rounded text-[10px] font-semibold cursor-pointer transition-colors', isDark ? 'bg-red-500/20 hover:bg-red-500/35 text-red-300' : 'bg-red-100 hover:bg-red-200 text-red-600')}
-                          >Yes</button>
-                          <button
-                            onClick={(e) => { e.stopPropagation(); setConfirmDeleteId(null) }}
-                            className={cn('px-1.5 py-0.5 rounded text-[10px] font-medium cursor-pointer transition-colors', isDark ? 'hover:bg-white/8 text-zinc-400' : 'hover:bg-black/5 text-zinc-500')}
-                          >No</button>
-                        </>
-                      ) : isRenaming ? (
+                      {isRenaming ? (
                         <input
                           ref={renameInputRef}
                           value={renameValue}
@@ -197,7 +183,7 @@ export function PagesDropdown({
                           </button>
                           {pages.length > 1 && (
                             <button
-                              onClick={(e) => { e.stopPropagation(); setConfirmDeleteId(page.id) }}
+                              onClick={(e) => { e.stopPropagation(); onDeletePage(page.id) }}
                               className="p-0.5 rounded hover:bg-destructive/15 text-muted-foreground hover:text-destructive"
                               title="Delete"
                             >
@@ -216,7 +202,6 @@ export function PagesDropdown({
             {folders.map((folder) => {
               const folderPages = pages.filter(p => p.folderId === folder.id)
               const isRenamingFolder = renamingId === folder.id
-              const isConfirmDeleteFolder = confirmDeleteId === folder.id
               
               return (
                 <div key={folder.id}>
@@ -224,7 +209,7 @@ export function PagesDropdown({
                   <div
                     className={cn(
                       'group flex items-center gap-2 px-3 py-2 text-[13px] transition-colors select-none',
-                      isRenamingFolder || isConfirmDeleteFolder ? 'cursor-default' : 'cursor-pointer',
+                      isRenamingFolder ? 'cursor-default' : 'cursor-pointer',
                       isDark ? 'text-zinc-200 hover:bg-white/6 hover:text-white' : 'text-zinc-700 hover:bg-black/4 hover:text-foreground',
                     )}
                   >
@@ -236,19 +221,7 @@ export function PagesDropdown({
                     </button>
                     <FolderSimple className="w-3.5 h-3.5 shrink-0" />
 
-                    {isConfirmDeleteFolder ? (
-                      <>
-                        <span className={cn('flex-1 text-xs', isDark ? 'text-red-300' : 'text-red-600')}>Delete "{folder.name}"?</span>
-                        <button
-                          onClick={(e) => { e.stopPropagation(); onDeleteFolder(folder.id); setConfirmDeleteId(null) }}
-                          className={cn('px-1.5 py-0.5 rounded text-[10px] font-semibold cursor-pointer transition-colors', isDark ? 'bg-red-500/20 hover:bg-red-500/35 text-red-300' : 'bg-red-100 hover:bg-red-200 text-red-600')}
-                        >Yes</button>
-                        <button
-                          onClick={(e) => { e.stopPropagation(); setConfirmDeleteId(null) }}
-                          className={cn('px-1.5 py-0.5 rounded text-[10px] font-medium cursor-pointer transition-colors', isDark ? 'hover:bg-white/8 text-zinc-400' : 'hover:bg-black/5 text-zinc-500')}
-                        >No</button>
-                      </>
-                    ) : isRenamingFolder ? (
+                    {isRenamingFolder ? (
                       <input
                         ref={renameInputRef}
                         value={renameValue}
@@ -275,7 +248,7 @@ export function PagesDropdown({
                           <PencilSimple className="w-3.5 h-3.5" />
                         </button>
                         <button
-                          onClick={(e) => { e.stopPropagation(); setConfirmDeleteId(folder.id) }}
+                          onClick={(e) => { e.stopPropagation(); onDeleteFolder(folder.id) }}
                           className="p-0.5 rounded hover:bg-destructive/15 text-muted-foreground hover:text-destructive"
                           title="Delete"
                         >
@@ -289,14 +262,13 @@ export function PagesDropdown({
                   {!folder.collapsed && folderPages.map((page) => {
                     const isActive = page.id === activePageId
                     const isRenaming = renamingId === page.id
-                    const isConfirmDelete = confirmDeleteId === page.id
                     
                     return (
                       <div
                         key={page.id}
                         className={cn(
                           'group flex items-center gap-2 pl-8 pr-3 py-2 text-[13px] transition-colors select-none',
-                          isRenaming || isConfirmDelete ? 'cursor-default' : 'cursor-pointer',
+                          isRenaming ? 'cursor-default' : 'cursor-pointer',
                           'border-l border-l-transparent',
                           isDark ? 'hover:border-l-white/20' : 'hover:border-l-black/10',
                           isActive
@@ -304,7 +276,7 @@ export function PagesDropdown({
                             : cn(isDark ? 'text-zinc-200 hover:bg-white/6 hover:text-white' : 'text-zinc-700 hover:bg-black/4 hover:text-foreground'),
                         )}
                         onClick={() => {
-                          if (!isRenaming && !isConfirmDelete) {
+                          if (!isRenaming) {
                             onSelectPage(page.id)
                             setOpen(false)
                           }
@@ -312,19 +284,7 @@ export function PagesDropdown({
                       >
                         <DiagramIcon type={detectDiagramType(page.code)} className={cn('w-3 h-3 shrink-0', isActive ? 'text-primary' : 'text-muted-foreground')} />
 
-                        {isConfirmDelete ? (
-                          <>
-                            <span className={cn('flex-1 text-xs', isDark ? 'text-red-300' : 'text-red-600')}>Delete "{page.name}"?</span>
-                            <button
-                              onClick={(e) => { e.stopPropagation(); onDeletePage(page.id); setConfirmDeleteId(null) }}
-                              className={cn('px-1.5 py-0.5 rounded text-[10px] font-semibold cursor-pointer transition-colors', isDark ? 'bg-red-500/20 hover:bg-red-500/35 text-red-300' : 'bg-red-100 hover:bg-red-200 text-red-600')}
-                            >Yes</button>
-                            <button
-                              onClick={(e) => { e.stopPropagation(); setConfirmDeleteId(null) }}
-                              className={cn('px-1.5 py-0.5 rounded text-[10px] font-medium cursor-pointer transition-colors', isDark ? 'hover:bg-white/8 text-zinc-400' : 'hover:bg-black/5 text-zinc-500')}
-                            >No</button>
-                          </>
-                        ) : isRenaming ? (
+                        {isRenaming ? (
                           <input
                             ref={renameInputRef}
                             value={renameValue}
@@ -352,7 +312,7 @@ export function PagesDropdown({
                             </button>
                             {pages.length > 1 && (
                               <button
-                                onClick={(e) => { e.stopPropagation(); setConfirmDeleteId(page.id) }}
+                                onClick={(e) => { e.stopPropagation(); onDeletePage(page.id) }}
                                 className="p-0.5 rounded hover:bg-destructive/15 text-muted-foreground hover:text-destructive"
                                 title="Delete"
                               >
