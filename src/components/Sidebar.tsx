@@ -5,7 +5,8 @@ import { mermaidFallbackLanguage } from '@/lib/mermaidHighlight'
 import { mermaidAltClickExtension } from '@/lib/mermaidAltClick'
 import type { TokenRef } from '@/lib/mermaidTokenLookup'
 import { syntaxHighlighting, defaultHighlightStyle } from '@codemirror/language'
-import { githubDark, githubLight } from '@uiw/codemirror-theme-github'
+import { githubLight } from '@uiw/codemirror-theme-github'
+import { vscodeDark } from '@uiw/codemirror-theme-vscode'
 import { EditorView, Decoration, type DecorationSet, GutterMarker, gutter, gutterLineClass } from '@codemirror/view'
 import { StateField, StateEffect, RangeSetBuilder, RangeSet } from '@codemirror/state'
 import { Button } from '@/components/ui/button'
@@ -413,7 +414,7 @@ export function Sidebar({
                 value={code}
                 onChange={handleCodeChange}
                 extensions={extensions}
-                theme={isDark ? githubDark : githubLight}
+                theme={isDark ? vscodeDark : githubLight}
                 height="100%"
                 style={{
                   height: '100%',
