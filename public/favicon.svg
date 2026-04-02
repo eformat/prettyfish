@@ -1,11 +1,11 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32">
-  <!-- Fish body — smooth teardrop -->
-  <path d="M6 16c0-5 4-9 10-9s10 4 10 9-4 9-10 9S6 21 6 16Z" fill="#3ECFB4" />
-  <!-- Tail fin — forked -->
-  <path d="M4 10c3 3 3 6 3 6s0 3-3 6c2-1 5-3 5-6s-3-5-5-6Z" fill="#F9A825" />
+  <!-- Fish body — rich teal -->
+  <path d="M6 16c0-5 4-9 10-9s10 4 10 9-4 9-10 9S6 21 6 16Z" fill="#0D9E8A" />
+  <!-- Tail fin — deep amber -->
+  <path d="M4 10c3 3 3 6 3 6s0 3-3 6c2-1 5-3 5-6s-3-5-5-6Z" fill="#D97706" />
   <!-- Eye -->
-  <circle cx="20.5" cy="14" r="2" fill="white" />
-  <circle cx="21" cy="13.7" r="0.9" fill="#1a1a2e" />
-  <!-- Subtle scale lines -->
-  <path d="M12 13c2-.5 4 0 5 1M11 17c2 .5 4 0 5-1" stroke="#2BB99A" stroke-width="0.7" fill="none" stroke-linecap="round" />
+  <circle cx="20.5" cy="14" r="2.2" fill="white" />
+  <circle cx="21" cy="13.6" r="1" fill="#0a1628" />
+  <!-- Scale arc lines -->
+  <path d="M12 13c2-.6 4.5-.1 6 1M11 17.5c2 .6 4.5 .1 6-1" stroke="#0A7A6A" stroke-width="0.9" fill="none" stroke-linecap="round" />
 </svg>

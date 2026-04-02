@@ -255,6 +255,13 @@ export default function App() {
         code={activePage.code}
         previewBg={previewBg}
         getState={getState}
+        pages={pages}
+        activePageId={activePageId}
+        onSelectPage={setActivePageId}
+        onAddPage={addPage}
+        onRenamePage={renamePage}
+        onDeletePage={deletePage}
+        onReorderPages={reorderPages}
         onModeChange={setMode}
         onMermaidThemeChange={setMermaidTheme}
         isMobile={isMobile}
@@ -303,8 +310,6 @@ export default function App() {
             <Sidebar
               code={activePage.code}
               mode={mode}
-              pages={pages}
-              activePageId={activePageId}
               diagramConfig={diagramConfig}
               error={error}
               editorLigatures={editorLigatures}
@@ -316,15 +321,9 @@ export default function App() {
                 setTimeout(() => referenceDocsRef.current?.scrollToElement(ref.diagramType, ref.elementName), 50)
               }}
               onChange={updateCode}
-              onSelectPage={setActivePageId}
-              onAddPage={addPage}
-              onRenamePage={renamePage}
-              onDeletePage={deletePage}
-              onReorderPages={reorderPages}
               mermaidTheme={mermaidTheme}
               onConfigChange={setDiagramConfig}
               onMermaidThemeChange={(t) => setMermaidTheme(t as MermaidTheme)}
-
               onLigaturesChange={setEditorLigatures}
               onAutoFormatChange={setAutoFormat}
             />
