@@ -310,7 +310,7 @@ export function Sidebar({
               }} />
             ) : activeTab === 'code' ? (
               <CodeMirror
-                key={activePageId}
+                key={code.split('\n')[0]}
                 value={code}
                 onChange={handleCodeChange}
                 extensions={extensions}

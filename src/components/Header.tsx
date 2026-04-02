@@ -128,24 +128,25 @@ export function Header({ pageName,
       isMobile ? 'justify-between px-2 pt-2 gap-1' : 'justify-between px-4 pt-3',
     )}>
 
-      {/* Left: Logo pill */}
-      <div className={pillClass}>
+      {/* Left: Logo + Pages pill — combined */}
+      <div className={cn(pillClass, 'gap-0.5')}>
         <div className="flex items-center justify-center w-5 h-5 rounded-md bg-primary/15">
           <img src="/favicon.svg" alt="" className="w-4 h-4" />
         </div>
-        <span className="text-sm tracking-tight pl-0.5">
+        <span className="text-sm tracking-tight pl-0.5 pr-1">
           <span className="font-semibold">Pretty</span><span className="font-serif italic text-primary ml-0.5">Fish</span>
         </span>
         <span className={cn(
-          'text-[10px] font-medium tracking-wider uppercase px-1.5 py-0.5 rounded-full ml-0.5 hidden sm:inline',
+          'text-[10px] font-medium tracking-wider uppercase px-1.5 py-0.5 rounded-full hidden sm:inline',
           isDark ? 'bg-accent/15 text-accent' : 'bg-primary/10 text-primary',
         )}>
           Mermaid Diagram Editor
         </span>
-      </div>
 
-      {/* Pages dropdown — separate pill after logo */}
-      <div className={pillClass}>
+        {/* Separator */}
+        <div className={cn('w-px h-4 mx-1.5', isDark ? 'bg-white/10' : 'bg-black/10')} />
+
+        {/* Pages dropdown inline */}
         <PagesDropdown
           pages={pages}
           folders={folders}
