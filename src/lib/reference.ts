@@ -1641,6 +1641,70 @@ export const DIAGRAM_REFS: Record<string, DiagramRef> = {
       },
     ],
   },
+  kanban: {
+    id: 'kanban',
+    label: 'Kanban',
+    elements: [
+      { name: 'kanban', syntax: 'kanban', description: 'Declares a Kanban board', examples: [{ label: 'Basic', code: 'kanban\n  Todo\n    Task 1\n  Done\n    Task 2' }] },
+      { name: 'column', syntax: 'ColumnName', description: 'A column header (no indentation)', examples: [{ label: 'Columns', code: 'kanban\n  Backlog\n  In Progress\n  Done' }] },
+      { name: 'card', syntax: '  Card text', description: 'A card inside a column (indented)', examples: [{ label: 'Cards', code: 'kanban\n  Todo\n    Design UI\n    Write tests\n  Done\n    Setup CI' }] },
+    ],
+  },
+  sankey: {
+    id: 'sankey',
+    label: 'Sankey',
+    elements: [
+      { name: 'sankey-beta', syntax: 'sankey-beta', description: 'Declares a Sankey diagram (beta)', examples: [{ label: 'Basic', code: 'sankey-beta\n\nA,B,10\nB,C,5' }] },
+      { name: 'flow', syntax: 'Source,Target,Value', description: 'Defines a flow between nodes with a quantity', examples: [{ label: 'Multi-flow', code: 'sankey-beta\n\nElectricity,Heating,20\nElectricity,Cooling,15\nGas,Heating,30' }] },
+    ],
+  },
+  block: {
+    id: 'block',
+    label: 'Block',
+    elements: [
+      { name: 'block-beta', syntax: 'block-beta', description: 'Declares a block diagram (beta)', examples: [{ label: 'Basic', code: 'block-beta\n  columns 2\n  A["Block A"]:1\n  B["Block B"]:1' }] },
+      { name: 'columns', syntax: 'columns N', description: 'Sets the number of columns in the grid', examples: [{ label: '3 columns', code: 'block-beta\n  columns 3\n  a:1\n  b:1\n  c:1' }] },
+      { name: 'block', syntax: 'id["Label"]:span', description: 'A block with optional label and column span', examples: [{ label: 'Spanning', code: 'block-beta\n  columns 3\n  Header:3\n  a:1\n  b:2' }] },
+      { name: 'space', syntax: 'space', description: 'An empty cell in the grid', examples: [{ label: 'With space', code: 'block-beta\n  columns 2\n  a:1\n  space\n  space\n  b:1' }] },
+    ],
+  },
+  packet: {
+    id: 'packet',
+    label: 'Packet',
+    elements: [
+      { name: 'packet-beta', syntax: 'packet-beta', description: 'Declares a packet diagram (beta)', examples: [{ label: 'Basic', code: 'packet-beta\n  0-15: "Source Port"\n  16-31: "Dest Port"' }] },
+      { name: 'field', syntax: 'start-end: "Label"', description: 'A bit field from start to end position', examples: [{ label: 'TCP header', code: 'packet-beta\n  0-15: "Source Port"\n  16-31: "Destination Port"\n  32-63: "Sequence Number"' }] },
+    ],
+  },
+  journey: {
+    id: 'journey',
+    label: 'Journey',
+    elements: [
+      { name: 'journey', syntax: 'journey', description: 'Declares a user journey diagram', examples: [{ label: 'Basic', code: 'journey\n  title My Journey\n  section Go\n    Task: 5: Me' }] },
+      { name: 'title', syntax: 'title Text', description: 'Sets the diagram title', examples: [{ label: 'Title', code: 'journey\n  title Shopping Experience' }] },
+      { name: 'section', syntax: 'section Name', description: 'Groups tasks into a named section', examples: [{ label: 'Sections', code: 'journey\n  section Browse\n    View items: 4: User\n  section Buy\n    Checkout: 3: User' }] },
+      { name: 'task', syntax: 'Task name: score: Actor1, Actor2', description: 'A task with satisfaction score (1-5) and actors', examples: [{ label: 'Task', code: 'journey\n  section Use\n    Login: 5: User\n    Search: 3: User, System' }] },
+    ],
+  },
+  requirement: {
+    id: 'requirement',
+    label: 'Requirement',
+    elements: [
+      { name: 'requirementDiagram', syntax: 'requirementDiagram', description: 'Declares a requirement diagram', examples: [{ label: 'Basic', code: 'requirementDiagram\n  requirement r1 {\n    id: 1\n    text: Must work\n    risk: low\n    verifymethod: test\n  }' }] },
+      { name: 'requirement', syntax: 'requirement name { ... }', description: 'Defines a requirement with id, text, risk, verifymethod', examples: [{ label: 'Requirement', code: 'requirementDiagram\n  requirement auth {\n    id: REQ-1\n    text: Must authenticate\n    risk: high\n    verifymethod: test\n  }' }] },
+      { name: 'element', syntax: 'element name { type: ... }', description: 'Defines a design element', examples: [{ label: 'Element', code: 'requirementDiagram\n  element app {\n    type: application\n  }' }] },
+      { name: 'relationship', syntax: 'el - type -> req', description: 'Links elements to requirements (satisfies, traces, contains, derives, refines, verifies)', examples: [{ label: 'Satisfies', code: 'requirementDiagram\n  requirement r1 {\n    id: 1\n    text: Test\n    risk: low\n    verifymethod: test\n  }\n  element app {\n    type: application\n  }\n  app - satisfies -> r1' }] },
+    ],
+  },
+  radar: {
+    id: 'radar',
+    label: 'Radar',
+    elements: [
+      { name: 'radar-beta', syntax: 'radar-beta', description: 'Declares a radar/spider chart (beta)', examples: [{ label: 'Basic', code: 'radar-beta\n  axis a, b, c, d\n  curve x: 3, 4, 2, 5' }] },
+      { name: 'axis', syntax: 'axis name1, name2, ...', description: 'Defines the axes of the radar chart', examples: [{ label: 'Axes', code: 'radar-beta\n  axis Speed, Power, Range, Cost, Style' }] },
+      { name: 'curve', syntax: 'curve label: v1, v2, ...', description: 'A data series plotted on the radar', examples: [{ label: 'Two curves', code: 'radar-beta\n  axis a, b, c, d, e\n  curve Team A: 4, 3, 2, 5, 4\n  curve Team B: 2, 5, 4, 3, 5' }] },
+    ],
+  },
   architecture: {
     id: 'architecture',
     label: 'Architecture',

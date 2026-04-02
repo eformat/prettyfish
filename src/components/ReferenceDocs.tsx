@@ -50,6 +50,13 @@ const TYPE_LABELS: Record<string, string> = {
   quadrantChart:   'Quad',
   'xychart-beta':  'XY',
   'architecture':  'Arch',
+  'kanban':        'Kanban',
+  'sankey':        'Sankey',
+  'block':         'Block',
+  'packet':        'Packet',
+  'journey':       'Journey',
+  'requirement':   'Req',
+  'radar':         'Radar',
 }
 
 // ─── RefTypePicker ────────────────────────────────────────────────────────────
@@ -75,7 +82,7 @@ function RefTypePicker({ selectedType, isDark, onSelect }: RefTypePickerProps) {
               key={key}
               onClick={() => onSelect(key)}
               className={cn(
-                'px-2 py-0.5 rounded text-[10px] font-medium cursor-pointer transition-colors',
+                'px-1.5 py-0.5 rounded text-[9px] font-medium cursor-pointer transition-colors',
                 isActive
                   ? 'bg-primary text-primary-foreground'
                   : isDark

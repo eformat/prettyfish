@@ -215,6 +215,91 @@ function XYChartIcon({ className }: { className?: string }) {
 }
 
 // Icon map by template id
+function KanbanIcon({ className }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" className={className}>
+      <rect x="2" y="2" width="6" height="18" rx="1" stroke="currentColor" strokeWidth="1.3"/>
+      <rect x="9" y="2" width="6" height="12" rx="1" stroke="currentColor" strokeWidth="1.3"/>
+      <rect x="16" y="2" width="6" height="8" rx="1" stroke="currentColor" strokeWidth="1.3"/>
+      <line x1="4" y1="6" x2="6" y2="6" stroke="currentColor" strokeWidth="1"/>
+      <line x1="4" y1="9" x2="6" y2="9" stroke="currentColor" strokeWidth="1"/>
+      <line x1="4" y1="12" x2="6" y2="12" stroke="currentColor" strokeWidth="1"/>
+      <line x1="11" y1="6" x2="13" y2="6" stroke="currentColor" strokeWidth="1"/>
+      <line x1="11" y1="9" x2="13" y2="9" stroke="currentColor" strokeWidth="1"/>
+      <line x1="18" y1="6" x2="20" y2="6" stroke="currentColor" strokeWidth="1"/>
+    </svg>
+  )
+}
+function SankeyIcon({ className }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" className={className}>
+      <path d="M2 4c4 0 6 2 10 6s6 6 10 6" stroke="currentColor" strokeWidth="3" opacity="0.4"/>
+      <path d="M2 8c4 0 8 4 10 6s6 4 10 4" stroke="currentColor" strokeWidth="2" opacity="0.6"/>
+      <path d="M2 14c6 0 8-4 10-6s6-2 10-2" stroke="currentColor" strokeWidth="2" opacity="0.5"/>
+    </svg>
+  )
+}
+function BlockIcon({ className }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" className={className}>
+      <rect x="2" y="2" width="20" height="6" rx="1" stroke="currentColor" strokeWidth="1.3"/>
+      <rect x="2" y="10" width="9.5" height="5" rx="1" stroke="currentColor" strokeWidth="1.3"/>
+      <rect x="12.5" y="10" width="9.5" height="5" rx="1" stroke="currentColor" strokeWidth="1.3"/>
+      <rect x="2" y="17" width="20" height="5" rx="1" stroke="currentColor" strokeWidth="1.3"/>
+    </svg>
+  )
+}
+function PacketIcon({ className }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" className={className}>
+      <rect x="2" y="2" width="20" height="4" rx="0.5" stroke="currentColor" strokeWidth="1.2"/>
+      <rect x="2" y="7" width="10" height="4" rx="0.5" stroke="currentColor" strokeWidth="1.2"/>
+      <rect x="12" y="7" width="10" height="4" rx="0.5" stroke="currentColor" strokeWidth="1.2"/>
+      <rect x="2" y="12" width="20" height="4" rx="0.5" stroke="currentColor" strokeWidth="1.2"/>
+      <rect x="2" y="17" width="7" height="4" rx="0.5" stroke="currentColor" strokeWidth="1.2"/>
+      <rect x="9" y="17" width="6" height="4" rx="0.5" stroke="currentColor" strokeWidth="1.2"/>
+      <rect x="15" y="17" width="7" height="4" rx="0.5" stroke="currentColor" strokeWidth="1.2"/>
+    </svg>
+  )
+}
+function JourneyIcon({ className }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" className={className}>
+      <path d="M3 18c3-4 5-12 9-12s6 8 9 12" stroke="currentColor" strokeWidth="1.4"/>
+      <circle cx="6" cy="14" r="1.5" fill="currentColor"/>
+      <circle cx="12" cy="6" r="1.5" fill="currentColor"/>
+      <circle cx="18" cy="14" r="1.5" fill="currentColor"/>
+    </svg>
+  )
+}
+function RequirementIcon({ className }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" className={className}>
+      <rect x="2" y="2" width="9" height="7" rx="1" stroke="currentColor" strokeWidth="1.3"/>
+      <rect x="13" y="2" width="9" height="7" rx="1" stroke="currentColor" strokeWidth="1.3"/>
+      <rect x="7.5" y="15" width="9" height="7" rx="1" stroke="currentColor" strokeWidth="1.3"/>
+      <line x1="6.5" y1="9" x2="10" y2="15" stroke="currentColor" strokeWidth="1.2"/>
+      <line x1="17.5" y1="9" x2="14" y2="15" stroke="currentColor" strokeWidth="1.2"/>
+      <line x1="4" y1="5" x2="9" y2="5" stroke="currentColor" strokeWidth="0.8"/>
+      <line x1="4" y1="7" x2="7" y2="7" stroke="currentColor" strokeWidth="0.8"/>
+    </svg>
+  )
+}
+function RadarIcon({ className }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" className={className}>
+      <polygon points="12,2 21,9 18,20 6,20 3,9" stroke="currentColor" strokeWidth="1" opacity="0.3"/>
+      <polygon points="12,6 17.5,10.5 16,17 8,17 6.5,10.5" stroke="currentColor" strokeWidth="1" opacity="0.3"/>
+      <polygon points="12,8 15,12 14,16 10,16 9,12" stroke="currentColor" strokeWidth="1.3" fill="currentColor" fillOpacity="0.15"/>
+      <line x1="12" y1="2" x2="12" y2="12" stroke="currentColor" strokeWidth="0.8"/>
+      <line x1="3" y1="9" x2="12" y2="12" stroke="currentColor" strokeWidth="0.8"/>
+      <line x1="21" y1="9" x2="12" y2="12" stroke="currentColor" strokeWidth="0.8"/>
+      <line x1="6" y1="20" x2="12" y2="12" stroke="currentColor" strokeWidth="0.8"/>
+      <line x1="18" y1="20" x2="12" y2="12" stroke="currentColor" strokeWidth="0.8"/>
+    </svg>
+  )
+}
+
 function ArchitectureIcon({ className }: { className?: string }) {
   return (
     <svg viewBox="0 0 24 24" fill="none" className={className}>
@@ -241,6 +326,13 @@ const ICON_MAP: Record<string, React.FC<{ className?: string }>> = {
   quadrant: QuadrantIcon,
   xychart: XYChartIcon,
   architecture: ArchitectureIcon,
+  kanban: KanbanIcon,
+  sankey: SankeyIcon,
+  block: BlockIcon,
+  packet: PacketIcon,
+  journey: JourneyIcon,
+  requirement: RequirementIcon,
+  radar: RadarIcon,
 }
 
 export function TemplateGallery({ mode, onSelect }: TemplateGalleryProps) {

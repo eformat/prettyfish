@@ -37,6 +37,22 @@ const KEYWORDS = new Set([
   // architecture
   'architecture-beta', 'service', 'group', 'junction', 'edge',
   'cloud', 'server', 'database', 'internet', 'disk', 'firewall', 'users',
+  // kanban
+  'kanban',
+  // sankey
+  'sankey-beta',
+  // block
+  'block-beta', 'columns', 'space',
+  // packet
+  'packet-beta',
+  // journey
+  'journey', 'section',
+  // requirement
+  'requirementDiagram', 'requirement', 'element', 'functionalRequirement',
+  'interfaceRequirement', 'performanceRequirement', 'physicalRequirement', 'designConstraint',
+  'satisfies', 'traces', 'contains', 'copies', 'derives', 'refines', 'verifies',
+  // radar
+  'radar-beta', 'axis', 'curve',
   // general
   'subgraph', 'direction', 'LR', 'RL', 'TD', 'TB', 'BT', 'TB',
 ])

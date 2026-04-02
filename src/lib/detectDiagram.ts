@@ -12,6 +12,13 @@ export type DiagramType =
   | 'quadrant'
   | 'xychart'
   | 'architecture'
+  | 'kanban'
+  | 'sankey'
+  | 'block'
+  | 'packet'
+  | 'journey'
+  | 'requirement'
+  | 'radar'
   | 'other'
 
 const PATTERNS: [RegExp, DiagramType][] = [
@@ -28,6 +35,13 @@ const PATTERNS: [RegExp, DiagramType][] = [
   [/^\s*quadrantChart\b/i, 'quadrant'],
   [/^\s*xychart/i, 'xychart'],
   [/^\s*architecture/i, 'architecture'],
+  [/^\s*kanban\b/i, 'kanban'],
+  [/^\s*sankey/i, 'sankey'],
+  [/^\s*block/i, 'block'],
+  [/^\s*packet/i, 'packet'],
+  [/^\s*journey\b/i, 'journey'],
+  [/^\s*requirementDiagram\b/i, 'requirement'],
+  [/^\s*radar/i, 'radar'],
 ]
 
 export function detectDiagramType(code: string): DiagramType {

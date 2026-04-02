@@ -325,4 +325,109 @@ export const DIAGRAM_TEMPLATES: DiagramTemplate[] = [
     gateway:R --> L:auth
     auth:R --> L:users`,
   },
+  {
+    id: 'kanban',
+    name: 'Kanban',
+    description: 'Kanban boards with columns and cards',
+    icon: '📋',
+    code: `kanban
+  Todo
+    Design homepage
+    Write tests
+  In Progress
+    Build API
+  Done
+    Setup CI/CD`,
+  },
+  {
+    id: 'sankey',
+    name: 'Sankey',
+    description: 'Flow diagrams showing quantities',
+    icon: '🌊',
+    code: `sankey-beta
+
+Agricultural "ichiban",Prod A,10
+Agricultural "ichiban",Prod B,25
+Prod A,Consumer X,10
+Prod B,Consumer X,15
+Prod B,Consumer Y,10`,
+  },
+  {
+    id: 'block',
+    name: 'Block',
+    description: 'Block diagrams with columns and sections',
+    icon: '🧱',
+    code: `block-beta
+  columns 3
+  Frontend:3
+  a["React App"]:1
+  b["Admin Panel"]:1
+  c["Mobile App"]:1
+  space:3
+  Backend:3
+  d["API Server"]:2
+  e["Workers"]:1`,
+  },
+  {
+    id: 'packet',
+    name: 'Packet',
+    description: 'Network packet structure diagrams',
+    icon: '📦',
+    code: `packet-beta
+  0-15: "Source Port"
+  16-31: "Destination Port"
+  32-63: "Sequence Number"
+  64-95: "Acknowledgment Number"
+  96-99: "Data Offset"
+  100-105: "Reserved"
+  106-111: "Flags"
+  112-127: "Window Size"`,
+  },
+  {
+    id: 'journey',
+    name: 'User Journey',
+    description: 'Map user experiences across touchpoints',
+    icon: '🚶',
+    code: `journey
+  title Customer Onboarding
+  section Discovery
+    Visit website: 5: Customer
+    Read docs: 3: Customer
+  section Signup
+    Create account: 5: Customer
+    Verify email: 3: Customer, System
+  section First Use
+    Complete tutorial: 4: Customer
+    Create first project: 5: Customer`,
+  },
+  {
+    id: 'requirement',
+    name: 'Requirement',
+    description: 'Requirements and their relationships',
+    icon: '📝',
+    code: `requirementDiagram
+
+  requirement Login {
+    id: REQ-001
+    text: Users must be able to log in
+    risk: low
+    verifymethod: test
+  }
+
+  element web_app {
+    type: application
+  }
+
+  web_app - satisfies -> Login`,
+  },
+  {
+    id: 'radar',
+    name: 'Radar',
+    description: 'Radar/spider charts for comparison',
+    icon: '🎯',
+    code: `radar-beta
+  axis speed, reliability, cost, features, support
+  curve teamA: 4, 3, 2, 5, 4
+  curve teamB: 2, 5, 4, 3, 5`,
+  },
 ]

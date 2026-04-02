@@ -202,6 +202,62 @@ function DiagramIcon({ type, className }: { type: DiagramType; className?: strin
         <circle cx="18" cy="7" r="1.2" fill="currentColor" strokeWidth="0"/>
       </svg>
     )
+    case 'kanban': return (
+      <svg viewBox="0 0 24 24" className={className} {...base}>
+        <rect x="2" y="2" width="6" height="18" rx="1" strokeWidth="1.3"/>
+        <rect x="9" y="2" width="6" height="12" rx="1" strokeWidth="1.3"/>
+        <rect x="16" y="2" width="6" height="8" rx="1" strokeWidth="1.3"/>
+      </svg>
+    )
+    case 'sankey': return (
+      <svg viewBox="0 0 24 24" className={className} {...base}>
+        <path d="M2 4c4 0 6 2 10 6s6 6 10 6" strokeWidth="3" opacity="0.4"/>
+        <path d="M2 8c4 0 8 4 10 6s6 4 10 4" strokeWidth="2" opacity="0.6"/>
+        <path d="M2 14c6 0 8-4 10-6s6-2 10-2" strokeWidth="2" opacity="0.5"/>
+      </svg>
+    )
+    case 'block': return (
+      <svg viewBox="0 0 24 24" className={className} {...base}>
+        <rect x="2" y="2" width="20" height="6" rx="1" strokeWidth="1.3"/>
+        <rect x="2" y="10" width="9.5" height="5" rx="1" strokeWidth="1.3"/>
+        <rect x="12.5" y="10" width="9.5" height="5" rx="1" strokeWidth="1.3"/>
+        <rect x="2" y="17" width="20" height="5" rx="1" strokeWidth="1.3"/>
+      </svg>
+    )
+    case 'packet': return (
+      <svg viewBox="0 0 24 24" className={className} {...base}>
+        <rect x="2" y="2" width="20" height="4" rx="0.5" strokeWidth="1.2"/>
+        <rect x="2" y="7" width="10" height="4" rx="0.5" strokeWidth="1.2"/>
+        <rect x="12" y="7" width="10" height="4" rx="0.5" strokeWidth="1.2"/>
+        <rect x="2" y="12" width="20" height="4" rx="0.5" strokeWidth="1.2"/>
+      </svg>
+    )
+    case 'journey': return (
+      <svg viewBox="0 0 24 24" className={className} {...base}>
+        <path d="M3 18c3-4 5-12 9-12s6 8 9 12" strokeWidth="1.4"/>
+        <circle cx="6" cy="14" r="1.5" fill="currentColor" strokeWidth="0"/>
+        <circle cx="12" cy="6" r="1.5" fill="currentColor" strokeWidth="0"/>
+        <circle cx="18" cy="14" r="1.5" fill="currentColor" strokeWidth="0"/>
+      </svg>
+    )
+    case 'requirement': return (
+      <svg viewBox="0 0 24 24" className={className} {...base}>
+        <rect x="2" y="2" width="9" height="7" rx="1" strokeWidth="1.3"/>
+        <rect x="13" y="2" width="9" height="7" rx="1" strokeWidth="1.3"/>
+        <rect x="7.5" y="15" width="9" height="7" rx="1" strokeWidth="1.3"/>
+        <line x1="6.5" y1="9" x2="10" y2="15" strokeWidth="1.2"/>
+        <line x1="17.5" y1="9" x2="14" y2="15" strokeWidth="1.2"/>
+      </svg>
+    )
+    case 'radar': return (
+      <svg viewBox="0 0 24 24" className={className} {...base}>
+        <polygon points="12,2 21,9 18,20 6,20 3,9" strokeWidth="1" opacity="0.3"/>
+        <polygon points="12,8 15,12 14,16 10,16 9,12" strokeWidth="1.3" fill="currentColor" fillOpacity="0.15"/>
+        <line x1="12" y1="2" x2="12" y2="12" strokeWidth="0.8"/>
+        <line x1="3" y1="9" x2="12" y2="12" strokeWidth="0.8"/>
+        <line x1="21" y1="9" x2="12" y2="12" strokeWidth="0.8"/>
+      </svg>
+    )
     case 'architecture': return (
       <svg viewBox="0 0 24 24" className={className} {...base}>
         <rect x="2" y="3" width="7" height="5" rx="1" strokeWidth="1.3"/>
