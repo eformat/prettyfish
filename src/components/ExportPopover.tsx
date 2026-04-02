@@ -101,15 +101,16 @@ export function ExportPopover({ svg, code, previewBg, isDark, pageName }: Export
             value={filename}
             onChange={(e) => setFilename(e.target.value)}
             placeholder="filename"
+            style={{ fontSize: '12px' }}
             className={cn(
-              'w-full text-xs px-2.5 py-1.5 rounded-md border mb-2',
+              'w-full px-2.5 py-1.5 rounded-md border mb-2',
               'border-border/60 bg-background focus:outline-none focus:ring-1 focus:ring-primary',
             )}
           />
 
           {/* PNG scale */}
           <div className="flex items-center gap-1.5 mb-2.5">
-            <span className="text-xs text-muted-foreground shrink-0">Scale</span>
+            <span className="text-muted-foreground shrink-0" style={{ fontSize: '12px' }}>Scale</span>
             <div className={cn(
               'flex flex-1 rounded-md overflow-hidden border',
               isDark ? 'border-white/10' : 'border-black/8',
@@ -118,8 +119,9 @@ export function ExportPopover({ svg, code, previewBg, isDark, pageName }: Export
                 <button
                   key={s.value}
                   onClick={() => setScale(s.value)}
+                  style={{ fontSize: '12px' }}
                   className={cn(
-                    'flex-1 py-1 text-xs font-medium cursor-pointer transition-colors border-r last:border-r-0',
+                    'flex-1 py-1 font-medium cursor-pointer transition-colors border-r last:border-r-0',
                     isDark ? 'border-white/10' : 'border-black/8',
                     scale === s.value
                       ? 'bg-primary text-primary-foreground'
@@ -138,27 +140,30 @@ export function ExportPopover({ svg, code, previewBg, isDark, pageName }: Export
               variant="outline"
               size="sm"
               onClick={handleMmd}
-              className="flex-1 text-xs h-7 gap-1.5"
+              className="flex-1 h-7 gap-1.5"
+              style={{ fontSize: '12px' }}
             >
-              <DownloadSimple className="w-3.5 h-3.5" /> MMD
+              <DownloadSimple className="w-3 h-3" /> MMD
             </Button>
             <Button
               variant="outline"
               size="sm"
               onClick={handleSvg}
               disabled={exporting}
-              className="flex-1 text-xs h-7 gap-1.5"
+              className="flex-1 h-7 gap-1.5"
+              style={{ fontSize: '12px' }}
             >
-              <DownloadSimple className="w-3.5 h-3.5" /> SVG
+              <DownloadSimple className="w-3 h-3" /> SVG
             </Button>
             <Button
               variant="outline"
               size="sm"
               onClick={handlePng}
               disabled={exporting}
-              className="flex-1 text-xs h-7 gap-1.5"
+              className="flex-1 h-7 gap-1.5"
+              style={{ fontSize: '12px' }}
             >
-              <DownloadSimple className="w-3.5 h-3.5" /> {exporting ? '…' : 'PNG'}
+              <DownloadSimple className="w-3 h-3" /> {exporting ? '…' : 'PNG'}
             </Button>
           </div>
         </div>
