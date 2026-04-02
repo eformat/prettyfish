@@ -62,6 +62,7 @@ type SidebarTab = 'code' | 'config'
 
 interface SidebarProps {
   code: string
+  activePageId: string
   onInsertReady?: (fn: (text: string) => void) => void
   onAltClick?: (ref: TokenRef) => void
   mode: AppMode
@@ -79,7 +80,7 @@ interface SidebarProps {
 }
 
 export function Sidebar({
-  code, mode, diagramConfig, error, editorLigatures, autoFormat, mermaidTheme,
+  code, activePageId, mode, diagramConfig, error, editorLigatures, autoFormat, mermaidTheme,
   editorFocusRef,
   onChange, onConfigChange, onMermaidThemeChange, onLigaturesChange, onAutoFormatChange, onInsertReady, onAltClick,
 }: SidebarProps) {
@@ -310,7 +311,7 @@ export function Sidebar({
               }} />
             ) : activeTab === 'code' ? (
               <CodeMirror
-                key={code.split('\n')[0]}
+                key={activePageId}
                 value={code}
                 onChange={handleCodeChange}
                 extensions={extensions}

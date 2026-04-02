@@ -341,6 +341,7 @@ export default function App() {
           <ErrorBoundary label="Editor panel failed to load">
             <Sidebar
               code={activePage.code}
+              activePageId={activePageId}
               mode={mode}
               diagramConfig={diagramConfig}
               error={error}
