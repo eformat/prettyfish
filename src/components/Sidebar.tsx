@@ -931,7 +931,42 @@ export function Sidebar({
           {/* Body — editor takes all remaining space; error bar overlays it */}
           <div className="flex-1 min-h-0 overflow-hidden relative">
             {activeTab === 'code' && code.trim() === '' ? (
-              <TemplateGallery mode={mode} onSelect={onChange} />
+              <TemplateGallery mode={mode} onSelect={(code) => {
+                onChange(code)
+                // Rename the page to match the template type if it's still a generic name
+                if (activePage) {
+                  const genericNames = new Set(['Untitled Catch', 'Untitled', ''])
+                  if (genericNames.has(activePage.name)) {
+                    // Detect the template name from the code's first line
+                    const firstLine = code.trim().split('\n')[0]?.trim() ?? ''
+                    const typeMap: Record<string, string> = {
+                      'flowchart': 'Flowchart', 'graph': 'Flowchart',
+                      'sequenceDiagram': 'Sequence Diagram',
+                      'classDiagram': 'Class Diagram',
+                      'stateDiagram': 'State Diagram', 'stateDiagram-v2': 'State Diagram',
+                      'erDiagram': 'ER Diagram',
+                      'gantt': 'Gantt Chart',
+                      'pie': 'Pie Chart',
+                      'gitGraph': 'Git Graph',
+                      'mindmap': 'Mind Map',
+                      'timeline': 'Timeline',
+                      'quadrantChart': 'Quadrant Chart',
+                      'xychart-beta': 'XY Chart',
+                      'architecture-beta': 'Architecture',
+                      'kanban': 'Kanban',
+                      'sankey-beta': 'Sankey',
+                      'block-beta': 'Block Diagram',
+                      'packet-beta': 'Packet Diagram',
+                      'journey': 'User Journey',
+                      'requirementDiagram': 'Requirement',
+                      'radar-beta': 'Radar Chart',
+                    }
+                    const keyword = firstLine.split(/[\s{(]/)[0] ?? ''
+                    const name = typeMap[keyword]
+                    if (name) onRenamePage(activePageId, name)
+                  }
+                }
+              }} />
             ) : activeTab === 'code' ? (
               <CodeMirror
                 key={activePageId}

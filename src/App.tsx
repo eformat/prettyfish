@@ -18,7 +18,7 @@ import { useIsMobile } from './hooks/useIsMobile'
 
 function getInitialState() {
   const fromHash = decodeStateFromHash()
-  const defaultPage = createPage('Untitled Catch', DEFAULT_DIAGRAM)
+  const defaultPage = createPage('Flowchart', DEFAULT_DIAGRAM)
   return {
     pages: fromHash?.pages ?? loadFromStorage<DiagramPage[]>(STORAGE_KEYS.pages, [defaultPage]),
     activePageId: fromHash?.activePageId ?? loadFromStorage<string>(STORAGE_KEYS.activePageId, defaultPage.id),
@@ -34,7 +34,7 @@ function getInitialState() {
 
 const initial = getInitialState()
 if (initial.pages.length === 0) {
-  const p = createPage('Untitled Catch', DEFAULT_DIAGRAM)
+  const p = createPage('Flowchart', DEFAULT_DIAGRAM)
   initial.pages = [p]
   initial.activePageId = p.id
 }
@@ -156,7 +156,7 @@ export default function App() {
   }, [activePageId])
 
   const addPage = useCallback((): string => {
-    const p = createPage('Untitled Catch', '')
+    const p = createPage('Untitled', '')
     setPages((prev) => [...prev, p])
     setActivePageId(p.id)
     return p.id
