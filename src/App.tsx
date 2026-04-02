@@ -16,7 +16,7 @@ import type { AppMode, AppState, MermaidTheme, DiagramPage, DiagramConfig } from
 
 function getInitialState() {
   const fromHash = decodeStateFromHash()
-  const defaultPage = createPage('Untitled', DEFAULT_DIAGRAM)
+  const defaultPage = createPage('Untitled Catch', DEFAULT_DIAGRAM)
   return {
     pages: fromHash?.pages ?? loadFromStorage<DiagramPage[]>(STORAGE_KEYS.pages, [defaultPage]),
     activePageId: fromHash?.activePageId ?? loadFromStorage<string>(STORAGE_KEYS.activePageId, defaultPage.id),
@@ -32,7 +32,7 @@ function getInitialState() {
 
 const initial = getInitialState()
 if (initial.pages.length === 0) {
-  const p = createPage('Untitled', DEFAULT_DIAGRAM)
+  const p = createPage('Untitled Catch', DEFAULT_DIAGRAM)
   initial.pages = [p]
   initial.activePageId = p.id
 }
@@ -113,7 +113,7 @@ export default function App() {
   }, [activePageId])
 
   const addPage = useCallback((): string => {
-    const p = createPage(`Untitled`, '')
+    const p = createPage('Untitled Catch', '')
     setPages((prev) => [...prev, p])
     setActivePageId(p.id)
     return p.id

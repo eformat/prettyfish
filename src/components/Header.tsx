@@ -9,7 +9,6 @@ import {
   Question,
   Check,
   X,
-  FlowArrow,
   CaretDown,
   Books,
 } from '@phosphor-icons/react'
@@ -76,10 +75,10 @@ export function Header({ pageName,
       {/* Left: Logo pill */}
       <div className={pillClass}>
         <div className="flex items-center justify-center w-5 h-5 rounded-md bg-primary/15">
-          <FlowArrow className="w-3 h-3 text-primary" />
+          <img src="/favicon.svg" alt="" className="w-4 h-4" />
         </div>
-        <span className="text-sm font-semibold tracking-tight pl-0.5">
-          <span className="font-serif italic text-primary">M</span>ermaid
+        <span className="text-sm tracking-tight pl-0.5">
+          <span className="font-semibold">Pretty</span><span className="font-serif italic text-primary ml-0.5">Fish</span>
         </span>
         <span className={cn(
           'text-[10px] font-medium tracking-wider uppercase px-1.5 py-0.5 rounded-full ml-0.5',
@@ -133,12 +132,12 @@ export function Header({ pageName,
                 copyState === 'error' && 'text-red-500',
               )}
             >
-              {copyState === 'copied' ? <><Check className="w-3 h-3" /> Copied</> :
+              {copyState === 'copied' ? <><Check className="w-3 h-3" /> Hooked!</> :
                copyState === 'error' ? <><X className="w-3 h-3" /> Failed</> :
                <><ShareNetwork className="w-3 h-3" /> Share</>}
             </Button>
           </TooltipTrigger>
-          <TooltipContent side="bottom">Copy shareable link</TooltipContent>
+          <TooltipContent side="bottom">Cast a link to share 🔗</TooltipContent>
         </Tooltip>
 
         <div className={cn('w-px h-4 mx-0.5', isDark ? 'bg-white/8' : 'bg-black/6')} />
@@ -155,7 +154,7 @@ export function Header({ pageName,
               {isDark ? <SunHorizon className="w-3.5 h-3.5" /> : <Moon className="w-3.5 h-3.5" />}
             </Button>
           </TooltipTrigger>
-          <TooltipContent side="bottom">{isDark ? 'Light' : 'Dark'} mode (⌘⇧D)</TooltipContent>
+          <TooltipContent side="bottom">{isDark ? 'Surface to light ☀' : 'Dive into dark 🌙'} (⌘⇧D)</TooltipContent>
         </Tooltip>
 
         {/* Docs toggle */}

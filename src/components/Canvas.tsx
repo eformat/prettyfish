@@ -192,7 +192,7 @@ export function Canvas({ svg, hasError, mode, sidebarOpen, sidebarWidth, docsOpe
             'text-xs font-medium',
             isDark ? 'text-red-400/40' : 'text-red-400/50',
           )}>
-            Fix errors in the editor
+            Something's fishy — check the editor
           </p>
         </div>
       ) : svg ? (

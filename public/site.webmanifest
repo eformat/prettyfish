@@ -1,6 +1,6 @@
 {
-  "name": "Diagram Studio",
-  "short_name": "Diagram Studio",
+  "name": "Pretty Fish",
+  "short_name": "Pretty Fish",
   "description": "A professional Mermaid diagram editor with live preview, multi-page support, and one-click export.",
   "start_url": "/",
   "display": "standalone",

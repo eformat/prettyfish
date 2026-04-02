@@ -241,13 +241,13 @@ export function TemplateGallery({ mode, onSelect }: TemplateGalleryProps) {
           'text-lg font-semibold tracking-tight font-serif italic',
           isDark ? 'text-zinc-100' : 'text-zinc-800',
         )}>
-          Start with a template
+          Cast your net
         </h2>
         <p className={cn(
           'text-xs leading-relaxed',
           isDark ? 'text-zinc-500' : 'text-zinc-400',
         )}>
-          Pick a diagram type to begin editing
+          Pick a diagram type and dive in 🐟
         </p>
       </div>
 
