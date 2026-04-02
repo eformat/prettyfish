@@ -238,6 +238,8 @@ export default function App() {
           sidebarWidth={sidebarWidth}
           docsOpen={docsOpen}
           isMobile={isMobile}
+          presentBg={previewBg}
+          pageName={activePage.name}
           transformRef={transformRef}
         />
       </ErrorBoundary>
