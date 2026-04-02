@@ -26,6 +26,7 @@ interface HeaderProps {
   docsOpen: boolean
   isMobile?: boolean
   svg: string
+  code: string
   previewBg: string
   pageName: string
   getState: () => AppState
@@ -43,6 +44,7 @@ export function Header({ pageName,
   docsOpen,
   isMobile = false,
   svg,
+  code,
   previewBg,
   getState,
   onModeChange,
@@ -126,7 +128,7 @@ export function Header({ pageName,
         <div className={cn('w-px h-4 mx-0.5', isDark ? 'bg-white/8' : 'bg-black/6')} />
 
         {/* Export — inline popover */}
-        <ExportPopover svg={svg} previewBg={previewBg} isDark={isDark} pageName={pageName} />
+        <ExportPopover svg={svg} code={code} previewBg={previewBg} isDark={isDark} pageName={pageName} />
 
         {/* Share */}
         <Tooltip>

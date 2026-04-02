@@ -249,6 +249,7 @@ export default function App() {
         sidebarOpen={sidebarOpen}
         docsOpen={docsOpen}
         svg={svg}
+        code={activePage.code}
         previewBg={previewBg}
         getState={getState}
         onModeChange={setMode}

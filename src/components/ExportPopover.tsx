@@ -23,12 +23,13 @@ function toFilename(name: string): string {
 
 interface ExportPopoverProps {
   svg: string
+  code: string
   previewBg: string
   isDark: boolean
   pageName: string
 }
 
-export function ExportPopover({ svg, previewBg, isDark, pageName }: ExportPopoverProps) {
+export function ExportPopover({ svg, code, previewBg, isDark, pageName }: ExportPopoverProps) {
   const [open, setOpen] = useState(false)
   const [filename, setFilename] = useState(() => toFilename(pageName))
   const [scale, setScale] = useState(2)
@@ -48,6 +49,17 @@ export function ExportPopover({ svg, previewBg, isDark, pageName }: ExportPopove
     document.addEventListener('mousedown', handler)
     return () => document.removeEventListener('mousedown', handler)
   }, [open])
+
+  const handleMmd = () => {
+    const blob = new Blob([code], { type: 'text/plain' })
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = `${filename || 'diagram'}.mmd`
+    a.click()
+    URL.revokeObjectURL(url)
+    setOpen(false)
+  }
 
   const handleSvg = async () => {
     setExporting(true)
@@ -122,6 +134,14 @@ export function ExportPopover({ svg, previewBg, isDark, pageName }: ExportPopove
 
           {/* Export buttons — identical style */}
           <div className="flex gap-1.5">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleMmd}
+              className="flex-1 text-xs h-7 gap-1.5"
+            >
+              <DownloadSimple className="w-3.5 h-3.5" /> MMD
+            </Button>
             <Button
               variant="outline"
               size="sm"
