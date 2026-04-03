@@ -116,7 +116,7 @@ export function useMermaidRenderer(
 
       mermaid.initialize({
         startOnLoad: false,
-        theme: effectiveTheme,
+        theme: effectiveTheme as Parameters<typeof mermaid.initialize>[0]['theme'],
         securityLevel: 'loose',
         look: diagramConfig.look,
         fontFamily: diagramConfig.fontFamily,

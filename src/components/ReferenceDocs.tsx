@@ -163,9 +163,9 @@ function RefCodePreview({ code, isDark }: RefCodePreviewProps) {
                 : (raw || '\u00A0')
               }
             </span>
-            {line.trim() !== '' && (
+            {raw.trim() !== '' && (
               <button
-                onClick={(e) => { e.stopPropagation(); copyLine(line) }}
+                onClick={(e) => { e.stopPropagation(); copyLine(raw) }}
                 title="Copy line"
                 className={cn(
                   'opacity-0 group-hover/line:opacity-100 transition-opacity shrink-0 p-0.5 rounded cursor-pointer',

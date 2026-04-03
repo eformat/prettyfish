@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect, useMemo, useCallback, type RefObject } from 'react'
+import { useState, useRef, useEffect, useMemo, useCallback, type RefObject } from 'react'
 import CodeMirror from '@uiw/react-codemirror'
 import { mermaid as mermaidLang } from 'codemirror-lang-mermaid'
 import { mermaidFallbackLanguage } from '@/lib/mermaidHighlight'

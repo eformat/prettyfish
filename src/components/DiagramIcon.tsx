@@ -16,16 +16,15 @@ export function DiagramIcon({ type, className }: { type: DiagramType; className?
       return <GitBranch {...iconProps} />
     case 'sequence':
       return <Rows {...iconProps} />
-    case 'class':
+    case 'classDiagram':
       return <Square {...iconProps} />
-    case 'state':
+    case 'stateDiagram':
       return <Graph {...iconProps} />
-    case 'er':
+    case 'erDiagram':
       return <Kanban {...iconProps} />
     case 'gantt':
       return <Gauge {...iconProps} />
     case 'pie':
-    case 'bar':
       return <Graph {...iconProps} />
     default:
       return <Square {...iconProps} />

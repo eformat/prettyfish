@@ -221,7 +221,8 @@ export const CUSTOM_THEME_PRESETS: Record<string, ThemePreset> = {
     },
   },
   blueprint: {
-    name: 'Blueprint',
+    label: 'Blueprint',
+    description: 'Technical blueprint with deep navy borders, monospace font, and minimal fills',
     configOverrides: {
       look: 'classic' as const,
       fontFamily: '"JetBrains Mono", monospace',
