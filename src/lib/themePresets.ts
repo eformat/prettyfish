@@ -220,6 +220,56 @@ export const CUSTOM_THEME_PRESETS: Record<string, ThemePreset> = {
       sequenceNumberColor: '#ffffff',
     },
   },
+  blueprint: {
+    name: 'Blueprint',
+    configOverrides: {
+      look: 'classic' as const,
+      fontFamily: '"JetBrains Mono", monospace',
+      fontSize: 13,
+      flowchart: { curve: 'linear' as const, nodeSpacing: 48, rankSpacing: 52, padding: 16, diagramPadding: 10 },
+      sequence: { showSequenceNumbers: false, mirrorActors: false, messageMargin: 30, actorMargin: 50, width: 140 },
+      gantt: { barHeight: 18, barGap: 4, topPadding: 48, axisFormat: '%Y-%m-%d' },
+    },
+    themeVariables: {
+      // Deep blueprint blue — like technical drawing paper
+      primaryColor: '#e8eef8',          // very light blue fill
+      primaryTextColor: '#0a2d6b',      // deep navy text
+      primaryBorderColor: '#0a2d6b',    // deep navy border
+      lineColor: '#1a4a9a',             // medium-deep blue for edges
+      background: '#f5f8ff',
+      mainBkg: '#e8eef8',
+      nodeBorder: '#0a2d6b',
+      clusterBkg: '#eef2fc',
+      edgeLabelBackground: '#f0f4ff',
+      titleColor: '#0a2d6b',
+      fontFamily: '"JetBrains Mono", monospace',
+      // Secondary: deep cobalt
+      secondaryColor: '#e8f0ff',
+      secondaryBorderColor: '#1a3a8a',
+      secondaryTextColor: '#1a3a8a',
+      // Tertiary: deep slate blue
+      tertiaryColor: '#edf1fb',
+      tertiaryBorderColor: '#2a4a7a',
+      tertiaryTextColor: '#2a4a7a',
+      // Notes
+      noteBkgColor: '#eef3ff',
+      noteTextColor: '#0a2d6b',
+      noteBorderColor: '#1a4a9a',
+      // Sequence actors
+      actorBkg: '#e8eef8',
+      actorBorder: '#0a2d6b',
+      actorTextColor: '#0a2d6b',
+      signalColor: '#0a2d6b',
+      signalTextColor: '#0a2d6b',
+      labelBoxBkgColor: '#e8eef8',
+      labelBoxBorderColor: '#0a2d6b',
+      labelTextColor: '#0a2d6b',
+      loopTextColor: '#0a2d6b',
+      activationBkgColor: '#c8d8f0',
+      activationBorderColor: '#0a2d6b',
+      sequenceNumberColor: '#ffffff',
+    },
+  },
 }
 
 export const CUSTOM_THEME_IDS = Object.keys(CUSTOM_THEME_PRESETS) as (keyof typeof CUSTOM_THEME_PRESETS)[]

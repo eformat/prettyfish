@@ -2,7 +2,7 @@ import { useState, useRef, useCallback } from 'react'
 import { TransformWrapper, TransformComponent, type ReactZoomPanPinchRef } from 'react-zoom-pan-pinch'
 import { Button } from '@/components/ui/button'
 import { Tooltip, TooltipTrigger, TooltipContent } from '@/components/ui/tooltip'
-import { Minus, Plus, Warning } from '@phosphor-icons/react'
+import { Minus, Plus, Warning, ArrowsOut } from '@phosphor-icons/react'
 import { cn } from '@/lib/utils'
 import type { AppMode } from '../types'
 import type { RefObject } from 'react'
@@ -15,6 +15,7 @@ interface CanvasProps {
   sidebarWidth: number | null
   docsOpen?: boolean
   isMobile?: boolean
+  pageName?: string
   transformRef: RefObject<ReactZoomPanPinchRef | null>
 }
 
@@ -22,7 +23,7 @@ const SIDEBAR_GAP = 16 + 16 // left-4 margin + gap before content
 const DOCS_WIDTH = 288 + 16 + 16 // w-72 + right-4 + gap
 const FIT_PADDING = 48 // px padding around diagram when fitting
 
-export function Canvas({ svg, hasError, mode, sidebarOpen, sidebarWidth, docsOpen, isMobile = false, transformRef }: CanvasProps) {
+export function Canvas({ svg, hasError, mode, sidebarOpen, sidebarWidth, docsOpen, isMobile = false, pageName, transformRef }: CanvasProps) {
   const isDark = mode === 'dark'
   const previewBg = isDark ? '#0f1019' : '#f0f1f5'
   const [isPanning, setIsPanning] = useState(false)
@@ -178,6 +179,32 @@ export function Canvas({ svg, hasError, mode, sidebarOpen, sidebarWidth, docsOpe
               </Button>
             </TooltipTrigger>
             <TooltipContent>Zoom in (⌘+)</TooltipContent>
+          </Tooltip>
+
+          <div className={cn('w-px h-4', isDark ? 'bg-white/8' : 'bg-black/8')} />
+
+          <Tooltip>
+            <TooltipTrigger>
+              <Button
+                onClick={() => {
+                  if (!svg) return
+                  const data = JSON.stringify({
+                    svg,
+                    bg: isDark ? '#1a1a2e' : '#ffffff',
+                    title: pageName ?? 'Diagram',
+                  })
+                  const hash = btoa(unescape(encodeURIComponent(data)))
+                  window.open(`${window.location.origin}/present#${hash}`, '_blank')
+                }}
+                variant="ghost"
+                size="icon-sm"
+                className="rounded-none"
+                disabled={!svg}
+              >
+                <ArrowsOut className="w-3.5 h-3.5" />
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent>Present (fullscreen)</TooltipContent>
           </Tooltip>
         </div>
       </div>

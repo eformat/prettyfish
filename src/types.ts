@@ -1,10 +1,16 @@
 export type AppMode = 'light' | 'dark'
 export type MermaidBuiltinTheme = 'default' | 'neutral' | 'dark' | 'forest' | 'base'
-export type MermaidTheme = MermaidBuiltinTheme | 'wireframe' | 'corporate' | 'amethyst' | 'neon'
+export type MermaidTheme = MermaidBuiltinTheme | 'wireframe' | 'corporate' | 'amethyst' | 'neon' | 'blueprint'
 
 /** Deep partial of DiagramConfig — only user-overridden fields */
 export type DiagramConfigOverrides = {
   [K in keyof DiagramConfig]?: DiagramConfig[K] extends object ? Partial<DiagramConfig[K]> : DiagramConfig[K]
+}
+
+export interface DiagramFolder {
+  id: string
+  name: string
+  collapsed: boolean
 }
 
 export interface DiagramPage {
@@ -16,10 +22,13 @@ export interface DiagramPage {
   configOverrides?: DiagramConfigOverrides
   /** @deprecated — use configOverrides instead. Kept for backward compat with old saved state */
   diagramConfig?: DiagramConfig
+  /** Optional folder ID — if set, page belongs to this folder */
+  folderId?: string
 }
 
 export interface AppState {
   pages: DiagramPage[]
+  folders: DiagramFolder[]
   activePageId: string
   mode: AppMode
   mermaidTheme: MermaidTheme
@@ -37,6 +46,7 @@ export const MERMAID_THEMES: { value: MermaidTheme; label: string; group: 'built
   { value: 'corporate', label: 'Corporate', group: 'custom' },
   { value: 'amethyst', label: 'Amethyst', group: 'custom' },
   { value: 'neon', label: 'Neon', group: 'custom' },
+  { value: 'blueprint', label: 'Blueprint', group: 'custom' },
 ]
 
 export const BUILTIN_THEMES = new Set<string>(['default', 'neutral', 'dark', 'forest', 'base'])
@@ -49,6 +59,10 @@ export const DEFAULT_DIAGRAM = `flowchart TD
 
 export function createPage(name: string, code: string = DEFAULT_DIAGRAM): DiagramPage {
   return { id: crypto.randomUUID(), name, code, mermaidTheme: 'default', configOverrides: {} }
+}
+
+export function createFolder(name: string): DiagramFolder {
+  return { id: crypto.randomUUID(), name, collapsed: false }
 }
 
 /** Deep merge: base ← overrides. Only copies defined override keys. */

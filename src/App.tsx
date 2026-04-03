@@ -11,16 +11,17 @@ import { useMermaidRenderer } from './hooks/useMermaidRenderer'
 import { useKeyboardShortcuts } from './hooks/useKeyboardShortcuts'
 import { loadFromStorage, saveToStorage, STORAGE_KEYS } from './lib/storage'
 import { decodeStateFromHash } from './lib/share'
-import { DEFAULT_DIAGRAM, DEFAULT_DIAGRAM_CONFIG, createPage, resolveConfig } from './types'
-import type { AppMode, AppState, MermaidTheme, DiagramPage, DiagramConfig, DiagramConfigOverrides } from './types'
+import { DEFAULT_DIAGRAM, DEFAULT_DIAGRAM_CONFIG, createPage, createFolder, resolveConfig } from './types'
+import type { AppMode, AppState, MermaidTheme, DiagramPage, DiagramConfig, DiagramConfigOverrides, DiagramFolder } from './types'
 import { CUSTOM_THEME_PRESETS } from './lib/themePresets'
 import { useIsMobile } from './hooks/useIsMobile'
 
 function getInitialState() {
   const fromHash = decodeStateFromHash()
-  const defaultPage = createPage('Untitled Catch', DEFAULT_DIAGRAM)
+  const defaultPage = createPage('Flowchart', DEFAULT_DIAGRAM)
   return {
     pages: fromHash?.pages ?? loadFromStorage<DiagramPage[]>(STORAGE_KEYS.pages, [defaultPage]),
+    folders: loadFromStorage<DiagramFolder[]>(STORAGE_KEYS.folders, []),
     activePageId: fromHash?.activePageId ?? loadFromStorage<string>(STORAGE_KEYS.activePageId, defaultPage.id),
     mode: fromHash?.mode ?? loadFromStorage<AppMode>(STORAGE_KEYS.mode,
       (typeof window !== 'undefined' && window.matchMedia?.('(prefers-color-scheme: dark)').matches) ? 'dark' : 'light'
@@ -34,13 +35,14 @@ function getInitialState() {
 
 const initial = getInitialState()
 if (initial.pages.length === 0) {
-  const p = createPage('Untitled Catch', DEFAULT_DIAGRAM)
+  const p = createPage('Flowchart', DEFAULT_DIAGRAM)
   initial.pages = [p]
   initial.activePageId = p.id
 }
 
 export default function App() {
   const [pages, setPages] = useState<DiagramPage[]>(initial.pages)
+  const [folders, setFolders] = useState<DiagramFolder[]>(initial.folders)
   const [activePageId, setActivePageId] = useState<string>(initial.activePageId)
   const [mode, setMode] = useState<AppMode>(initial.mode)
   // Legacy global state — only used as fallback for old saved pages without per-page config
@@ -142,6 +144,7 @@ export default function App() {
 
   // Persist
   useEffect(() => saveToStorage(STORAGE_KEYS.pages, pages), [pages])
+  useEffect(() => saveToStorage(STORAGE_KEYS.folders, folders), [folders])
   useEffect(() => saveToStorage(STORAGE_KEYS.activePageId, activePageId), [activePageId])
   useEffect(() => saveToStorage(STORAGE_KEYS.mode, mode), [mode])
   useEffect(() => saveToStorage(STORAGE_KEYS.editorLigatures, editorLigatures), [editorLigatures])
@@ -156,7 +159,7 @@ export default function App() {
   }, [activePageId])
 
   const addPage = useCallback((): string => {
-    const p = createPage('Untitled Catch', '')
+    const p = createPage('Untitled', '')
     setPages((prev) => [...prev, p])
     setActivePageId(p.id)
     return p.id
@@ -183,6 +186,30 @@ export default function App() {
       return next
     })
   }, [activePageId])
+
+  const addFolder = useCallback((name: string): string => {
+    const folder = createFolder(name)
+    setFolders((prev) => [...prev, folder])
+    return folder.id
+  }, [])
+
+  const deleteFolder = useCallback((folderId: string) => {
+    setFolders((prev) => prev.filter((f) => f.id !== folderId))
+    // Unassign pages from this folder
+    setPages((prev) => prev.map((p) => p.folderId === folderId ? { ...p, folderId: undefined } : p))
+  }, [])
+
+  const renameFolder = useCallback((folderId: string, name: string) => {
+    setFolders((prev) => prev.map((f) => f.id === folderId ? { ...f, name } : f))
+  }, [])
+
+  const toggleFolderCollapsed = useCallback((folderId: string) => {
+    setFolders((prev) => prev.map((f) => f.id === folderId ? { ...f, collapsed: !f.collapsed } : f))
+  }, [])
+
+  const movePageToFolder = useCallback((pageId: string, folderId: string | null) => {
+    setPages((prev) => prev.map((p) => p.id === pageId ? { ...p, folderId: folderId ?? undefined } : p))
+  }, [])
 
   const goToNextPage = useCallback(() => {
     const idx = pages.findIndex((p) => p.id === activePageId)
@@ -223,8 +250,8 @@ export default function App() {
   const { svg, error } = useMermaidRenderer(activePage.code, mermaidTheme, diagramConfig)
 
   const getState = useCallback((): AppState => ({
-    pages, activePageId, mode, mermaidTheme, diagramConfig, editorLigatures,
-  }), [pages, activePageId, mode, mermaidTheme, diagramConfig, editorLigatures])
+    pages, folders, activePageId, mode, mermaidTheme, diagramConfig, editorLigatures,
+  }), [pages, folders, activePageId, mode, mermaidTheme, diagramConfig, editorLigatures])
 
   return (
     <div className="relative w-full h-full overflow-hidden" style={{ position: 'fixed', inset: 0 }}>
@@ -238,6 +265,7 @@ export default function App() {
           sidebarWidth={sidebarWidth}
           docsOpen={docsOpen}
           isMobile={isMobile}
+          pageName={activePage.name}
           transformRef={transformRef}
         />
       </ErrorBoundary>
@@ -253,6 +281,19 @@ export default function App() {
         code={activePage.code}
         previewBg={previewBg}
         getState={getState}
+        pages={pages}
+        folders={folders}
+        activePageId={activePageId}
+        onSelectPage={setActivePageId}
+        onAddPage={addPage}
+        onRenamePage={renamePage}
+        onDeletePage={deletePage}
+        onReorderPages={reorderPages}
+        onAddFolder={addFolder}
+        onDeleteFolder={deleteFolder}
+        onRenameFolder={renameFolder}
+        onToggleFolderCollapsed={toggleFolderCollapsed}
+        onMovePageToFolder={movePageToFolder}
         onModeChange={setMode}
         onMermaidThemeChange={setMermaidTheme}
         isMobile={isMobile}
@@ -300,9 +341,8 @@ export default function App() {
           <ErrorBoundary label="Editor panel failed to load">
             <Sidebar
               code={activePage.code}
-              mode={mode}
-              pages={pages}
               activePageId={activePageId}
+              mode={mode}
               diagramConfig={diagramConfig}
               error={error}
               editorLigatures={editorLigatures}
@@ -314,15 +354,9 @@ export default function App() {
                 setTimeout(() => referenceDocsRef.current?.scrollToElement(ref.diagramType, ref.elementName), 50)
               }}
               onChange={updateCode}
-              onSelectPage={setActivePageId}
-              onAddPage={addPage}
-              onRenamePage={renamePage}
-              onDeletePage={deletePage}
-              onReorderPages={reorderPages}
               mermaidTheme={mermaidTheme}
               onConfigChange={setDiagramConfig}
               onMermaidThemeChange={(t) => setMermaidTheme(t as MermaidTheme)}
-
               onLigaturesChange={setEditorLigatures}
               onAutoFormatChange={setAutoFormat}
             />

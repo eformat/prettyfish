@@ -16,26 +16,30 @@ import {
 import { cn } from '@/lib/utils'
 import { copyShareUrl } from '../lib/share'
 import { ExportPopover } from './ExportPopover'
-import type { AppMode, AppState, MermaidTheme } from '../types'
+import { PagesDropdown } from './PagesDropdown'
+import type { AppMode, AppState, MermaidTheme, DiagramPage, DiagramFolder } from '../types'
 import { MERMAID_THEMES } from '../types'
 import { CUSTOM_THEME_PRESETS } from '@/lib/themePresets'
 
-/** Color swatches for theme preview — [primary, secondary, accent/line] */
+/** Color swatches for theme preview — [primary, secondary, accent/line]
+ * Sourced from mermaid's actual theme defaults */
 const THEME_SWATCHES: Record<string, [string, string, string]> = {
-  default: ['#4f46e5', '#eef2ff', '#6b7280'],
-  neutral: ['#6b7280', '#f3f4f6', '#9ca3af'],
-  dark: ['#1f2937', '#374151', '#9ca3af'],
-  forest: ['#228b22', '#e6f4e6', '#2d8f2d'],
-  base: ['#4f46e5', '#ffffff', '#6b7280'],
+  default: ['#4f46e5', '#ede9fe', '#999'],   // indigo nodes, lavender fill, gray lines
+  neutral: ['#666', '#e5e7eb', '#bbb'],       // gray nodes, light gray fill, silver lines
+  dark:    ['#cdd5e0', '#1e2a3a', '#81909f'], // light text on dark nodes, navy fill, slate lines
+  forest:  ['#157520', '#d4edda', '#3d9e42'], // dark green border, pale green fill, mid green line
+  base:    ['#4f46e5', '#e8e6ff', '#888'],    // same as default but pure base
 }
 // Derive custom theme swatches from their themeVariables
 for (const [key, preset] of Object.entries(CUSTOM_THEME_PRESETS)) {
   const tv = preset.themeVariables
-  THEME_SWATCHES[key] = [
-    tv.primaryColor ?? '#4f46e5',
-    tv.secondaryColor ?? tv.mainBkg ?? '#eee',
-    tv.lineColor ?? '#888',
-  ]
+  // For themes like Blueprint where primaryColor is a light fill, use the border color as the swatch
+  const primary = (tv.primaryBorderColor && tv.primaryBorderColor !== tv.primaryColor)
+    ? tv.primaryBorderColor
+    : (tv.primaryColor ?? '#4f46e5')
+  const secondary = tv.secondaryBorderColor ?? tv.secondaryColor ?? tv.mainBkg ?? '#eee'
+  const tertiary = tv.tertiaryBorderColor ?? tv.lineColor ?? '#888'
+  THEME_SWATCHES[key] = [primary, secondary, tertiary]
 }
 
 interface HeaderProps {
@@ -49,6 +53,19 @@ interface HeaderProps {
   previewBg: string
   pageName: string
   getState: () => AppState
+  pages: DiagramPage[]
+  folders: DiagramFolder[]
+  activePageId: string
+  onSelectPage: (id: string) => void
+  onAddPage: () => string
+  onRenamePage: (id: string, name: string) => void
+  onDeletePage: (id: string) => void
+  onReorderPages: (from: number, to: number) => void
+  onAddFolder: (name: string) => string
+  onDeleteFolder: (id: string) => void
+  onRenameFolder: (id: string, name: string) => void
+  onToggleFolderCollapsed: (id: string) => void
+  onMovePageToFolder: (pageId: string, folderId: string | null) => void
   onModeChange: (mode: AppMode) => void
   onMermaidThemeChange: (theme: MermaidTheme) => void
   onToggleSidebar: () => void
@@ -66,6 +83,19 @@ export function Header({ pageName,
   code,
   previewBg,
   getState,
+  pages,
+  folders,
+  activePageId,
+  onSelectPage,
+  onAddPage,
+  onRenamePage,
+  onDeletePage,
+  onReorderPages,
+  onAddFolder,
+  onDeleteFolder,
+  onRenameFolder,
+  onToggleFolderCollapsed,
+  onMovePageToFolder,
   onModeChange,
   onMermaidThemeChange,
   onToggleSidebar,
@@ -99,20 +129,41 @@ export function Header({ pageName,
       isMobile ? 'justify-between px-2 pt-2 gap-1' : 'justify-between px-4 pt-3',
     )}>
 
-      {/* Left: Logo pill */}
-      <div className={pillClass}>
+      {/* Left: Logo + Pages pill — combined */}
+      <div className={cn(pillClass, 'gap-0.5')} data-testid="header-logo-pill">
         <div className="flex items-center justify-center w-5 h-5 rounded-md bg-primary/15">
           <img src="/favicon.svg" alt="" className="w-4 h-4" />
         </div>
-        <span className="text-sm tracking-tight pl-0.5">
+        <span className="text-sm tracking-tight pl-0.5 pr-1">
           <span className="font-semibold">Pretty</span><span className="font-serif italic text-primary ml-0.5">Fish</span>
         </span>
         <span className={cn(
-          'text-[10px] font-medium tracking-wider uppercase px-1.5 py-0.5 rounded-full ml-0.5 hidden sm:inline',
+          'text-[10px] font-medium tracking-wider uppercase px-1.5 py-0.5 rounded-full hidden sm:inline',
           isDark ? 'bg-accent/15 text-accent' : 'bg-primary/10 text-primary',
         )}>
           Mermaid Diagram Editor
         </span>
+
+        {/* Separator */}
+        <div className={cn('w-px h-4 mx-1.5', isDark ? 'bg-white/10' : 'bg-black/10')} />
+
+        {/* Pages dropdown inline */}
+        <PagesDropdown
+          pages={pages}
+          folders={folders}
+          activePageId={activePageId}
+          onSelectPage={onSelectPage}
+          onAddPage={onAddPage}
+          onRenamePage={onRenamePage}
+          onDeletePage={onDeletePage}
+          onReorderPages={onReorderPages}
+          onAddFolder={onAddFolder}
+          onDeleteFolder={onDeleteFolder}
+          onRenameFolder={onRenameFolder}
+          onToggleFolderCollapsed={onToggleFolderCollapsed}
+          onMovePageToFolder={onMovePageToFolder}
+          isDark={isDark}
+        />
       </div>
 
       {/* Center: Toolbar pill */}
@@ -223,6 +274,7 @@ export function Header({ pageName,
     </div>
   )
 }
+
 
 // ── Theme Dropdown ────────────────────────────────────────────────────────────
 

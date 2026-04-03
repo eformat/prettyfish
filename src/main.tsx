@@ -3,11 +3,18 @@ import { createRoot } from 'react-dom/client'
 import { TooltipProvider } from '@/components/ui/tooltip'
 import './index.css'
 import App from './App.tsx'
+import { PresentationMode } from './components/PresentationMode.tsx'
+
+const isPresentation = window.location.pathname.endsWith('/present')
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
-    <TooltipProvider>
-      <App />
-    </TooltipProvider>
+    {isPresentation ? (
+      <PresentationMode />
+    ) : (
+      <TooltipProvider>
+        <App />
+      </TooltipProvider>
+    )}
   </StrictMode>,
 )
