@@ -96,15 +96,19 @@ export function useMermaidRenderer(
   // (resolveConfig creates new objects on each call, causing infinite re-renders)
   const configJson = JSON.stringify(diagramConfig)
 
+  // Keep a ref to diagramConfig so the effect closure can read latest without being a dep
+  const diagramConfigRef = useRef(diagramConfig)
+  diagramConfigRef.current = diagramConfig
+
   useEffect(() => {
     if (debounceRef.current) clearTimeout(debounceRef.current)
 
-    // Render immediately on success path, but delay errors so they don't flash mid-keystroke
-    // We don't know yet if it'll succeed, so use short delay — but on error we'll re-delay
     const delay = 150
     prevCodeRef.current = code
 
     debounceRef.current = setTimeout(async () => {
+      // Read config from ref so we always have latest without re-triggering effect
+      const cfg = diagramConfigRef.current
       const trimmed = code.trim()
       pfDebug('mermaid-render', 'render scheduled fired', {
         codeLength: code.length,
@@ -118,9 +122,7 @@ export function useMermaidRenderer(
         return
       }
 
-      // diagramConfig is already fully resolved: defaults → theme preset → user overrides
-      // The renderer only needs to handle theme selection and themeVariables
-      const fontSizeStr = `${diagramConfig.fontSize}px`
+      const fontSizeStr = `${cfg.fontSize}px`
       const isCustom = !BUILTIN_THEMES.has(theme)
       const customPreset = isCustom ? CUSTOM_THEME_PRESETS[theme] : null
       const effectiveTheme = isCustom ? 'base' : theme
@@ -129,20 +131,17 @@ export function useMermaidRenderer(
         startOnLoad: false,
         theme: effectiveTheme as Parameters<typeof mermaid.initialize>[0]['theme'],
         securityLevel: 'loose',
-        look: diagramConfig.look,
-        fontFamily: diagramConfig.fontFamily,
-        fontSize: diagramConfig.fontSize,
+        look: cfg.look,
+        fontFamily: cfg.fontFamily,
+        fontSize: cfg.fontSize,
         themeVariables: customPreset
-          // Custom preset: use preset colors (user can't override these yet)
           ? { ...customPreset.themeVariables, fontSize: fontSizeStr }
-          // Built-in 'base' theme: user controls colors via config panel
           : effectiveTheme === 'base'
-            ? { ...diagramConfig.themeVariables, fontFamily: diagramConfig.fontFamily, fontSize: fontSizeStr }
-            // Other built-in themes: only pass font info
-            : { fontFamily: diagramConfig.fontFamily, fontSize: fontSizeStr },
-        flowchart: diagramConfig.flowchart,
-        sequence: diagramConfig.sequence,
-        gantt: diagramConfig.gantt,
+            ? { ...cfg.themeVariables, fontFamily: cfg.fontFamily, fontSize: fontSizeStr }
+            : { fontFamily: cfg.fontFamily, fontSize: fontSizeStr },
+        flowchart: cfg.flowchart,
+        sequence: cfg.sequence,
+        gantt: cfg.gantt,
       })
 
       try {
@@ -150,7 +149,6 @@ export function useMermaidRenderer(
         pfDebug('mermaid-render', 'render start', { id, theme, codeLength: trimmed.length })
         const { svg: rendered } = await mermaid.render(id, trimmed)
         pfDebug('mermaid-render', 'render success', { id, svgLength: rendered.length })
-        // Success — cancel any pending error reveal and clear immediately
         if (errorDebounceRef.current) clearTimeout(errorDebounceRef.current)
         setSvg(rendered)
         setError(null)
@@ -158,11 +156,9 @@ export function useMermaidRenderer(
         const parsed = parseError(err)
         pfDebug('mermaid-render', 'render error', parsed)
         setSvg('')
-        // Delay showing the error 500ms so it doesn't flash while still typing
         if (errorDebounceRef.current) clearTimeout(errorDebounceRef.current)
         errorDebounceRef.current = setTimeout(() => setError(parsed), 500)
       } finally {
-        // Mermaid sometimes injects error <pre> elements into the body — clean them up
         document.querySelectorAll('body > [id^="mermaid-render-"]').forEach(el => el.remove())
         document.querySelectorAll('body > .mermaid-error, body > pre').forEach(el => {
           if (el.textContent?.includes('mermaid') || el.textContent?.includes('💣')) el.remove()
@@ -174,7 +170,7 @@ export function useMermaidRenderer(
       if (debounceRef.current) clearTimeout(debounceRef.current)
       if (errorDebounceRef.current) clearTimeout(errorDebounceRef.current)
     }
-  }, [code, theme, configJson, diagramConfig])
+  }, [code, theme, configJson])
 
   return { svg, error }
 }

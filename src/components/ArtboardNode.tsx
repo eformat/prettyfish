@@ -4,7 +4,7 @@
  * Each artboard is a draggable, named panel on the infinite canvas.
  * Clicking it selects it (opens the sidebar editor).
  */
-import { memo, useCallback, useRef } from 'react'
+import { memo, useCallback, useRef, useState, useEffect } from 'react'
 import { NodeResizer, type Node } from '@xyflow/react'
 import type { NodeProps } from '@xyflow/react'
 import { useMermaidRenderer } from '../hooks/useMermaidRenderer'
@@ -18,6 +18,9 @@ export interface ArtboardNodeData extends Record<string, unknown> {
   artboard: Artboard
   isActive: boolean
   mode: 'light' | 'dark'
+  /** Pre-rendered SVG passed from parent for active artboard — avoids per-node renderer instances */
+  activeSvg?: string
+  activeError?: { message: string; line: number | null; column: number | null } | null
   onSelect: (id: string) => void
   onRename: (id: string, name: string) => void
   onUpdateDescription: (id: string, description: string) => void
@@ -33,18 +36,37 @@ export const ArtboardNode = memo(function ArtboardNode({
   data,
   selected,
 }: NodeProps<ArtboardFlowNode>) {
-  const { artboard, isActive, mode, onSelect, onRename, onUpdateDescription, onOpenContextMenu } = data
+  const { artboard, isActive, mode, activeSvg, activeError, onSelect, onRename, onUpdateDescription, onOpenContextMenu } = data
 
-  const nameInputRef = useRef<HTMLInputElement>(null)
-  const descInputRef = useRef<HTMLInputElement>(null)
-
+  // For inactive artboards: render once using own hook but cache the result
+  // For active artboard: use the svg/error passed from parent (rendered at App level)
   const mermaidTheme: MermaidTheme = artboard.mermaidTheme ?? 'default'
   const diagramConfig = resolveConfig(
     CUSTOM_THEME_PRESETS[mermaidTheme]?.configOverrides as DiagramConfigOverrides | undefined,
     artboard.configOverrides,
   )
 
-  const { svg, error: mermaidError } = useMermaidRenderer(artboard.code, mermaidTheme, diagramConfig)
+  // Inactive artboards get their own renderer so they show a preview,
+  // but we cache the last rendered SVG to avoid re-renders on unrelated state changes
+  const { svg: ownSvg, error: ownError } = useMermaidRenderer(
+    isActive ? '' : artboard.code,  // active artboard: skip own render (parent renders it)
+    mermaidTheme,
+    diagramConfig,
+  )
+
+  // Cache last valid SVG for inactive artboards so switching away doesn't blank it
+  const cachedSvgRef = useRef<string>('')
+  const [cachedSvg, setCachedSvg] = useState<string>('')
+  useEffect(() => {
+    if (!isActive && ownSvg) {
+      cachedSvgRef.current = ownSvg
+      setCachedSvg(ownSvg)
+    }
+  }, [isActive, ownSvg])
+
+  // Use active svg from parent for active artboard, cached svg for inactive
+  const svg = isActive ? (activeSvg ?? '') : (ownSvg || cachedSvg)
+  const mermaidError = isActive ? (activeError ?? null) : ownError
 
   const handleClick = useCallback(() => {
     onSelect(artboard.id)
@@ -56,6 +78,9 @@ export const ArtboardNode = memo(function ArtboardNode({
     onSelect(artboard.id)
     onOpenContextMenu(artboard.id, e.clientX, e.clientY)
   }, [artboard.id, onOpenContextMenu, onSelect])
+
+  const nameInputRef = useRef<HTMLInputElement>(null)
+  const descInputRef = useRef<HTMLInputElement>(null)
 
   const handleNameBlur = useCallback((e: React.FocusEvent<HTMLInputElement>) => {
     const trimmed = e.target.value.trim()
@@ -84,6 +109,7 @@ export const ArtboardNode = memo(function ArtboardNode({
     }
   }, [artboard.description])
 
+  // Derived display values calculated during render (rule 5.1)
   const isHighlighted = isActive || selected
   const borderColor = isHighlighted
     ? 'var(--color-primary, #4f46e5)'

@@ -342,7 +342,8 @@ export const ReferenceDocs = forwardRef<ReferenceDocsHandle, ReferenceDocsProps>
     const [searchQuery, setSearchQuery] = useState('')
     const elementRefs = useRef<Record<string, HTMLDivElement | null>>({})
 
-    // Auto-sync selected type when code changes diagram type
+    // Auto-sync selected type when code changes diagram type (rule 5.1 — derive during render)
+    // Using state-during-render pattern (React docs approved for derived sync)
     const [lastAutoType, setLastAutoType] = useState<string>(detectedType)
     if (detectedType !== lastAutoType) {
       setLastAutoType(detectedType)
@@ -392,16 +393,18 @@ export const ReferenceDocs = forwardRef<ReferenceDocsHandle, ReferenceDocsProps>
     const { border } = useTheme(isDark)
     const bg = isDark ? 'oklch(0.16 0.015 260)' : '#ffffff'
 
-    // Filter elements by search query
+    // Filter elements by search query — memoized to avoid re-filtering on every render (rule 5.6)
     const q = searchQuery.trim().toLowerCase()
-    const filteredElements = q
-      ? docRef.elements.filter(el =>
-          el.name.toLowerCase().includes(q) ||
-          el.description.toLowerCase().includes(q) ||
-          el.syntax?.toLowerCase().includes(q) ||
-          el.examples?.some(ex => ex.code.toLowerCase().includes(q) || ex.label.toLowerCase().includes(q))
-        )
-      : docRef.elements
+    const filteredElements = useMemo(() => {
+      if (!q) return docRef.elements
+      return docRef.elements.filter(el =>
+        el.name.toLowerCase().includes(q) ||
+        el.description.toLowerCase().includes(q) ||
+        el.syntax?.toLowerCase().includes(q) ||
+        el.examples?.some(ex => ex.code.toLowerCase().includes(q) || ex.label.toLowerCase().includes(q))
+      )
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [q, docRef.elements])
 
     return (
       <div className="flex flex-col h-full overflow-hidden" style={{ background: bg }}>

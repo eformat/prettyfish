@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect, useMemo } from 'react'
+import { useState, useRef, useEffect, useCallback } from 'react'
 import { Button } from '@/components/ui/button'
 import { DownloadSimple } from '@phosphor-icons/react'
 import { cn } from '@/lib/utils'
@@ -35,7 +35,8 @@ export function ExportPopover({ svg, code, previewBg, isDark, pageName }: Export
   const [scale, setScale] = useState(2)
   const [exporting, setExporting] = useState(false)
   const ref = useRef<HTMLDivElement>(null)
-  const defaultFilename = useMemo(() => toFilename(pageName), [pageName])
+  // Derive directly during render — toFilename is a cheap pure function, no useMemo needed (rule 5.3)
+  const defaultFilename = toFilename(pageName)
   const effectiveFilename = filename ?? defaultFilename
 
   useEffect(() => {
@@ -43,11 +44,12 @@ export function ExportPopover({ svg, code, previewBg, isDark, pageName }: Export
     const handler = (e: MouseEvent) => {
       if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false)
     }
-    document.addEventListener('mousedown', handler)
+    // Passive listener safe for mousedown (rule 4.2)
+    document.addEventListener('mousedown', handler, { passive: true })
     return () => document.removeEventListener('mousedown', handler)
   }, [open])
 
-  const handleMmd = () => {
+  const handleMmd = useCallback(() => {
     const blob = new Blob([code], { type: 'text/plain' })
     const url = URL.createObjectURL(blob)
     const a = document.createElement('a')
@@ -56,27 +58,32 @@ export function ExportPopover({ svg, code, previewBg, isDark, pageName }: Export
     a.click()
     URL.revokeObjectURL(url)
     setOpen(false)
-  }
+  }, [code, effectiveFilename])
 
-  const handleSvg = async () => {
+  const handleSvg = useCallback(async () => {
     setExporting(true)
     try { await exportSvg(svg, effectiveFilename || 'diagram') }
     finally { setExporting(false); setOpen(false) }
-  }
+  }, [svg, effectiveFilename])
 
-  const handlePng = async () => {
+  const handlePng = useCallback(async () => {
     setExporting(true)
     try { await exportPng(svg, previewBg, effectiveFilename || 'diagram', scale) }
     finally { setExporting(false); setOpen(false) }
-  }
+  }, [svg, previewBg, effectiveFilename, scale])
+
+  // Stable toggle handler (rule 5.11 — use functional setState updates)
+  const handleToggle = useCallback(() => {
+    setOpen(prev => {
+      if (!prev) setFilename(null)
+      return !prev
+    })
+  }, [])
 
   return (
     <div ref={ref} className="relative">
       <Button
-        onClick={() => {
-          if (!open) setFilename(null)
-          setOpen(!open)
-        }}
+        onClick={handleToggle}
         variant="ghost"
         size="sm"
         className={cn(

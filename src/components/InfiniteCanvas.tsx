@@ -37,6 +37,8 @@ function artboardsToNodes(
   artboards: Artboard[],
   activeArtboardId: string | null,
   mode: AppMode,
+  activeSvg: string,
+  activeError: ArtboardNodeData['activeError'],
   onSelect: (id: string) => void,
   onRename: (id: string, name: string) => void,
   onUpdateDesc: (id: string, description: string) => void,
@@ -126,24 +128,24 @@ function InnerCanvas({
     setViewport({ x, y, zoom }, { duration: 300 })
   }, [page.id, page.artboards, setViewport])
 
-  // Register the zoom-to-artboard function with the parent
+  // Register the zoom-to-artboard function with the parent (rule 5.7 — narrow deps)
   useEffect(() => {
-    onRegisterFocus((id: string) => {
-      focusArtboardInViewport(id)
-    })
+    onRegisterFocus(focusArtboardInViewport)
   }, [focusArtboardInViewport, onRegisterFocus])
 
-  // Stable callback refs to avoid re-triggering node sync
+  // Stable callback refs — update synchronously to avoid stale closures
+  // without adding callbacks to the node-sync effect deps (rule 8.3)
   const selectRef = useRef(onSelectArtboard)
   const renameRef = useRef(onRenameArtboard)
   const updateDescRef = useRef(onUpdateArtboardDescription)
   const deleteRef = useRef(onDeleteArtboard)
   const contextMenuRef = useRef(onOpenDiagramContextMenu)
-  useEffect(() => { selectRef.current = onSelectArtboard }, [onSelectArtboard])
-  useEffect(() => { renameRef.current = onRenameArtboard }, [onRenameArtboard])
-  useEffect(() => { updateDescRef.current = onUpdateArtboardDescription }, [onUpdateArtboardDescription])
-  useEffect(() => { deleteRef.current = onDeleteArtboard }, [onDeleteArtboard])
-  useEffect(() => { contextMenuRef.current = onOpenDiagramContextMenu }, [onOpenDiagramContextMenu])
+  // Keep refs current without separate effects — assign during render (safe: refs are mutation-only)
+  selectRef.current = onSelectArtboard
+  renameRef.current = onRenameArtboard
+  updateDescRef.current = onUpdateArtboardDescription
+  deleteRef.current = onDeleteArtboard
+  contextMenuRef.current = onOpenDiagramContextMenu
 
   const stableSelect = useCallback((id: string) => selectRef.current(id), [])
   const stableRename = useCallback((id: string, name: string) => renameRef.current(id, name), [])

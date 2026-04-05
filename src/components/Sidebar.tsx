@@ -20,26 +20,34 @@ import {
 } from '@phosphor-icons/react'
 import { formatMermaid } from 'mermaid-formatter'
 
+// Hoisted RegExp patterns for spacifyMermaid (rule 7.10 — hoist RegExp creation)
+const RE_COMMENT = /^\s*%%/
+const RE_DIAGRAM_DECL = /^\s*(flowchart|graph|sequenceDiagram|classDiagram|stateDiagram|erDiagram|gantt|pie|gitGraph|mindmap|timeline|xychart-beta|quadrantChart|requirementDiagram)\b/
+const RE_ARROW_LABEL_PRE = /(\S)(--+>|--+x|--+o|==+>|-\.+-?>|<--+|<==+|<-\.+-?)(\|)/g
+const RE_PIPE_SPACE = /(\|)(\S)/g
+const RE_ARROW_NODE = /(\]|\)|\}|[a-zA-Z0-9_"])(\s*)(--+>|--+x|--+o|==+>|-\.+-?>|<--+|<==+|<-\.+-?)(\s*)(\[|\(|\{|[a-zA-Z0-9_"])/g
+const RE_SEQ_ARROW = /(\S)(\s*)(--?>>?|--?>|--?x|--?\))([\s:])/
+
 /** Add spaces around arrows and operators in mermaid code */
 function spacifyMermaid(code: string): string {
   return code.split('\n').map(line => {
     // Skip comment lines
-    if (line.trim().startsWith('%%')) return line
+    if (RE_COMMENT.test(line)) return line
     // Skip lines that are just diagram declarations
-    if (/^\s*(flowchart|graph|sequenceDiagram|classDiagram|stateDiagram|erDiagram|gantt|pie|gitGraph|mindmap|timeline|xychart-beta|quadrantChart|requirementDiagram)\b/.test(line.trim())) return line
+    if (RE_DIAGRAM_DECL.test(line.trim())) return line
 
     // Add spaces around arrow operators (but not inside strings or labels)
     // Match mermaid arrows: -->, --->, -.->, -.-, ==>, ===>, --x, --o, <--, etc.
     // Careful not to break |label| or [text] or {text} or (text)
     let result = line
     // Arrows with text labels like -->|text| — space before arrow, after closing |
-    result = result.replace(/(\S)(--+>|--+x|--+o|==+>|-\.+-?>|<--+|<==+|<-\.+-?)(\|)/g, '$1 $2$3')
-    result = result.replace(/(\|)(\S)/g, '$1 $2')
+    result = result.replace(RE_ARROW_LABEL_PRE, '$1 $2$3')
+    result = result.replace(RE_PIPE_SPACE, '$1 $2')
     // Regular arrows without labels
-    result = result.replace(/(\]|\)|\}|[a-zA-Z0-9_"])(\s*)(--+>|--+x|--+o|==+>|-\.+-?>|<--+|<==+|<-\.+-?)(\s*)(\[|\(|\{|[a-zA-Z0-9_"])/g,
+    result = result.replace(RE_ARROW_NODE,
       (_, before, _s1, arrow, _s2, after) => `${before} ${arrow} ${after}`)
     // Sequence diagram arrows: ->>, ->, -->, -->>, -x, --)
-    result = result.replace(/(\S)(\s*)(--?>>?|--?>|--?x|--?\))([\s:])/, (_, before, _s, arrow, after) => `${before} ${arrow}${after}`)
+    result = result.replace(RE_SEQ_ARROW, (_, before, _s, arrow, after) => `${before} ${arrow}${after}`)
     return result
   }).join('\n')
 }
@@ -84,8 +92,11 @@ export function Sidebar({
   const { error } = useMermaidRenderer(code, mermaidTheme as import('../types').MermaidTheme, diagramConfig)
   const [activeTab, setActiveTab] = useState<SidebarTab>('code')
   const [collapsed, setCollapsed] = useState(false)
+  // Stable toggle using functional updater (rule 5.11)
+  const toggleCollapsed = useCallback(() => setCollapsed(c => !c), [])
   const [settingsOpen, setSettingsOpen] = useState<string[]>([])
   const [codeCopied, setCodeCopied] = useState(false)
+  const copyTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const editorViewRef = useRef<EditorView | null>(null)
   const isDark = mode === 'dark'
   const editorLigatures = true
@@ -108,7 +119,8 @@ export function Sidebar({
 
 
 
-  const goToErrorLine = () => {
+  // Stable handlers — useCallback prevents unnecessary re-renders of consumers (rule 5.8)
+  const goToErrorLine = useCallback(() => {
     if (!error?.line || !editorViewRef.current) return
     const view = editorViewRef.current
     const lineNum = error.line
@@ -116,9 +128,9 @@ export function Sidebar({
     const line = view.state.doc.line(lineNum)
     view.dispatch({ selection: { anchor: line.from }, scrollIntoView: true })
     view.focus()
-  }
+  }, [error?.line])
 
-  const handleFormat = (src?: string) => {
+  const handleFormat = useCallback((src?: string) => {
     const target = src ?? code
     try {
       const formatted = spacifyMermaid(formatMermaid(target, { indentSize: 2 }))
@@ -127,7 +139,7 @@ export function Sidebar({
       // If formatting fails, leave code as-is
       return target
     }
-  }
+  }, [code])
 
   const insertAtCursor = useCallback((text: string) => {
     const view = editorViewRef.current
@@ -155,7 +167,7 @@ export function Sidebar({
     onFocusReady?.(() => view.focus())
   }, [editorViewRef, onFocusReady])
 
-  const handleCodeChange = (value: string) => {
+  const handleCodeChange = useCallback((value: string) => {
     pfDebug('editor', 'handleCodeChange', {
       diagramId: activePageId,
       incomingLength: value.length,
@@ -172,7 +184,7 @@ export function Sidebar({
     } else {
       onChange(value)
     }
-  }
+  }, [activePageId, autoFormat, handleFormat, onChange])
 
   // Placeholder when no diagram is selected
   if (!artboard) {
@@ -236,7 +248,9 @@ export function Sidebar({
                 onClick={() => {
                   navigator.clipboard.writeText(code)
                   setCodeCopied(true)
-                  setTimeout(() => setCodeCopied(false), 1500)
+                  // Track timer ref to avoid leaking on rapid clicks (rule 5.15)
+                  if (copyTimerRef.current) clearTimeout(copyTimerRef.current)
+                  copyTimerRef.current = setTimeout(() => setCodeCopied(false), 1500)
                 }}
                 className={cn('shrink-0 rounded-lg', codeCopied ? 'text-emerald-500' : 'text-muted-foreground hover:text-foreground')}
               >
@@ -249,7 +263,7 @@ export function Sidebar({
 
         <Tooltip>
           <TooltipTrigger>
-            <Button variant="ghost" size="icon-sm" onClick={() => setCollapsed(!collapsed)} className="shrink-0 rounded-lg">
+            <Button variant="ghost" size="icon-sm" onClick={toggleCollapsed} className="shrink-0 rounded-lg">
               {collapsed ? <CaretDown className="w-3.5 h-3.5" /> : <CaretUp className="w-3.5 h-3.5" />}
             </Button>
           </TooltipTrigger>

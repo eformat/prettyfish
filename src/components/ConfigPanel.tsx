@@ -110,21 +110,22 @@ export function ConfigPanel({ config, code, mode, onChange, mermaidTheme, onMerm
     }
   }, [onChange])
 
-  function set<K extends keyof DiagramConfig>(key: K, value: DiagramConfig[K]) {
+  // Use useCallback so these helpers don't get re-created on every render (rule 5.8)
+  const set = useCallback(<K extends keyof DiagramConfig>(key: K, value: DiagramConfig[K]) => {
     onChange({ ...config, [key]: value })
-  }
-  function setFlowchart<K extends keyof DiagramConfig['flowchart']>(key: K, value: DiagramConfig['flowchart'][K]) {
+  }, [config, onChange])
+  const setFlowchart = useCallback(<K extends keyof DiagramConfig['flowchart']>(key: K, value: DiagramConfig['flowchart'][K]) => {
     onChange({ ...config, flowchart: { ...config.flowchart, [key]: value } })
-  }
-  function setSequence<K extends keyof DiagramConfig['sequence']>(key: K, value: DiagramConfig['sequence'][K]) {
+  }, [config, onChange])
+  const setSequence = useCallback(<K extends keyof DiagramConfig['sequence']>(key: K, value: DiagramConfig['sequence'][K]) => {
     onChange({ ...config, sequence: { ...config.sequence, [key]: value } })
-  }
-  function setGantt<K extends keyof DiagramConfig['gantt']>(key: K, value: DiagramConfig['gantt'][K]) {
+  }, [config, onChange])
+  const setGantt = useCallback(<K extends keyof DiagramConfig['gantt']>(key: K, value: DiagramConfig['gantt'][K]) => {
     onChange({ ...config, gantt: { ...config.gantt, [key]: value } })
-  }
-  function setThemeVar<K extends keyof DiagramConfig['themeVariables']>(key: K, value: string) {
+  }, [config, onChange])
+  const setThemeVar = useCallback(<K extends keyof DiagramConfig['themeVariables']>(key: K, value: string) => {
     onChange({ ...config, themeVariables: { ...config.themeVariables, [key]: value } })
-  }
+  }, [config, onChange])
   function sliderVal(vals: number[]): number { return vals[0] ?? 0 }
 
   return (
@@ -411,13 +412,16 @@ function Divider() {
 function FontSelect({ value, onChange }: { value: string; onChange: (v: string) => void }) {
   const [open, setOpen] = useState(false)
   const ref = useRef<HTMLDivElement>(null)
+  // Stable toggle using functional updater (rule 5.11)
+  const toggleOpen = useCallback(() => setOpen(o => !o), [])
 
   useEffect(() => {
     if (!open) return
     const handler = (e: MouseEvent) => {
       if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false)
     }
-    document.addEventListener('mousedown', handler)
+    // Passive listener — no preventDefault needed (rule 4.2)
+    document.addEventListener('mousedown', handler, { passive: true })
     return () => document.removeEventListener('mousedown', handler)
   }, [open])
 
@@ -426,7 +430,7 @@ function FontSelect({ value, onChange }: { value: string; onChange: (v: string) 
   return (
     <div ref={ref} className="relative">
       <button
-        onClick={() => setOpen(!open)}
+        onClick={toggleOpen}
         className={cn(
           'w-full flex items-center justify-between px-2.5 py-1.5 rounded-md border border-border/60',
           'text-xs cursor-pointer transition-colors',
@@ -468,13 +472,16 @@ function ColorSwatch({ label, value, onChange }: { label: string; value: string;
   const [open, setOpen] = useState(false)
   const [localColor, setLocalColor] = useState(value)
   const ref = useRef<HTMLDivElement>(null)
+  // Stable toggle using functional updater (rule 5.11)
+  const toggleOpen = useCallback(() => setOpen(o => !o), [])
 
   useEffect(() => {
     if (!open) return
     const handler = (e: MouseEvent) => {
       if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false)
     }
-    document.addEventListener('mousedown', handler)
+    // Passive listener — no preventDefault needed (rule 4.2)
+    document.addEventListener('mousedown', handler, { passive: true })
     return () => document.removeEventListener('mousedown', handler)
   }, [open])
 
@@ -488,7 +495,7 @@ function ColorSwatch({ label, value, onChange }: { label: string; value: string;
       <button
         onClick={() => {
           if (!open) setLocalColor(value)
-          setOpen(!open)
+          toggleOpen()
         }}
         className={cn(
           'flex flex-col items-center gap-1.5 p-2 rounded-md border border-border/40',

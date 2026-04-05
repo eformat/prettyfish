@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect, useCallback } from 'react'
+import { useState, useRef, useEffect, useCallback, useMemo } from 'react'
 import { Button } from '@/components/ui/button'
 import { Tooltip, TooltipTrigger, TooltipContent } from '@/components/ui/tooltip'
 import {
@@ -100,20 +100,28 @@ export function Header({
 }: HeaderProps) {
   const isDark = mode === 'dark'
   const [copyState, setCopyState] = useState<'idle' | 'copied' | 'error'>('idle')
+  // Use ref for timer to avoid stale closure issues (rule 5.15 — useRef for transient values)
+  const copyTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
-  const handleShare = async () => {
+  const handleShare = useCallback(async () => {
+    if (copyTimerRef.current) clearTimeout(copyTimerRef.current)
     try {
       await copyShareUrl(getShareState())
       setCopyState('copied')
-      setTimeout(() => setCopyState('idle'), 2000)
+      copyTimerRef.current = setTimeout(() => setCopyState('idle'), 2000)
     } catch {
       setCopyState('error')
-      setTimeout(() => setCopyState('idle'), 2000)
+      copyTimerRef.current = setTimeout(() => setCopyState('idle'), 2000)
     }
-  }
+  }, [getShareState])
 
-  // Export filename: use active artboard name, fall back to page name
-  const activeArtboard = activePage.artboards.find(a => a.id === activePage.activeArtboardId)
+  // Build a fast O(1) lookup map for artboards (rule 7.2 — build index maps)
+  const artboardById = useMemo(
+    () => new Map(activePage.artboards.map(a => [a.id, a])),
+    [activePage.artboards],
+  )
+  // Export filename: derive directly during render (rule 5.1)
+  const activeArtboard = activePage.activeArtboardId ? artboardById.get(activePage.activeArtboardId) : undefined
   const exportName = activeArtboard?.name ?? activePage.name
 
   const pillClass = cn(
@@ -321,14 +329,17 @@ function PagesDropdown({
   const [renamingId, setRenamingId] = useState<string | null>(null)
   const [draftName, setDraftName] = useState('')
   const ref = useRef<HTMLDivElement>(null)
-  const activePage = pages.find(p => p.id === activePageId)
+  // Build index map for O(1) lookup (rule 7.2)
+  const pageById = useMemo(() => new Map(pages.map(p => [p.id, p])), [pages])
+  const activePage = pageById.get(activePageId)
 
   useEffect(() => {
     if (!open) return
     const handler = (e: MouseEvent) => {
       if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false)
     }
-    document.addEventListener('mousedown', handler)
+    // Passive listener — mousedown doesn't need to call preventDefault here (rule 4.2)
+    document.addEventListener('mousedown', handler, { passive: true })
     return () => document.removeEventListener('mousedown', handler)
   }, [open])
 
@@ -459,7 +470,8 @@ function ThemeDropdown({ value, onChange, isDark }: { value: MermaidTheme; onCha
     const handler = (e: MouseEvent) => {
       if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false)
     }
-    document.addEventListener('mousedown', handler)
+    // Passive listener — no preventDefault needed (rule 4.2)
+    document.addEventListener('mousedown', handler, { passive: true })
     return () => document.removeEventListener('mousedown', handler)
   }, [open])
 

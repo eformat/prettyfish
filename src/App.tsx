@@ -1,4 +1,4 @@
-import { useState, useEffect, useLayoutEffect, useCallback, useRef } from 'react'
+import { useState, useEffect, useLayoutEffect, useCallback, useRef, useMemo } from 'react'
 
 import { Header } from './components/Header'
 import { Sidebar } from './components/Sidebar'
@@ -170,10 +170,15 @@ export default function App() {
   }, [sidebarWidth])
 
   // ── Derived active page / artboard ──────────────────────────────────────────
-
-  const activePage = pages.find(p => p.id === activePageId) ?? pages[0]!
+  // Build index maps for O(1) lookups instead of repeated .find() (rule 7.2)
+  const pageById = useMemo(() => new Map(pages.map(p => [p.id, p])), [pages])
+  const activePage = pageById.get(activePageId) ?? pages[0]!
+  const artboardById = useMemo(
+    () => new Map(activePage.artboards.map(a => [a.id, a])),
+    [activePage.artboards],
+  )
   const activeArtboard: Artboard | null =
-    activePage.artboards.find(a => a.id === activePage.activeArtboardId) ?? null
+    (activePage.activeArtboardId ? artboardById.get(activePage.activeArtboardId) : null) ?? null
 
   useEffect(() => {
     pfDebug('app', 'pages state changed', {
@@ -264,21 +269,24 @@ export default function App() {
   }, [activePageId, updatePage])
 
   const renameArtboard = useCallback((id: string, name: string) => {
-    const artboard = activePage.artboards.find(a => a.id === id)
+    // Use artboardById map for O(1) lookup (rule 7.2)
+    const artboard = artboardById.get(id)
     if (!artboard || artboard.name === name) return
     pushUndoSnapshot()
     updateArtboard(id, a => ({ ...a, name }))
-  }, [activePage.artboards, pushUndoSnapshot, updateArtboard])
+  }, [artboardById, pushUndoSnapshot, updateArtboard])
 
   const updateArtboardDescription = useCallback((id: string, description: string) => {
-    const artboard = activePage.artboards.find(a => a.id === id)
+    // Use artboardById map for O(1) lookup (rule 7.2)
+    const artboard = artboardById.get(id)
     const nextDescription = description || undefined
     if (!artboard || artboard.description === nextDescription) return
     pushUndoSnapshot()
     updateArtboard(id, a => ({ ...a, description: nextDescription }))
-  }, [activePage.artboards, pushUndoSnapshot, updateArtboard])
+  }, [artboardById, pushUndoSnapshot, updateArtboard])
 
   const buildDuplicateName = useCallback((name: string) => {
+    // Build Set for O(1) membership checks (rule 7.13 — use Set for O(1) lookups)
     const existingNames = new Set(activePage.artboards.map(a => a.name))
     const baseName = `${name} Copy`
     let nextName = baseName
@@ -291,14 +299,15 @@ export default function App() {
   }, [activePage.artboards])
 
   const copyArtboard = useCallback((id: string) => {
-    const target = activePage.artboards.find(a => a.id === id)
+    // Use artboardById map for O(1) lookup (rule 7.2)
+    const target = artboardById.get(id)
     if (!target) return
     copiedArtboardRef.current = {
       ...target,
       configOverrides: target.configOverrides ? structuredClone(target.configOverrides) : {},
     }
     setHasCopied(true)
-  }, [activePage.artboards])
+  }, [artboardById])
 
   const duplicateArtboard = useCallback((source: Artboard) => {
     pushUndoSnapshot()
@@ -346,18 +355,20 @@ export default function App() {
   }, [activePageId, updatePage, pushUndoSnapshot])
 
   const moveArtboard = useCallback((id: string, x: number, y: number) => {
-    const artboard = activePage.artboards.find(a => a.id === id)
+    // Use artboardById map for O(1) lookup (rule 7.2)
+    const artboard = artboardById.get(id)
     if (!artboard || (artboard.x === x && artboard.y === y)) return
     pushUndoSnapshot()
     updateArtboard(id, a => ({ ...a, x, y }))
-  }, [activePage.artboards, pushUndoSnapshot, updateArtboard])
+  }, [artboardById, pushUndoSnapshot, updateArtboard])
 
   const resizeArtboard = useCallback((id: string, width: number) => {
-    const artboard = activePage.artboards.find(a => a.id === id)
+    // Use artboardById map for O(1) lookup (rule 7.2)
+    const artboard = artboardById.get(id)
     if (!artboard || artboard.width === width) return
     pushUndoSnapshot()
     updateArtboard(id, a => ({ ...a, width }))
-  }, [activePage.artboards, pushUndoSnapshot, updateArtboard])
+  }, [artboardById, pushUndoSnapshot, updateArtboard])
 
   const updateCode = useCallback((value: string) => {
     if (!activeArtboard) return
@@ -399,6 +410,7 @@ export default function App() {
 
   useEffect(() => {
     const handler = (e: StorageEvent) => {
+      // Early return on missing data (rule 7.9 — early return from functions)
       if (!e.key || !e.newValue) return
       try {
         if (e.key === STORAGE_KEYS.pages) {
@@ -419,7 +431,8 @@ export default function App() {
         // Ignore malformed storage data
       }
     }
-    window.addEventListener('storage', handler)
+    // Passive listener — storage events don't need preventDefault (rule 4.2)
+    window.addEventListener('storage', handler, { passive: true })
     return () => window.removeEventListener('storage', handler)
   }, [])
 
@@ -434,7 +447,12 @@ export default function App() {
   }), [pages, activePageId, mode, editorLigatures])
 
   const getShareStateForArtboard = useCallback((artboardId: string): AppState => {
-    const source = pages.flatMap(page => page.artboards.map(artboard => ({ page, artboard }))).find(entry => entry.artboard.id === artboardId)
+    // Use artboardById for O(1) lookup when possible, then search all pages (rule 7.2)
+    let source: { page: DiagramPage; artboard: Artboard } | undefined
+    for (const page of pages) {
+      const found = page.artboards.find(a => a.id === artboardId)
+      if (found) { source = { page, artboard: found }; break }
+    }
     if (!source) return getState()
 
     const sharedPage: DiagramPage = {
@@ -533,11 +551,12 @@ export default function App() {
 
   const handleContextMenuDuplicate = useCallback(() => {
     if (!contextMenu || contextMenu.type !== 'diagram' || !contextMenu.id) return
-    const source = activePage.artboards.find(a => a.id === contextMenu.id)
+    // Use artboardById map for O(1) lookup (rule 7.2)
+    const source = artboardById.get(contextMenu.id)
     if (!source) return
     duplicateArtboard(source)
     setContextMenu(null)
-  }, [activePage.artboards, contextMenu, duplicateArtboard])
+  }, [artboardById, contextMenu, duplicateArtboard])
 
   const handleContextMenuDelete = useCallback(() => {
     if (!contextMenu || contextMenu.type !== 'diagram' || !contextMenu.id) return
@@ -567,8 +586,9 @@ export default function App() {
       if (e.key === 'Escape') setContextMenu(null)
     }
     const handleResize = () => setContextMenu(null)
-    window.addEventListener('resize', handleResize)
-    window.addEventListener('keydown', handleKeyDown)
+    // Passive listeners — neither needs preventDefault (rule 4.2)
+    window.addEventListener('resize', handleResize, { passive: true })
+    window.addEventListener('keydown', handleKeyDown, { passive: true })
     return () => {
       window.removeEventListener('resize', handleResize)
       window.removeEventListener('keydown', handleKeyDown)
