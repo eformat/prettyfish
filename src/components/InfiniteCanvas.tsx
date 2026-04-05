@@ -19,6 +19,7 @@ import {
   type OnNodesChange,
 } from '@xyflow/react'
 import '@xyflow/react/dist/style.css'
+import { useIsMobile } from '@/hooks/useIsMobile'
 
 import { DiagramNode } from './DiagramNode'
 import type { DiagramNodeData } from './DiagramNode'
@@ -295,6 +296,7 @@ function InnerCanvas({
   }, [onOpenCanvasContextMenu])
 
   const isDark = mode === 'dark'
+  const isMobile = useIsMobile()
   const bgColor = isDark ? 'oklch(0.13 0.015 260)' : '#f1f0f5'
   const dotColor = isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.10)'
   const minimapBg = isDark ? 'oklch(0.18 0.015 260)' : '#e8e7ef'
@@ -327,29 +329,33 @@ function InnerCanvas({
         size={1.5}
         color={dotColor}
       />
-      <Controls
-        position="bottom-right"
-        showInteractive={false}
-        style={{
-          background: isDark ? 'oklch(0.20 0.015 260)' : '#ffffff',
-          border: isDark ? '1px solid rgba(255,255,255,0.08)' : '1px solid rgba(0,0,0,0.08)',
-          borderRadius: 10,
-          overflow: 'hidden',
-          boxShadow: '0 2px 8px rgba(0,0,0,0.12)',
-          marginBottom: 112,
-        }}
-      />
-      <MiniMap
-        nodeColor={isDark ? 'oklch(0.30 0.02 260)' : '#ddd8f8'}
-        maskColor={minimapMask}
-        style={{
-          width: 132,
-          height: 88,
-          background: minimapBg,
-          border: isDark ? '1px solid rgba(255,255,255,0.08)' : '1px solid rgba(0,0,0,0.08)',
-          borderRadius: 10,
-        }}
-      />
+      {!isMobile && (
+        <Controls
+          position="bottom-right"
+          showInteractive={false}
+          style={{
+            background: isDark ? 'oklch(0.20 0.015 260)' : '#ffffff',
+            border: isDark ? '1px solid rgba(255,255,255,0.08)' : '1px solid rgba(0,0,0,0.08)',
+            borderRadius: 10,
+            overflow: 'hidden',
+            boxShadow: '0 2px 8px rgba(0,0,0,0.12)',
+            marginBottom: 112,
+          }}
+        />
+      )}
+      {!isMobile && (
+        <MiniMap
+          nodeColor={isDark ? 'oklch(0.30 0.02 260)' : '#ddd8f8'}
+          maskColor={minimapMask}
+          style={{
+            width: 132,
+            height: 88,
+            background: minimapBg,
+            border: isDark ? '1px solid rgba(255,255,255,0.08)' : '1px solid rgba(0,0,0,0.08)',
+            borderRadius: 10,
+          }}
+        />
+      )}
     </ReactFlow>
   )
 }
