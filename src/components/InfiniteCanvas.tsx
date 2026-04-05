@@ -124,14 +124,13 @@ function InnerCanvas({
     const y = centerY - (ab.y + artboardH / 2) * zoom
 
     setViewport({ x, y, zoom }, { duration: 300 })
-  }, [page.artboards, setViewport])
+  }, [page.id, page.artboards, setViewport])
 
   // Register the zoom-to-artboard function with the parent
   useEffect(() => {
     onRegisterFocus((id: string) => {
       focusArtboardInViewport(id)
     })
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [focusArtboardInViewport, onRegisterFocus])
 
   // Stable callback refs to avoid re-triggering node sync
@@ -240,7 +239,7 @@ function InnerCanvas({
         pageFocusTimerRef.current = null
       }
     }
-  }, [page.id, page.activeArtboardId, focusArtboardInViewport])
+  }, [page.id, page.activeArtboardId, page.artboards, focusArtboardInViewport, setViewport])
 
   // Handle node drag end → persist position
   const handleNodesChange: OnNodesChange = useCallback(

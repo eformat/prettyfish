@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect, useMemo, useCallback, type RefObject } from 'react'
+import { useState, useRef, useEffect, useMemo, useCallback } from 'react'
 import { Accordion } from '@base-ui/react/accordion'
 import CodeMirror from '@uiw/react-codemirror'
 import { mermaidFallbackLanguage } from '@/lib/mermaidHighlight'
@@ -49,7 +49,7 @@ import { ConfigPanel } from '@/components/ConfigPanel'
 import { TemplateGallery } from '@/components/TemplateGallery'
 import type { AppMode, DiagramConfig } from '../types'
 import { useMermaidRenderer } from '../hooks/useMermaidRenderer'
-import type { MermaidError as _MermaidError } from '../hooks/useMermaidRenderer'
+
 
 // ── CodeMirror error line highlighting ──
 
@@ -66,7 +66,7 @@ interface SidebarProps {
   onAltClick?: (ref: TokenRef) => void
   mode: AppMode
   diagramConfig: DiagramConfig
-  editorFocusRef: RefObject<(() => void) | null>
+  onFocusReady?: (focusFn: () => void) => void
   onChange: (value: string) => void
   mermaidTheme: string
   onConfigChange: (config: DiagramConfig) => void
@@ -75,13 +75,11 @@ interface SidebarProps {
 
 export function Sidebar({
   artboard, mode, diagramConfig, mermaidTheme,
-  editorFocusRef,
+  onFocusReady,
   onChange, onConfigChange, onMermaidThemeChange, onInsertReady, onAltClick,
 }: SidebarProps) {
   const code = artboard?.code ?? ''
   const activePageId = artboard?.id ?? ''
-  'use no memo'
-
   // Get error state for the active artboard (for inline error display in editor)
   const { error } = useMermaidRenderer(code, mermaidTheme as import('../types').MermaidTheme, diagramConfig)
   const [activeTab, setActiveTab] = useState<SidebarTab>('code')
@@ -152,10 +150,10 @@ export function Sidebar({
     onInsertReady?.(insertAtCursor)
   }, [onInsertReady, insertAtCursor])
 
-  function handleCreateEditor(view: EditorView) {
+  const handleCreateEditor = useCallback((view: EditorView) => {
     editorViewRef.current = view
-    editorFocusRef.current = () => view.focus() // eslint-disable-line react-compiler/react-compiler
-  }
+    onFocusReady?.(() => view.focus())
+  }, [editorViewRef, onFocusReady])
 
   const handleCodeChange = (value: string) => {
     pfDebug('editor', 'handleCodeChange', {

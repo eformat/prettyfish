@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useRef } from 'react'
+import { useState, useEffect, useLayoutEffect, useCallback, useRef } from 'react'
 
 import { Header } from './components/Header'
 import { Sidebar } from './components/Sidebar'
@@ -80,6 +80,7 @@ export default function App() {
   const [helpOpen, setHelpOpen] = useState(false)
   const [contextMenu, setContextMenu] = useState<{ type: 'diagram' | 'canvas'; id?: string; x: number; y: number } | null>(null)
   const copiedArtboardRef = useRef<Artboard | null>(null)
+  const [hasCopied, setHasCopied] = useState(false)
   const undoStackRef = useRef<UndoableState[]>([])
   const redoStackRef = useRef<UndoableState[]>([])
 
@@ -96,6 +97,7 @@ export default function App() {
   const handleInsertReady = useCallback((fn: (text: string) => void) => { insertRef.current = fn }, [])
   const referenceDocsRef = useRef<ReferenceDocsHandle>(null)
   const editorFocusRef = useRef<(() => void) | null>(null)
+  const handleFocusReady = useCallback((fn: () => void) => { editorFocusRef.current = fn }, [])
 
   const [sidebarWidth, setSidebarWidth] = useState<number | null>(() => {
     try {
@@ -109,11 +111,12 @@ export default function App() {
   const modeRef = useRef(mode)
   const editorLigaturesRef = useRef(editorLigatures)
   const autoFormatRef = useRef(autoFormat)
-  pagesRef.current = pages
-  activePageIdRef.current = activePageId
-  modeRef.current = mode
-  editorLigaturesRef.current = editorLigatures
-  autoFormatRef.current = autoFormat
+  // Update refs synchronously before paint so event handlers always see latest values
+  useLayoutEffect(() => { pagesRef.current = pages }, [pages])
+  useLayoutEffect(() => { activePageIdRef.current = activePageId }, [activePageId])
+  useLayoutEffect(() => { modeRef.current = mode }, [mode])
+  useLayoutEffect(() => { editorLigaturesRef.current = editorLigatures }, [editorLigatures])
+  useLayoutEffect(() => { autoFormatRef.current = autoFormat }, [autoFormat])
 
   const SIDEBAR_MIN = 300
   const SIDEBAR_MAX = 600
@@ -294,6 +297,7 @@ export default function App() {
       ...target,
       configOverrides: target.configOverrides ? structuredClone(target.configOverrides) : {},
     }
+    setHasCopied(true)
   }, [activePage.artboards])
 
   const duplicateArtboard = useCallback((source: Artboard) => {
@@ -666,7 +670,7 @@ export default function App() {
               artboard={activeArtboard}
               mode={mode}
               diagramConfig={diagramConfig}
-              editorFocusRef={editorFocusRef}
+              onFocusReady={handleFocusReady}
               onInsertReady={handleInsertReady}
               onAltClick={(ref) => {
                 setDocsOpen(true)
@@ -769,7 +773,7 @@ export default function App() {
               </>
             ) : (
               <>
-                <button type="button" onClick={handleCanvasContextMenuPaste} disabled={!copiedArtboardRef.current} className={cn('w-full flex items-center gap-2 px-2.5 py-2 rounded-lg text-xs text-left transition-colors', copiedArtboardRef.current ? (mode === 'dark' ? 'hover:bg-white/6' : 'hover:bg-black/4') : 'opacity-40 cursor-not-allowed')}>
+                <button type="button" onClick={handleCanvasContextMenuPaste} disabled={!hasCopied} className={cn('w-full flex items-center gap-2 px-2.5 py-2 rounded-lg text-xs text-left transition-colors', hasCopied ? (mode === 'dark' ? 'hover:bg-white/6' : 'hover:bg-black/4') : 'opacity-40 cursor-not-allowed')}>
                   <Copy className="w-3.5 h-3.5" /> Paste
                 </button>
                 <button type="button" onClick={handleCanvasContextMenuNewDiagram} className={cn('w-full flex items-center gap-2 px-2.5 py-2 rounded-lg text-xs text-left transition-colors', mode === 'dark' ? 'hover:bg-white/6' : 'hover:bg-black/4')}>

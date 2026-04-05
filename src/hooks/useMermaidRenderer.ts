@@ -174,8 +174,7 @@ export function useMermaidRenderer(
       if (debounceRef.current) clearTimeout(debounceRef.current)
       if (errorDebounceRef.current) clearTimeout(errorDebounceRef.current)
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [code, theme, configJson])
+  }, [code, theme, configJson, diagramConfig])
 
   return { svg, error }
 }
