@@ -250,6 +250,50 @@
 }
 
 /* ── Diagram SVG scaling ────────────────────────────────────────────────── */
+/* ── CodeMirror alt+click tooltip ─────────────────────────────────────────── */
+
+.cm-mermaid-ref-tooltip {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding: 4px 8px;
+  border-radius: 5px;
+  font-size: 11px;
+  font-family: var(--font-sans);
+  line-height: 1.4;
+  pointer-events: none;
+  background: #fff;
+  color: #444;
+  border: 1px solid #e2e8f0;
+}
+
+.cm-mermaid-ref-tooltip[data-theme='dark'] {
+  background: oklch(0.22 0.015 260);
+  color: oklch(0.75 0.02 260);
+  border-color: oklch(0.3 0.015 260);
+}
+
+.cm-mermaid-ref-kbd {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1px 5px;
+  border-radius: 3px;
+  font-size: 10px;
+  font-family: inherit;
+  background: #f1f5f9;
+  color: #334155;
+  border: 1px solid #cbd5e1;
+}
+
+.cm-mermaid-ref-tooltip[data-theme='dark'] .cm-mermaid-ref-kbd {
+  background: oklch(0.28 0.015 260);
+  color: oklch(0.85 0.015 260);
+  border-color: oklch(0.35 0.015 260);
+}
+
+/* ── SVG diagram container ─────────────────────────────────────────────────── */
+
 .diagram-svg-container svg {
   max-width: 100%;
   height: auto !important;

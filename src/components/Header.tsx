@@ -370,7 +370,8 @@ export function Header({
               rel="noopener noreferrer"
               className={cn(
                 'inline-flex items-center justify-center w-7 h-7 rounded-lg transition-colors cursor-pointer',
-                isDark ? 'hover:bg-white/8 text-pink-400' : 'hover:bg-black/5 text-pink-500',
+                'text-pink-500 hover:bg-black/5',
+                'dark:text-pink-400 dark:hover:bg-white/8',
               )}
             >
               <Heart className="w-3.5 h-3.5" weight="fill" />

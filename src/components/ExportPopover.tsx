@@ -107,16 +107,15 @@ export function ExportPopover({ svg, code, previewBg, pageName }: ExportPopoverP
             value={effectiveFilename}
             onChange={(e) => setFilename(e.target.value)}
             placeholder="filename"
-            style={{ fontSize: '12px' }}
             className={cn(
-              'w-full px-2.5 py-1.5 rounded-md border mb-2',
+              'w-full px-2.5 py-1.5 rounded-md border mb-2 text-xs',
               'border-border/60 bg-background focus:outline-none focus:ring-1 focus:ring-primary',
             )}
           />
 
           {/* PNG scale */}
           <div className="flex items-center gap-1.5 mb-2.5">
-            <span className="text-muted-foreground shrink-0" style={{ fontSize: '12px' }}>Scale</span>
+            <span className="text-muted-foreground shrink-0 text-xs">Scale</span>
             <div className={cn(
               'flex flex-1 rounded-md overflow-hidden border border-black/8 dark:border-white/10',
             )}>
@@ -126,13 +125,13 @@ export function ExportPopover({ svg, code, previewBg, pageName }: ExportPopoverP
                   data-testid={scale === s.value ? 'export-scale-button-active' : 'export-scale-button'}
                   data-scale={String(s.value)}
                   onClick={() => setScale(s.value)}
-                  style={{ fontSize: '12px' }}
                   className={cn(
                     'flex-1 py-1 font-medium cursor-pointer transition-colors border-r last:border-r-0',
                     'border-black/8 dark:border-white/10',
                     scale === s.value
                       ? 'bg-primary text-primary-foreground'
                       : 'text-muted-foreground hover:bg-black/3 hover:text-foreground dark:hover:bg-white/5',
+                    'text-xs',
                   )}
                 >
                   {s.label}
@@ -148,8 +147,7 @@ export function ExportPopover({ svg, code, previewBg, pageName }: ExportPopoverP
               variant="outline"
               size="sm"
               onClick={handleMmd}
-              className="flex-1 h-7 gap-1.5"
-              style={{ fontSize: '12px' }}
+              className="flex-1 h-7 gap-1.5 text-xs"
             >
               <DownloadSimple className="w-3 h-3" /> MMD
             </Button>
@@ -159,8 +157,7 @@ export function ExportPopover({ svg, code, previewBg, pageName }: ExportPopoverP
               size="sm"
               onClick={handleSvg}
               disabled={exporting}
-              className="flex-1 h-7 gap-1.5"
-              style={{ fontSize: '12px' }}
+              className="flex-1 h-7 gap-1.5 text-xs"
             >
               <DownloadSimple className="w-3 h-3" /> SVG
             </Button>
@@ -170,8 +167,7 @@ export function ExportPopover({ svg, code, previewBg, pageName }: ExportPopoverP
               size="sm"
               onClick={handlePng}
               disabled={exporting}
-              className="flex-1 h-7 gap-1.5"
-              style={{ fontSize: '12px' }}
+              className="flex-1 h-7 gap-1.5 text-xs"
             >
               <DownloadSimple className="w-3 h-3" /> {exporting ? '…' : 'PNG'}
             </Button>

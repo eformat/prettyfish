@@ -1,73 +1,156 @@
-# React + TypeScript + Vite
+# Pretty Fish — Mermaid Diagram Editor
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+A professional, browser-based Mermaid diagram editor with live preview, infinite canvas, multi-page projects, and full offline support (PWA).
 
-Currently, two official plugins are available:
+---
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+## Features
 
-## React Compiler
+- **Live preview** — renders Mermaid diagrams as you type with syntax error reporting
+- **Infinite canvas** — drag, resize, and arrange multiple diagrams per page
+- **Multi-page projects** — organise diagrams across named pages
+- **Custom themes** — built-in Mermaid themes plus a curated set of custom presets
+- **Export** — SVG, PNG (1×–4×), and `.mmd` source file
+- **Share** — encode the current diagram into a URL hash for one-click sharing
+- **Presentation mode** — open any diagram full-screen with pinch-to-zoom
+- **Offline support** — full PWA with service worker; works without a network connection
+- **Multi-tab sync** — changes in one tab are reflected in others via BroadcastChannel
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+---
 
-## Expanding the ESLint configuration
+## Getting Started
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+### Prerequisites
 
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
+- Node.js ≥ 18
+- npm ≥ 9
 
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
+### Install dependencies
 
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+```bash
+npm install
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+### Environment variables
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+Create a `.env.local` file in the project root:
 
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+```env
+# PostHog analytics (optional — app works without these)
+VITE_POSTHOG_KEY=your_posthog_project_api_key
+VITE_POSTHOG_HOST=https://app.posthog.com
 ```
+
+If these variables are absent, analytics are silently disabled.
+
+### Run in development
+
+```bash
+npm run dev
+```
+
+### Type-check
+
+```bash
+npm run typecheck
+```
+
+### Lint
+
+```bash
+npm run lint
+```
+
+### Unit tests (Vitest)
+
+```bash
+npm test
+```
+
+### End-to-end tests (Playwright)
+
+```bash
+npm run e2e
+```
+
+### Build for production
+
+```bash
+npm run build
+```
+
+### Preview the production build locally (via Wrangler)
+
+```bash
+npm run preview
+```
+
+---
+
+## Project Structure
+
+```
+src/
+  App.tsx                  # Root layout and context menu
+  main.tsx                 # Entry point — routing between app and /present
+  types.ts                 # All shared domain types and pure helpers
+  state/
+    appStore.ts            # Reducer, action types, store state shape
+  hooks/
+    useAppController.ts    # Application controller (state + actions facade)
+    useDocumentHistory.ts  # Generic undo/redo stack
+    useRenderQueue.ts      # Mermaid render queue (one diagram at a time)
+    usePersistenceSync.ts  # IndexedDB persistence + BroadcastChannel sync
+    useKeyboardShortcuts.ts
+    useIsMobile.ts
+  components/
+    InfiniteCanvas.tsx     # React Flow canvas for diagram layout
+    Sidebar.tsx            # CodeMirror editor panel
+    Header.tsx             # Top navigation bar
+    ConfigPanel.tsx        # Diagram style/config panel
+    DiagramNode.tsx        # React Flow custom node for a single diagram
+    ReferenceDocs.tsx      # In-app Mermaid reference documentation
+    TemplateGallery.tsx    # New diagram template picker
+    ExportPopover.tsx      # Export (SVG / PNG / MMD) popover
+    PresentationMode.tsx   # Standalone full-screen presentation view (/present)
+    ErrorBoundary.tsx
+    KeyboardHelp.tsx
+    ReloadPrompt.tsx       # PWA update / offline-ready toast
+    ui/                    # Primitive UI components (Button, Dialog, etc.)
+  lib/
+    render.ts              # Mermaid rendering + error parsing
+    storage.ts             # IndexedDB read/write via idb-keyval
+    share.ts               # URL hash encode/decode
+    file.ts                # Project file save/load (.prettyfish.json)
+    documentState.ts       # Normalization + migration of persisted state
+    templates.ts           # Diagram template definitions
+    themePresets.ts        # Custom Mermaid theme preset definitions
+    detectDiagram.ts       # Diagram type detection from code
+    mermaidHighlight.ts    # CodeMirror fallback syntax highlighter
+    mermaidAltClick.ts     # CodeMirror alt+click → docs extension
+    mermaidTokenLookup.ts  # Token → reference doc lookup
+    highlightCode.ts       # Static code highlighting for reference panel
+    reference.ts           # Mermaid reference documentation data
+    debug.ts               # Dev-only debug logging helper
+    utils.ts               # Tailwind class merge utility (cn)
+tests/
+  e2e/                     # Playwright end-to-end tests
+```
+
+---
+
+## Deployment
+
+The app is deployed to **Cloudflare Pages** via Wrangler:
+
+```bash
+npm run deploy
+```
+
+The `wrangler.jsonc` file configures the Cloudflare project. The `public/_redirects` file handles SPA fallback routing.
+
+---
+
+## PWA & Offline
+
+The service worker is generated by `vite-plugin-pwa` (Workbox). It precaches all built assets and handles runtime caching for Google Fonts. The `ReloadPrompt` component notifies users when an update is available.

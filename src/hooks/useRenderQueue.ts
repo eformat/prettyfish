@@ -1,7 +1,7 @@
 import { useEffect, useRef } from 'react'
 import type { Dispatch } from 'react'
 
-import { getDiagramRenderHash, renderDiagramDiagram } from '../lib/render'
+import { getDiagramRenderHash, renderDiagram } from '../lib/render'
 import { findDiagramById, pickNextQueuedDiagram, type AppAction } from '../state/appStore'
 import type { DiagramPage } from '../types'
 
@@ -53,7 +53,7 @@ export function useRenderQueue({
       job.started = true
       dispatch({ type: 'render/mark-rendering', diagramId: next.id, inputHash })
 
-      void renderDiagramDiagram(next)
+      void renderDiagram(next)
         .then(result => {
           dispatch({
             type: 'render/complete',

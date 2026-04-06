@@ -17,14 +17,18 @@ export function ReloadPrompt() {
     updateServiceWorker,
   } = useRegisterSW({
     onRegistered(r) {
-      console.log('[SW] Registered:', r?.scope)
+      if (import.meta.env.DEV) {
+        console.log('[SW] Registered:', r?.scope)
+      }
       // Periodic update check
       if (r) {
         setInterval(() => { r.update() }, INTERVAL_MS)
       }
     },
     onRegisterError(error) {
-      console.error('[SW] Registration error:', error)
+      if (import.meta.env.DEV) {
+        console.error('[SW] Registration error:', error)
+      }
     },
   })
 

@@ -29,8 +29,8 @@ import { pfDebug } from '../lib/debug'
 
 // ── Node types ────────────────────────────────────────────────────────────────
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-const nodeTypes = { diagram: DiagramNode } as any
+import type { NodeTypes } from '@xyflow/react'
+const nodeTypes: NodeTypes = { diagram: DiagramNode as NodeTypes[string] }
 
 // ── Helper: page diagrams → RF nodes ────────────────────────────────────────
 

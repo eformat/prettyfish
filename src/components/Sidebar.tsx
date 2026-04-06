@@ -64,8 +64,6 @@ import type { AppMode, DiagramConfig, MermaidRenderError } from '../types'
 
 const EXTENSIONS_BASE = [EditorView.lineWrapping]
 
-type SidebarTab = 'code'
-
 import type { Diagram } from '../types'
 
 interface SidebarProps {
@@ -95,7 +93,6 @@ export function Sidebar({
   const code = diagram?.code ?? ''
   const activePageId = diagram?.id ?? ''
   const error = renderError
-  const [activeTab, setActiveTab] = useState<SidebarTab>('code')
   const [collapsed, setCollapsed] = useState(false)
   // Stable toggle using functional updater (rule 5.11)
   const toggleCollapsed = useCallback(() => setCollapsed(c => !c), [])
@@ -133,6 +130,7 @@ export function Sidebar({
     view.focus()
   }, [error])
 
+
   const handleFormat = useCallback((src?: string) => {
     const target = src ?? code
     try {
@@ -156,7 +154,6 @@ export function Sidebar({
       selection: { anchor: from + text.length },
     })
     view.focus()
-    setActiveTab('code')
     setCollapsed(false)
   }, [onChange])
 
@@ -317,7 +314,7 @@ export function Sidebar({
           </div>
 
           {/* Error bar — absolute overlay at bottom so editor height never changes */}
-          {error && activeTab === 'code' && (
+          {error && (
             <div className={cn(
               'absolute bottom-0 left-0 right-0 z-10 border-t',
               isDark

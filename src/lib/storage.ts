@@ -1,8 +1,7 @@
 import { createStore, del, get, set } from 'idb-keyval'
 
-import { nextDiagramPosition } from '../types'
 import type { AppMode, DiagramPage } from '../types'
-import { normalizePages, normalizePersistedDocumentState } from './documentState'
+import { normalizePersistedDocumentState } from './documentState'
 
 const DB_NAME = 'prettyfish-db'
 const STORE_NAME = 'app-state'
@@ -82,16 +81,3 @@ export function subscribeToPersistedDocumentState(
   return () => channel.removeEventListener('message', handler)
 }
 
-/**
- * Migrates old-format pages (with `code` directly on the page, no diagrams)
- * to the new format (pages contain diagrams). Safe to call on already-migrated data.
- */
-export function migratePages(raw: unknown[]): DiagramPage[] {
-  return normalizePages(raw)
-}
-
-/**
- * Returns the next grid position for a new diagram within a page.
- * Re-exported here for convenience so callers don't need to import from types.
- */
-export { nextDiagramPosition }

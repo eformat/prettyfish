@@ -28,40 +28,15 @@ export function mermaidAltClickExtension(
       arrow: false,
       create() {
         const dom = document.createElement('div')
+        // Styles live in index.css as .cm-mermaid-ref-tooltip[data-dark] / [data-light]
         dom.className = 'cm-mermaid-ref-tooltip'
-        dom.style.cssText = [
-          'display:flex',
-          'align-items:center',
-          'gap:5px',
-          'padding:4px 8px',
-          'border-radius:5px',
-          'font-size:11px',
-          'font-family:var(--font-sans)',
-          'line-height:1.4',
-          'pointer-events:none',
-          isDark
-            ? 'background:oklch(0.22 0.015 260);color:oklch(0.75 0.02 260);border:1px solid oklch(0.3 0.015 260)'
-            : 'background:#fff;color:#444;border:1px solid #e2e8f0',
-        ].join(';')
+        dom.dataset.theme = isDark ? 'dark' : 'light'
 
-        // Alt symbol + label
         const kbd = document.createElement('kbd')
-        kbd.style.cssText = [
-          'display:inline-flex',
-          'align-items:center',
-          'justify-content:center',
-          'padding:1px 5px',
-          'border-radius:3px',
-          'font-size:10px',
-          'font-family:inherit',
-          isDark
-            ? 'background:oklch(0.28 0.015 260);color:oklch(0.85 0.015 260);border:1px solid oklch(0.35 0.015 260)'
-            : 'background:#f1f5f9;color:#334155;border:1px solid #cbd5e1',
-        ].join(';')
+        kbd.className = 'cm-mermaid-ref-kbd'
         kbd.textContent = '⌥ click'
 
         const label = document.createElement('span')
-        // Shorten the element name for tooltip brevity
         label.textContent = `→ ${ref.elementName}`
 
         dom.appendChild(kbd)

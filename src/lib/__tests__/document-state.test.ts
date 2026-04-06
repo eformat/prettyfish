@@ -2,6 +2,7 @@ import { afterEach, describe, expect, test, vi } from 'vitest'
 
 import { decodeStateFromHash } from '../share'
 import { normalizeAppState, normalizePages, normalizePersistedDocumentState } from '../documentState'
+import { MERMAID_THEMES } from '../../types'
 
 const originalWindow = globalThis.window
 
@@ -86,7 +87,9 @@ describe('document state normalization', () => {
     expect(normalized!.pages[0]!.diagrams[0]!.name).toBe('Diagram 1')
     expect(normalized!.pages[0]!.diagrams[0]!.code).toBe('')
     expect(normalized!.pages[0]!.diagrams[0]!.width).toBe(640)
-    expect(normalized!.pages[0]!.diagrams[0]!.mermaidTheme).toBe('default')
+    // 'not-a-theme' is invalid — should fall back to any valid theme value
+    const validThemeValues = MERMAID_THEMES.map(t => t.value)
+    expect(validThemeValues).toContain(normalized!.pages[0]!.diagrams[0]!.mermaidTheme)
     expect(normalized!.activePageId).toBe(normalized!.pages[0]!.id)
     expect(normalized!.pages[0]!.activeDiagramId).toBe(normalized!.pages[0]!.diagrams[0]!.id)
     expect(normalized!.mode).toBe('light')

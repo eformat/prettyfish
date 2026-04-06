@@ -9,7 +9,13 @@ import type {
 import { BUILTIN_THEMES, resolveConfig } from '../types'
 import { CUSTOM_THEME_PRESETS } from './themePresets'
 
-let renderCounter = 0
+// Using crypto.randomUUID avoids a mutable module-level counter that leaks across test runs
+function newRenderId(): string {
+  if (typeof crypto !== 'undefined' && 'randomUUID' in crypto) {
+    return `mermaid-render-${crypto.randomUUID()}`
+  }
+  return `mermaid-render-${Date.now()}-${Math.random().toString(36).slice(2)}`
+}
 
 export interface MermaidRenderResult {
   svg: string
@@ -98,7 +104,7 @@ function extractSvgDimensions(svg: string): { svgWidth: number | null; svgHeight
   return { svgWidth: width, svgHeight: height }
 }
 
-export async function renderDiagramDiagram(diagram: Diagram): Promise<MermaidRenderResult> {
+export async function renderDiagram(diagram: Diagram): Promise<MermaidRenderResult> {
   const trimmed = diagram.code.trim()
   if (!trimmed) {
     return { svg: '', error: null, svgWidth: null, svgHeight: null }
@@ -128,7 +134,7 @@ export async function renderDiagramDiagram(diagram: Diagram): Promise<MermaidRen
   })
 
   try {
-    const id = `mermaid-render-${++renderCounter}`
+    const id = newRenderId()
     let { svg } = await mermaid.render(id, trimmed)
 
     // Fix ER diagram alternating row backgrounds:
@@ -155,7 +161,7 @@ export async function renderDiagramDiagram(diagram: Diagram): Promise<MermaidRen
   } catch (err) {
     return { svg: '', error: parseError(err), svgWidth: null, svgHeight: null }
   } finally {
-    document.querySelectorAll('body > [id^="mermaid-render-"]').forEach(el => el.remove())
+    document.querySelectorAll('body > [id^="mermaid-render-"]').forEach((el) => el.remove())
     document.querySelectorAll('body > .mermaid-error, body > pre').forEach(el => {
       if (el.textContent?.includes('mermaid') || el.textContent?.includes('💣')) el.remove()
     })

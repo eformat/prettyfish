@@ -9,6 +9,7 @@ function ts() {
 }
 
 export function pfDebug(scope: string, message: string, details?: unknown) {
+  if (!import.meta.env.DEV) return
   pfDebugCounter += 1
   const prefix = `[PF_DEBUG #${pfDebugCounter} ${ts()}] [${scope}] ${message}`
   if (details === undefined) {
