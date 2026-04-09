@@ -30,38 +30,30 @@ test.describe('Keyboard shortcuts', () => {
 
     // Diagram shortcuts
     await page.keyboard.press('Control+t')
-    await page.waitForTimeout(250)
     await app.canvas.shouldShowDiagramCount(2)
 
     await page.keyboard.press('Control+c')
     await page.keyboard.press('Control+v')
-    await page.waitForTimeout(300)
     await app.canvas.shouldShowDiagramCount(3)
 
     await page.keyboard.press('Backspace')
-    await page.waitForTimeout(300)
     await app.canvas.shouldShowDiagramCount(2)
 
     // Undo / redo shortcuts
     await page.keyboard.press('Control+z')
-    await page.waitForTimeout(250)
     await app.canvas.shouldShowDiagramCount(3)
 
     await page.keyboard.press('Control+Shift+z')
-    await page.waitForTimeout(250)
     await app.canvas.shouldShowDiagramCount(2)
 
     await page.keyboard.press('Control+z')
-    await page.waitForTimeout(250)
     await app.canvas.shouldShowDiagramCount(3)
 
     await page.keyboard.press('Control+y')
-    await page.waitForTimeout(250)
     await app.canvas.shouldShowDiagramCount(2)
 
     // Page shortcuts
     await page.keyboard.press('Control+Shift+t')
-    await page.waitForTimeout(300)
     await app.templates.shouldBeVisible()
     await app.startFlowchartDiagram()
     await app.header.renameLastPage('Shortcut Page')
@@ -72,14 +64,12 @@ test.describe('Keyboard shortcuts', () => {
     await app.header.logoPill.click()
 
     await page.keyboard.press('Control+Shift+BracketLeft')
-    await page.waitForTimeout(300)
     await app.header.openPagesMenu()
     await expect(page.getByTestId('page-item-active')).toContainText('Page 1')
     await page.keyboard.press('Escape')
     await app.header.logoPill.click()
 
     await page.keyboard.press('Control+Shift+BracketRight')
-    await page.waitForTimeout(300)
     await app.header.openPagesMenu()
     await expect(page.getByTestId('page-item-active')).toContainText('Shortcut Page')
     await page.keyboard.press('Escape')
@@ -126,7 +116,6 @@ test.describe('Keyboard shortcuts', () => {
       page.keyboard.press('Control+O'),
     ])
     await chooser.setFiles(savedPath!)
-    await page.waitForTimeout(1000)
     await app.header.openPagesMenu()
     await expect(page.getByTestId('page-item-active')).toContainText('Shortcut Page')
     await page.keyboard.press('Escape')
