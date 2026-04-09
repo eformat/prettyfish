@@ -1,6 +1,6 @@
 # Pretty Fish
 
-Pretty Fish is a browser-based Mermaid workspace for writing, arranging, and sharing diagrams without leaving the browser.
+**[pretty.fish](https://pretty.fish)** — a browser-based Mermaid workspace for writing, arranging, and sharing diagrams without leaving the browser.
 
 It is built for a workflow that sits somewhere between a text editor and a diagram board: edit Mermaid source, preview the result immediately, keep multiple diagrams on a canvas, and organize work across pages.
 
