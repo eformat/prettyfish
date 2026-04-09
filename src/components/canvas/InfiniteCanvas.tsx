@@ -97,7 +97,7 @@ function InnerCanvas({
   const pageFocusTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const { setViewport } = useReactFlow()
 
-  const focusDiagramViewport = useCallback((diagram: Diagram, options?: { duration?: number }) => {
+  const focusDiagramViewport = useCallback((diagram: Diagram, options?: { duration?: number }, _retryCount = 0) => {
     const container = document.querySelector('.react-flow')
     if (!container) return
     const rect = container.getBoundingClientRect()
@@ -111,6 +111,13 @@ function InnerCanvas({
 
     const escapedId = typeof CSS !== 'undefined' && 'escape' in CSS ? CSS.escape(diagram.id) : diagram.id
     const nodeEl = document.querySelector(`[data-diagram-id="${escapedId}"]`) as HTMLElement | null
+
+    // If the node hasn't rendered yet, retry up to 3 times with 80ms gaps.
+    if (!nodeEl && _retryCount < 3) {
+      setTimeout(() => focusDiagramViewport(diagram, options, _retryCount + 1), 80)
+      return
+    }
+
     const diagramHeight = nodeEl?.offsetHeight ?? 480
 
     // Use 0.85 padding factor so diagrams have comfortable breathing room.

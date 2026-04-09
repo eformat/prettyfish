@@ -184,12 +184,14 @@ export function Header({
           <span className="font-semibold">Pretty</span><span className="font-medium text-primary ml-0.5">Fish</span>
         </span>
 
+        {!isMobile && (
         <div className={cn(
           'hidden sm:inline-flex items-center px-2 py-0.5 rounded-lg text-[11px] font-semibold shrink-0',
           isDark ? 'bg-primary/12 text-primary' : 'bg-primary/8 text-primary',
         )}>
           Mermaid Diagram Editor
         </div>
+        )}
 
         <div className={cn('w-px h-4 mx-0.5 shrink-0', isDark ? 'bg-white/10' : 'bg-black/10')} />
 

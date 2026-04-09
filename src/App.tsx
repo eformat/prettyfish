@@ -460,6 +460,7 @@ export default function App() {
           <div
             className="absolute inset-0 z-40"
             onMouseDown={() => dispatch({ type: 'ui/set-context-menu', menu: null })}
+            onTouchStart={() => dispatch({ type: 'ui/set-context-menu', menu: null })}
             onContextMenu={(event) => {
               event.preventDefault()
               dispatch({ type: 'ui/set-context-menu', menu: null })

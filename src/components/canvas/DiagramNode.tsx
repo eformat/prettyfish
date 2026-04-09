@@ -55,6 +55,8 @@ export const DiagramNode = memo(function DiagramNode({
   const handlePointerDown = useCallback((e: React.PointerEvent<HTMLDivElement>) => {
     if (e.pointerType !== 'touch') return
     longPressTriggeredRef.current = false
+    // Capture the pointer so we still get pointerup/cancel even if touch moves
+    ;(e.currentTarget as HTMLDivElement).setPointerCapture(e.pointerId)
     longPressTimerRef.current = setTimeout(() => {
       longPressTriggeredRef.current = true
       onSelect(diagram.id)
