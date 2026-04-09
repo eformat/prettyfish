@@ -119,7 +119,15 @@ function InnerCanvas({
       return
     }
 
-    const diagramHeight = nodeEl?.offsetHeight ?? 480
+    // Prefer SVG intrinsic dimensions — accurate even before the DOM is measured.
+    // Fall back to DOM offsetHeight, then a sensible default.
+    let diagramHeight: number
+    if (diagram.render?.svgWidth && diagram.render?.svgHeight) {
+      const scale = diagram.width / diagram.render.svgWidth
+      diagramHeight = Math.ceil(diagram.render.svgHeight * scale) + 64 // +64 for the label bar
+    } else {
+      diagramHeight = nodeEl?.offsetHeight ?? 480
+    }
 
     // Use 0.85 padding factor so diagrams have comfortable breathing room.
     // Do NOT cap at 1.0 — on small screens the diagram may need to be zoomed

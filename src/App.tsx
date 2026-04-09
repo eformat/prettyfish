@@ -434,7 +434,7 @@ export default function App() {
       {isMobile && !docsOpen && (
         <div
           className="absolute right-4 z-40 pointer-events-none transition-all duration-300"
-          style={{ bottom: sidebarOpen ? 'calc(80vh + 1rem)' : '1.25rem' }}
+          style={{ bottom: (sidebarOpen && !mobileSidebarCollapsed) ? 'calc(80vh + 1rem)' : '1.25rem' }}
         >
           <Button
             data-testid="mobile-add-diagram-button"
