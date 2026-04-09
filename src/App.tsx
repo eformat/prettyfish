@@ -329,7 +329,11 @@ export default function App() {
           aria-label="Diagram editor"
           className={isMobile ? 'absolute left-0 right-0 bottom-0 z-30 rounded-t-2xl overflow-hidden' : 'absolute top-16 bottom-4 left-4 z-20'}
           style={isMobile
-            ? (mobileSidebarCollapsed ? { height: 'auto', maxHeight: 'none' } : { height: '80vh', maxHeight: '80vh' })
+            ? {
+                height: mobileSidebarCollapsed ? '3.5rem' : '80vh',
+                maxHeight: mobileSidebarCollapsed ? '3.5rem' : '80vh',
+                transition: 'height 0.3s cubic-bezier(0.4,0,0.2,1), max-height 0.3s cubic-bezier(0.4,0,0.2,1)',
+              }
             : { width: sidebarWidth ? `${sidebarWidth}px` : 'clamp(320px, 34vw, 480px)' }}
         >
           {!isMobile && (

@@ -287,7 +287,7 @@ export function Sidebar({
           onClick={toggleCollapsed}
           className="shrink-0 rounded-lg"
         >
-          {collapsed ? <CaretDown className="w-3.5 h-3.5" /> : <CaretUp className="w-3.5 h-3.5" />}
+          {collapsed ? <CaretUp className="w-3.5 h-3.5" /> : <CaretDown className="w-3.5 h-3.5" />}
         </Button>
       </div>
 
