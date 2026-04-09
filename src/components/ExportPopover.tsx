@@ -1,8 +1,8 @@
 import { useState, useRef, useEffect, useCallback } from 'react'
-import posthog from 'posthog-js'
 import { Button } from '@/components/ui/button'
 import { ChromeTextButton, chromePopoverClass } from '@/components/ui/app-chrome'
 import { DownloadSimple } from '@phosphor-icons/react'
+import { captureEvent } from '@/lib/analytics'
 import { cn } from '@/lib/utils'
 import { exportSvg, exportPng } from '@/lib/export'
 
@@ -36,7 +36,6 @@ export function ExportPopover({ svg, code, previewBg, pageName }: ExportPopoverP
   const [scale, setScale] = useState(2)
   const [exporting, setExporting] = useState(false)
   const ref = useRef<HTMLDivElement>(null)
-  // Derive directly during render — toFilename is a cheap pure function, no useMemo needed (rule 5.3)
   const defaultFilename = toFilename(pageName)
   const effectiveFilename = filename ?? defaultFilename
 
@@ -45,13 +44,12 @@ export function ExportPopover({ svg, code, previewBg, pageName }: ExportPopoverP
     const handler = (e: MouseEvent) => {
       if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false)
     }
-    // Passive listener safe for mousedown (rule 4.2)
     document.addEventListener('mousedown', handler, { passive: true })
     return () => document.removeEventListener('mousedown', handler)
   }, [open])
 
   const handleMmd = useCallback(() => {
-    posthog.capture('diagram_exported', { format: 'mmd' })
+    captureEvent('diagram_exported', { format: 'mmd' })
     const blob = new Blob([code], { type: 'text/plain' })
     const url = URL.createObjectURL(blob)
     const a = document.createElement('a')
@@ -63,20 +61,19 @@ export function ExportPopover({ svg, code, previewBg, pageName }: ExportPopoverP
   }, [code, effectiveFilename])
 
   const handleSvg = useCallback(async () => {
-    posthog.capture('diagram_exported', { format: 'svg' })
+    captureEvent('diagram_exported', { format: 'svg' })
     setExporting(true)
     try { await exportSvg(svg, effectiveFilename || 'diagram') }
     finally { setExporting(false); setOpen(false) }
   }, [svg, effectiveFilename])
 
   const handlePng = useCallback(async () => {
-    posthog.capture('diagram_exported', { format: 'png', scale })
+    captureEvent('diagram_exported', { format: 'png', scale })
     setExporting(true)
     try { await exportPng(svg, previewBg, effectiveFilename || 'diagram', scale) }
     finally { setExporting(false); setOpen(false) }
   }, [svg, previewBg, effectiveFilename, scale])
 
-  // Stable toggle handler (rule 5.11 — use functional setState updates)
   const handleToggle = useCallback(() => {
     setOpen(prev => {
       if (!prev) setFilename(null)

@@ -67,6 +67,7 @@ export interface AppState {
   activePageId: string
   mode: AppMode
   editorLigatures: boolean
+  autoFormat: boolean
 }
 
 export const MERMAID_THEMES: { value: MermaidTheme; label: string; group: 'builtin' | 'custom' }[] = [

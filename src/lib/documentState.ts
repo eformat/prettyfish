@@ -214,5 +214,6 @@ export function normalizeAppState(raw: unknown): AppState | null {
     activePageId: normalized.activePageId,
     mode: normalized.mode,
     editorLigatures: normalized.editorLigatures,
+    autoFormat: normalized.autoFormat,
   }
 }

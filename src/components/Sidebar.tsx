@@ -21,7 +21,6 @@ import {
 } from '@phosphor-icons/react'
 import { formatMermaid } from 'mermaid-formatter'
 
-// Hoisted RegExp patterns for spacifyMermaid (rule 7.10 — hoist RegExp creation)
 const RE_COMMENT = /^\s*%%/
 const RE_DIAGRAM_DECL = /^\s*(flowchart|graph|sequenceDiagram|classDiagram|stateDiagram|erDiagram|gantt|pie|gitGraph|mindmap|timeline|xychart-beta|quadrantChart|requirementDiagram)\b/
 const RE_ARROW_LABEL_PRE = /(\S)(--+>|--+x|--+o|==+>|-\.+-?>|<--+|<==+|<-\.+-?)(\|)/g
@@ -94,7 +93,6 @@ export function Sidebar({
   const activePageId = diagram?.id ?? ''
   const error = renderError
   const [collapsed, setCollapsed] = useState(false)
-  // Stable toggle using functional updater (rule 5.11)
   const toggleCollapsed = useCallback(() => setCollapsed(c => !c), [])
   const [settingsOpen, setSettingsOpen] = useState<string[]>([])
   const [codeCopied, setCodeCopied] = useState(false)
@@ -119,7 +117,6 @@ export function Sidebar({
 
 
 
-  // Stable handlers — useCallback prevents unnecessary re-renders of consumers (rule 5.8)
   const goToErrorLine = useCallback(() => {
     if (!error?.line || !editorViewRef.current) return
     const view = editorViewRef.current
@@ -249,7 +246,6 @@ export function Sidebar({
                 onClick={() => {
                   navigator.clipboard.writeText(code)
                   setCodeCopied(true)
-                  // Track timer ref to avoid leaking on rapid clicks (rule 5.15)
                   if (copyTimerRef.current) clearTimeout(copyTimerRef.current)
                   copyTimerRef.current = setTimeout(() => setCodeCopied(false), 1500)
                 }}

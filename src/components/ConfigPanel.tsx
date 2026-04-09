@@ -109,7 +109,6 @@ export function ConfigPanel({ config, code, onChange, mermaidTheme, onMermaidThe
     }
   }, [onChange])
 
-  // Use useCallback so these helpers don't get re-created on every render (rule 5.8)
   const set = useCallback(<K extends keyof DiagramConfig>(key: K, value: DiagramConfig[K]) => {
     onChange({ ...config, [key]: value })
   }, [config, onChange])
@@ -407,7 +406,6 @@ function Divider() {
 function FontSelect({ value, onChange }: { value: string; onChange: (v: string) => void }) {
   const [open, setOpen] = useState(false)
   const ref = useRef<HTMLDivElement>(null)
-  // Stable toggle using functional updater (rule 5.11)
   const toggleOpen = useCallback(() => setOpen(o => !o), [])
 
   useEffect(() => {
@@ -415,7 +413,6 @@ function FontSelect({ value, onChange }: { value: string; onChange: (v: string) 
     const handler = (e: MouseEvent) => {
       if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false)
     }
-    // Passive listener — no preventDefault needed (rule 4.2)
     document.addEventListener('mousedown', handler, { passive: true })
     return () => document.removeEventListener('mousedown', handler)
   }, [open])
@@ -470,7 +467,6 @@ function ColorSwatch({ label, value, onChange }: { label: string; value: string;
   const [open, setOpen] = useState(false)
   const [localColor, setLocalColor] = useState(value)
   const ref = useRef<HTMLDivElement>(null)
-  // Stable toggle using functional updater (rule 5.11)
   const toggleOpen = useCallback(() => setOpen(o => !o), [])
 
   useEffect(() => {
@@ -478,7 +474,6 @@ function ColorSwatch({ label, value, onChange }: { label: string; value: string;
     const handler = (e: MouseEvent) => {
       if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false)
     }
-    // Passive listener — no preventDefault needed (rule 4.2)
     document.addEventListener('mousedown', handler, { passive: true })
     return () => document.removeEventListener('mousedown', handler)
   }, [open])

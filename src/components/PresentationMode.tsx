@@ -79,7 +79,6 @@ function ExitHint() {
   const [visible, setVisible] = useState(true)
 
   useEffect(() => {
-    // Use functional setState to avoid capturing stale state (rule 5.11)
     const t = setTimeout(() => setVisible(false), 3000)
     return () => clearTimeout(t)
   }, [])

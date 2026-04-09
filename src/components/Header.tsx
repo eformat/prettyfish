@@ -1,5 +1,4 @@
 import { useState, useRef, useEffect, useCallback, useMemo } from 'react'
-import posthog from 'posthog-js'
 import { Button } from '@/components/ui/button'
 import {
   chromePillClass,
@@ -39,6 +38,7 @@ import { copyShareUrl } from '../lib/share'
 import { ExportPopover } from './ExportPopover'
 import type { AppMode, AppState, MermaidTheme, DiagramPage } from '../types'
 import { MERMAID_THEMES } from '../types'
+import { captureEvent } from '@/lib/analytics'
 import { CUSTOM_THEME_PRESETS } from '@/lib/themePresets'
 
 const THEME_SWATCHES: Record<string, [string, string, string]> = {
@@ -119,14 +119,13 @@ export function Header({
   const [copyState, setCopyState] = useState<'idle' | 'copied' | 'error'>('idle')
   const [resetOpen, setResetOpen] = useState(false)
   const [resetting, setResetting] = useState(false)
-  // Use ref for timer to avoid stale closure issues (rule 5.15 — useRef for transient values)
   const copyTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   const handleShare = useCallback(async () => {
     if (copyTimerRef.current) clearTimeout(copyTimerRef.current)
     try {
       await copyShareUrl(getShareState())
-      posthog.capture('share_link_copied')
+      captureEvent('share_link_copied')
       setCopyState('copied')
       copyTimerRef.current = setTimeout(() => setCopyState('idle'), 2000)
     } catch {
@@ -139,19 +138,17 @@ export function Header({
     setResetting(true)
     try {
       await onResetWorkspace()
-      posthog.capture('workspace_reset')
+      captureEvent('workspace_reset')
       setResetOpen(false)
     } finally {
       setResetting(false)
     }
   }, [onResetWorkspace])
 
-  // Build a fast O(1) lookup map for diagrams (rule 7.2 — build index maps)
   const diagramById = useMemo(
     () => new Map(activePage.diagrams.map(a => [a.id, a])),
     [activePage.diagrams],
   )
-  // Export filename: derive directly during render (rule 5.1)
   const activeDiagram = activePage.activeDiagramId ? diagramById.get(activePage.activeDiagramId) : undefined
   const exportName = activeDiagram?.name ?? activePage.name
 
@@ -188,7 +185,7 @@ export function Header({
         <div className="flex items-center gap-1 shrink-0">
           <Tooltip>
             <TooltipTrigger>
-              <ChromeIconButton type="button" data-testid="open-project-button" onClick={() => { posthog.capture('project_loaded'); onLoadProject() }}>
+              <ChromeIconButton type="button" data-testid="open-project-button" onClick={() => { captureEvent('project_loaded'); onLoadProject() }}>
                 <FolderOpen className="w-3.5 h-3.5" />
               </ChromeIconButton>
             </TooltipTrigger>
@@ -196,7 +193,7 @@ export function Header({
           </Tooltip>
           <Tooltip>
             <TooltipTrigger>
-              <ChromeIconButton type="button" data-testid="save-project-button" onClick={() => { posthog.capture('project_saved'); onSaveProject() }}>
+              <ChromeIconButton type="button" data-testid="save-project-button" onClick={() => { captureEvent('project_saved'); onSaveProject() }}>
                 <FloppyDisk className="w-3.5 h-3.5" />
               </ChromeIconButton>
             </TooltipTrigger>
@@ -411,7 +408,6 @@ function PagesDropdown({
   const [renamingId, setRenamingId] = useState<string | null>(null)
   const [draftName, setDraftName] = useState('')
   const ref = useRef<HTMLDivElement>(null)
-  // Build index map for O(1) lookup (rule 7.2)
   const pageById = useMemo(() => new Map(pages.map(p => [p.id, p])), [pages])
   const activePage = pageById.get(activePageId)
 
@@ -420,7 +416,6 @@ function PagesDropdown({
     const handler = (e: MouseEvent) => {
       if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false)
     }
-    // Passive listener — mousedown doesn't need to call preventDefault here (rule 4.2)
     document.addEventListener('mousedown', handler, { passive: true })
     return () => document.removeEventListener('mousedown', handler)
   }, [open])
@@ -536,7 +531,7 @@ function PagesDropdown({
             <div className={cn('mx-2 my-1 h-px', isDark ? 'bg-white/8' : 'bg-black/6')} />
             <button
               data-testid="page-add-button"
-              onClick={() => { posthog.capture('page_added'); onAddPage(); setOpen(false) }}
+              onClick={() => { captureEvent('page_added'); onAddPage(); setOpen(false) }}
               className={cn(
                 'flex items-center gap-1.5 w-full px-3 py-1.5 text-xs cursor-pointer transition-colors',
                 isDark ? 'text-zinc-400 hover:text-zinc-100 hover:bg-white/6' : 'text-zinc-500 hover:text-zinc-700 hover:bg-black/4',
@@ -561,7 +556,6 @@ function ThemeDropdown({ value, onChange, isDark }: { value: MermaidTheme; onCha
     const handler = (e: MouseEvent) => {
       if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false)
     }
-    // Passive listener — no preventDefault needed (rule 4.2)
     document.addEventListener('mousedown', handler, { passive: true })
     return () => document.removeEventListener('mousedown', handler)
   }, [open])
@@ -613,7 +607,7 @@ function ThemeDropdown({ value, onChange, isDark }: { value: MermaidTheme; onCha
                     type="button"
                     data-testid={active ? 'theme-option-active' : 'theme-option'}
                     data-theme-value={String(t.value)}
-                    onClick={() => { posthog.capture('theme_changed', { theme: t.value }); onChange(t.value as MermaidTheme); setOpen(false) }}
+                    onClick={() => { captureEvent('theme_changed', { theme: t.value }); onChange(t.value as MermaidTheme); setOpen(false) }}
                     className={cn(
                       'w-full flex items-center gap-2 px-3 py-1.5 text-xs cursor-pointer transition-colors',
                       active

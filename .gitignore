@@ -32,6 +32,10 @@ dist-ssr
 
 # Test artifacts
 test-results/
+playwright-report/
+coverage/
 tests/screenshots/
 tmp_chaos_logs/
+trace.json
+trace-*.json
 .env

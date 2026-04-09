@@ -4,15 +4,16 @@ import react from '@vitejs/plugin-react'
 import tailwindcss from '@tailwindcss/vite'
 import { VitePWA } from 'vite-plugin-pwa'
 import istanbul from 'vite-plugin-istanbul'
+import { cloudflare } from '@cloudflare/vite-plugin'
 
-import { cloudflare } from "@cloudflare/vite-plugin";
+const isVitest = process.env.VITEST === 'true'
 
 // https://vite.dev/config/
 export default defineConfig({
   plugins: [
     react(),
     tailwindcss(),
-    cloudflare(),
+    !isVitest ? cloudflare() : null,
     process.env.PLAYWRIGHT_COVERAGE
       ? istanbul({
           include: 'src/*',
@@ -106,6 +107,38 @@ export default defineConfig({
   resolve: {
     alias: {
       '@': path.resolve(__dirname, './src'),
+    },
+  },
+  build: {
+    modulePreload: {
+      resolveDependencies: (_filename, deps, context) => {
+        if (context.hostType !== 'html') return deps
+
+        return deps.filter((dep) => {
+          return !(
+            dep.includes('/mermaid-') ||
+            dep.includes('/codemirror-') ||
+            dep.includes('/reactflow-') ||
+            dep.includes('/utils-')
+          )
+        })
+      },
+    },
+    rolldownOptions: {
+      output: {
+        manualChunks(id) {
+          if (id.includes('/node_modules/mermaid/')) return 'mermaid'
+          if (id.includes('/node_modules/@xyflow/')) return 'reactflow'
+          if (
+            id.includes('/node_modules/@uiw/react-codemirror/') ||
+            id.includes('/node_modules/@codemirror/') ||
+            id.includes('/node_modules/@uiw/codemirror-theme-')
+          ) {
+            return 'codemirror'
+          }
+          return undefined
+        },
+      },
     },
   },
   test: {

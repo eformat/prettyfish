@@ -1,16 +1,29 @@
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
-import posthog from 'posthog-js'
 import App from './App.tsx'
 import { PresentationMode } from './components/PresentationMode.tsx'
 import { ReloadPrompt } from './components/ReloadPrompt.tsx'
 import { TooltipProvider } from '@/components/ui/tooltip'
 import './index.css'
 
-posthog.init('phc_uJGijY8E6V8Wge3PddD2bs6zKkK89hegJAaYVxgMYGW9', {
-  api_host: import.meta.env.VITE_POSTHOG_HOST ?? 'https://us.i.posthog.com',
-  defaults: '2026-01-30',
-})
+function scheduleAnalyticsInit() {
+  const loadAnalytics = () => {
+    void import('./lib/analytics.ts').then(({ initAnalytics }) => initAnalytics())
+  }
+
+  if (document.readyState === 'complete') {
+    if ('requestIdleCallback' in window) {
+      window.requestIdleCallback(loadAnalytics, { timeout: 2_000 })
+    } else {
+      globalThis.setTimeout(loadAnalytics, 1_500)
+    }
+    return
+  }
+
+  window.addEventListener('load', loadAnalytics, { once: true })
+}
+
+scheduleAnalyticsInit()
 
 const isPresentation = window.location.pathname.endsWith('/present')
 

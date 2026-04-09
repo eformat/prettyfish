@@ -140,6 +140,7 @@ describe('document state normalization', () => {
       activePageId: 'p1',
       mode: 'dark',
       editorLigatures: false,
+      autoFormat: false,
     })
   })
 })

@@ -63,7 +63,8 @@ export function useProjectIO({
     activePageId: state.activePageId,
     mode: state.mode,
     editorLigatures: state.editorLigatures,
-  }), [state.activePageId, state.editorLigatures, state.mode, state.pages])
+    autoFormat: state.autoFormat,
+  }), [state.activePageId, state.autoFormat, state.editorLigatures, state.mode, state.pages])
 
   const getShareStateForDiagram = useCallback((diagramId: string): AppState => {
     const source = findDiagramById(state.pages, diagramId)
@@ -82,8 +83,9 @@ export function useProjectIO({
       activePageId: sharedPage.id,
       mode: state.mode,
       editorLigatures: state.editorLigatures,
+      autoFormat: state.autoFormat,
     }
-  }, [getState, state.editorLigatures, state.mode, state.pages])
+  }, [getState, state.autoFormat, state.editorLigatures, state.mode, state.pages])
 
   const getShareState = useCallback((): AppState => {
     if (!activeDiagram) return getState()
@@ -105,10 +107,10 @@ export function useProjectIO({
         activePageId: loaded.activePageId,
         mode: loaded.mode,
         editorLigatures: loaded.editorLigatures,
-        autoFormat: state.autoFormat,
+        autoFormat: loaded.autoFormat,
       },
     })
-  }, [clearHistory, dispatch, state.autoFormat])
+  }, [clearHistory, dispatch])
 
   const resetWorkspace = useCallback(async () => {
     clearHistory()

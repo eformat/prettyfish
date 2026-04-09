@@ -1,22 +1,32 @@
-import { useCallback, useEffect, useRef } from 'react'
+import { Suspense, lazy, useCallback, useEffect, useRef } from 'react'
 import { Copy, CopySimple, Plus, ShareNetwork, Trash } from '@phosphor-icons/react'
-import posthog from 'posthog-js'
 
 import { Header } from './components/Header'
-import { Sidebar } from './components/Sidebar'
-import { InfiniteCanvas } from './components/InfiniteCanvas'
 import { KeyboardHelp } from './components/KeyboardHelp'
-import { ReferenceDocs, type ReferenceDocsHandle } from './components/ReferenceDocs'
+import type { ReferenceDocsHandle } from './components/ReferenceDocs'
 import { ErrorBoundary } from './components/ErrorBoundary'
 import { useKeyboardShortcuts } from './hooks/useKeyboardShortcuts'
 import { useIsMobile } from './hooks/useIsMobile'
 import { useAppController } from './hooks/useAppController'
 import type { MermaidTheme } from './types'
+import { captureEvent } from './lib/analytics'
 import { cn } from './lib/utils'
 import { Button } from '@/components/ui/button'
 
 const SIDEBAR_MIN = 300
 const SIDEBAR_MAX = 600
+
+const InfiniteCanvas = lazy(() =>
+  import('./components/InfiniteCanvas').then((module) => ({ default: module.InfiniteCanvas })),
+)
+
+const Sidebar = lazy(() =>
+  import('./components/Sidebar').then((module) => ({ default: module.Sidebar })),
+)
+
+const ReferenceDocs = lazy(() =>
+  import('./components/ReferenceDocs').then((module) => ({ default: module.ReferenceDocs })),
+)
 
 export default function App() {
   const isMobile = useIsMobile()
@@ -72,6 +82,9 @@ export default function App() {
   } = state
 
   const activeSvg = activeDiagram?.render?.svg ?? ''
+  const panelSurfaceClass = mode === 'dark'
+    ? 'bg-[oklch(0.16_0.015_280)] border-white/8'
+    : 'bg-white/95 border-black/6'
 
   const handleInsertReady = useCallback((fn: (text: string) => void) => {
     registerInsertHandler(fn)
@@ -89,7 +102,7 @@ export default function App() {
 
   const handleDeleteActiveDiagram = useCallback(() => {
     if (!activeDiagram || activePage.diagrams.length === 0) return
-    posthog.capture('diagram_deleted', { source: 'keyboard' })
+    captureEvent('diagram_deleted', { source: 'keyboard' })
     deleteDiagram(activeDiagram.id)
   }, [activeDiagram, activePage.diagrams.length, deleteDiagram])
 
@@ -173,14 +186,14 @@ export default function App() {
     if (!contextMenu || contextMenu.type !== 'diagram' || !contextMenu.id) return
     const source = activePage.diagrams.find(diagram => diagram.id === contextMenu.id)
     if (!source) return
-    posthog.capture('diagram_duplicated', { source: 'context_menu' })
+    captureEvent('diagram_duplicated', { source: 'context_menu' })
     duplicateDiagram(source)
     dispatch({ type: 'ui/set-context-menu', menu: null })
   }, [activePage.diagrams, contextMenu, dispatch, duplicateDiagram])
 
   const handleContextMenuDelete = useCallback(() => {
     if (!contextMenu || contextMenu.type !== 'diagram' || !contextMenu.id) return
-    posthog.capture('diagram_deleted', { source: 'context_menu' })
+    captureEvent('diagram_deleted', { source: 'context_menu' })
     deleteDiagram(contextMenu.id)
     dispatch({ type: 'ui/set-context-menu', menu: null })
   }, [contextMenu, deleteDiagram, dispatch])
@@ -197,7 +210,7 @@ export default function App() {
   }, [dispatch, pasteDiagram])
 
   const handleCanvasContextMenuNewDiagram = useCallback(() => {
-    posthog.capture('diagram_created', { source: 'context_menu' })
+    captureEvent('diagram_created', { source: 'context_menu' })
     addDiagram()
     dispatch({ type: 'ui/set-context-menu', menu: null })
   }, [addDiagram, dispatch])
@@ -205,19 +218,21 @@ export default function App() {
   return (
     <div data-testid="app-root" className="w-screen h-screen relative bg-background text-foreground overflow-hidden">
       <div className="absolute inset-0">
-        <InfiniteCanvas
-          page={activePage}
-          mode={mode}
-          onSelectDiagram={selectDiagram}
-          onRenameDiagram={renameDiagram}
-          onUpdateDiagramDescription={updateDiagramDescription}
-          onDeleteDiagram={deleteDiagram}
-          onOpenDiagramContextMenu={(id, x, y) => dispatch({ type: 'ui/set-context-menu', menu: { type: 'diagram', id, x, y } })}
-          onOpenCanvasContextMenu={(x, y) => dispatch({ type: 'ui/set-context-menu', menu: { type: 'canvas', x, y } })}
-          onMoveDiagram={moveDiagram}
-          onResizeDiagram={resizeDiagram}
-          onRegisterFocus={registerFocusDiagram}
-        />
+        <Suspense fallback={<div className="h-full w-full bg-background" />}>
+          <InfiniteCanvas
+            page={activePage}
+            mode={mode}
+            onSelectDiagram={selectDiagram}
+            onRenameDiagram={renameDiagram}
+            onUpdateDiagramDescription={updateDiagramDescription}
+            onDeleteDiagram={deleteDiagram}
+            onOpenDiagramContextMenu={(id, x, y) => dispatch({ type: 'ui/set-context-menu', menu: { type: 'diagram', id, x, y } })}
+            onOpenCanvasContextMenu={(x, y) => dispatch({ type: 'ui/set-context-menu', menu: { type: 'canvas', x, y } })}
+            onMoveDiagram={moveDiagram}
+            onResizeDiagram={resizeDiagram}
+            onRegisterFocus={registerFocusDiagram}
+          />
+        </Suspense>
       </div>
 
       <Header
@@ -280,24 +295,26 @@ export default function App() {
             </div>
           )}
           <ErrorBoundary label="Editor panel failed to load">
-            <Sidebar
-              diagram={activeDiagram}
-              mode={mode}
-              diagramConfig={diagramConfig}
-              renderError={activeDiagram?.render?.error ?? null}
-              autoFormat={autoFormat}
-              editorLigatures={editorLigatures}
-              onFocusReady={handleFocusReady}
-              onInsertReady={handleInsertReady}
-              onAltClick={(ref) => {
-                dispatch({ type: 'ui/set-docs-open', open: true })
-                setTimeout(() => referenceDocsRef.current?.scrollToElement(ref.diagramType, ref.elementName), 50)
-              }}
-              onChange={updateCode}
-              mermaidTheme={mermaidTheme}
-              onConfigChange={setDiagramConfig}
-              onMermaidThemeChange={(theme) => setMermaidTheme(theme as MermaidTheme)}
-            />
+            <Suspense fallback={<div className={cn('h-full rounded-xl border animate-pulse', panelSurfaceClass)} />}>
+              <Sidebar
+                diagram={activeDiagram}
+                mode={mode}
+                diagramConfig={diagramConfig}
+                renderError={activeDiagram?.render?.error ?? null}
+                autoFormat={autoFormat}
+                editorLigatures={editorLigatures}
+                onFocusReady={handleFocusReady}
+                onInsertReady={handleInsertReady}
+                onAltClick={(ref) => {
+                  dispatch({ type: 'ui/set-docs-open', open: true })
+                  setTimeout(() => referenceDocsRef.current?.scrollToElement(ref.diagramType, ref.elementName), 50)
+                }}
+                onChange={updateCode}
+                mermaidTheme={mermaidTheme}
+                onConfigChange={setDiagramConfig}
+                onMermaidThemeChange={(theme) => setMermaidTheme(theme as MermaidTheme)}
+              />
+            </Suspense>
           </ErrorBoundary>
         </div>
       )}
@@ -315,12 +332,14 @@ export default function App() {
           style={isMobile ? { height: '75vh', maxHeight: '75vh' } : undefined}
         >
           <ErrorBoundary label="Reference docs failed to load">
-            <ReferenceDocs
-              ref={referenceDocsRef}
-              currentCode={activeDiagram?.code ?? ''}
-              mode={mode}
-              onInsert={insertText}
-            />
+            <Suspense fallback={<div className={cn('h-full w-full animate-pulse', mode === 'dark' ? 'bg-white/5' : 'bg-black/3')} />}>
+              <ReferenceDocs
+                ref={referenceDocsRef}
+                currentCode={activeDiagram?.code ?? ''}
+                mode={mode}
+                onInsert={insertText}
+              />
+            </Suspense>
           </ErrorBoundary>
         </div>
       )}
@@ -337,7 +356,7 @@ export default function App() {
         >
           <Button
             data-testid="add-diagram-button"
-            onClick={() => { posthog.capture('diagram_created', { source: 'toolbar' }); addDiagram() }}
+            onClick={() => { captureEvent('diagram_created', { source: 'toolbar' }); addDiagram() }}
             variant="outline"
             size="default"
             className={cn(

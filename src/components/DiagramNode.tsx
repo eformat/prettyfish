@@ -78,7 +78,6 @@ export const DiagramNode = memo(function DiagramNode({
     }
   }, [diagram.description])
 
-  // Derived display values calculated during render (rule 5.1)
   const isHighlighted = isActive || selected
   const svgWidth = diagram.render?.svgWidth ?? null
   const svgHeight = diagram.render?.svgHeight ?? null

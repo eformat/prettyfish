@@ -128,13 +128,11 @@ function InnerCanvas({
     setViewport({ x, y, zoom }, { duration: 300 })
   }, [page.id, page.diagrams, setViewport])
 
-  // Register the zoom-to-diagram function with the parent (rule 5.7 — narrow deps)
   useEffect(() => {
     onRegisterFocus(focusDiagramInViewport)
   }, [focusDiagramInViewport, onRegisterFocus])
 
   // Stable callback refs — update synchronously to avoid stale closures
-  // without adding callbacks to the node-sync effect deps (rule 8.3)
   const selectRef = useRef(onSelectDiagram)
   const renameRef = useRef(onRenameDiagram)
   const updateDescRef = useRef(onUpdateDiagramDescription)

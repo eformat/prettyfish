@@ -348,7 +348,6 @@ export const ReferenceDocs = forwardRef<ReferenceDocsHandle, ReferenceDocsProps>
     const [searchQuery, setSearchQuery] = useState('')
     const elementRefs = useRef<Record<string, HTMLDivElement | null>>({})
 
-    // Auto-sync selected type when code changes diagram type (rule 5.1 — derive during render)
     // Using state-during-render pattern (React docs approved for derived sync)
     const [lastAutoType, setLastAutoType] = useState<string>(detectedType)
     if (detectedType !== lastAutoType) {
@@ -399,7 +398,6 @@ export const ReferenceDocs = forwardRef<ReferenceDocsHandle, ReferenceDocsProps>
     const { border } = useTheme(isDark)
     const bg = isDark ? 'oklch(0.16 0.015 260)' : '#ffffff'
 
-    // Filter elements by search query — memoized to avoid re-filtering on every render (rule 5.6)
     const q = searchQuery.trim().toLowerCase()
     const filteredElements = useMemo(() => {
       if (!q) return docRef.elements

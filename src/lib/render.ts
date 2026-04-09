@@ -1,4 +1,3 @@
-import mermaid from 'mermaid'
 import type {
   Diagram,
   DiagramConfig,
@@ -8,6 +7,16 @@ import type {
 } from '../types'
 import { BUILTIN_THEMES, resolveConfig } from '../types'
 import { CUSTOM_THEME_PRESETS } from './themePresets'
+
+type MermaidModule = typeof import('mermaid')
+type MermaidApi = MermaidModule['default']
+
+let mermaidPromise: Promise<MermaidApi> | null = null
+
+async function getMermaid(): Promise<MermaidApi> {
+  mermaidPromise ??= import('mermaid').then((module) => module.default)
+  return mermaidPromise
+}
 
 // Using crypto.randomUUID avoids a mutable module-level counter that leaks across test runs
 function newRenderId(): string {
@@ -110,6 +119,7 @@ export async function renderDiagram(diagram: Diagram): Promise<MermaidRenderResu
     return { svg: '', error: null, svgWidth: null, svgHeight: null }
   }
 
+  const mermaid = await getMermaid()
   const { theme, diagramConfig } = resolveDiagramRenderInputs(diagram)
   const fontSizeStr = `${diagramConfig.fontSize}px`
   const isCustom = !BUILTIN_THEMES.has(theme)
