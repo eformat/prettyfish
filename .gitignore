@@ -38,4 +38,5 @@ tests/screenshots/
 tmp_chaos_logs/
 trace.json
 trace-*.json
+perf-artifacts/
 .env

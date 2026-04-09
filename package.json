@@ -30,7 +30,8 @@
     "test:coverage": "vitest run --coverage",
     "e2e": "playwright test",
     "e2e:headed": "playwright test --headed",
-    "e2e:report": "playwright show-report"
+    "e2e:report": "playwright show-report",
+    "perf:workspace": "node scripts/measure-large-workspace.mjs"
   },
   "dependencies": {
     "@base-ui/react": "^1.3.0",
