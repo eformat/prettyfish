@@ -97,7 +97,8 @@ function InnerCanvas({
   const pageFocusTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const { setViewport } = useReactFlow()
 
-  const focusDiagramViewport = useCallback((diagram: Diagram, options?: { duration?: number }, _retryCount = 0) => {
+  const focusDiagramViewportRef = useRef<(diagram: Diagram, options?: { duration?: number }, retryCount?: number) => void>(null!)
+  const focusDiagramViewport = useCallback((diagram: Diagram, options?: { duration?: number }, retryCount = 0) => {
     const container = document.querySelector('.react-flow')
     if (!container) return
     const rect = container.getBoundingClientRect()
@@ -113,8 +114,8 @@ function InnerCanvas({
     const nodeEl = document.querySelector(`[data-diagram-id="${escapedId}"]`) as HTMLElement | null
 
     // If the node hasn't rendered yet, retry up to 3 times with 80ms gaps.
-    if (!nodeEl && _retryCount < 3) {
-      setTimeout(() => focusDiagramViewport(diagram, options, _retryCount + 1), 80)
+    if (!nodeEl && retryCount < 3) {
+      setTimeout(() => focusDiagramViewportRef.current(diagram, options, retryCount + 1), 80)
       return
     }
 
@@ -136,6 +137,7 @@ function InnerCanvas({
 
     setViewport({ x, y, zoom }, options?.duration ? { duration: options.duration } : undefined)
   }, [setViewport])
+  useLayoutEffect(() => { focusDiagramViewportRef.current = focusDiagramViewport }, [focusDiagramViewport])
 
   const focusDiagramInViewport = useCallback((id: string) => {
     pfDebug('canvas', 'focusDiagramInViewport requested', { pageId: page.id, diagramId: id })
@@ -216,6 +218,8 @@ function InnerCanvas({
 
   // Track whether we've done the initial focus for this canvas mount
   const hasInitialFocusedRef = useRef(false)
+  // Track the SVG of the last diagram we focused on, so we re-focus when it renders for the first time
+  const lastFocusedSvgRef = useRef<string | null>(null)
 
   // Gently focus the active diagram when switching pages, and also on initial
   // mount so our sidebar-aware zoom is used instead of ReactFlow's fitView.
@@ -230,6 +234,7 @@ function InnerCanvas({
 
     if (isPageSwitch) {
       prevPageId.current = page.id
+      lastFocusedSvgRef.current = null // reset so we re-focus when new page's diagram renders
     }
 
     if ((isPageSwitch || isInitialMount) && page.activeDiagramId) {
@@ -238,6 +243,7 @@ function InnerCanvas({
         pfDebug('canvas', isInitialMount ? 'initial mount focus fire' : 'page switch focus fire', { pageId: page.id, diagramId: page.activeDiagramId })
         const ab = page.diagrams.find(a => a.id === page.activeDiagramId)
         if (!ab) return
+        lastFocusedSvgRef.current = ab.render?.svg ?? null
         focusDiagramViewport(ab)
       }, 50)
     }
@@ -249,6 +255,19 @@ function InnerCanvas({
       }
     }
   }, [focusDiagramViewport, page.id, page.activeDiagramId, page.diagrams, focusDiagramInViewport])
+
+  // Re-focus when the active diagram's SVG renders for the first time (was empty before)
+  const activeDiagram = page.diagrams.find(d => d.id === page.activeDiagramId)
+  const activeSvg = activeDiagram?.render?.svg ?? null
+  useEffect(() => {
+    if (!activeDiagram || !activeSvg) return
+    // Only refocus if this is the first render (going from no SVG to having one)
+    if (lastFocusedSvgRef.current === null && activeSvg) {
+      lastFocusedSvgRef.current = activeSvg
+      pfDebug('canvas', 'first svg render focus', { diagramId: activeDiagram.id })
+      focusDiagramViewport(activeDiagram)
+    }
+  }, [activeSvg, activeDiagram, focusDiagramViewport])
 
   // Handle node drag end → persist position
   const handleNodesChange: OnNodesChange = useCallback(
