@@ -17,14 +17,20 @@ test.describe('Mobile shell', () => {
     await app.mobile.shouldKeepCanvasClear()
   })
 
-  test('keeps the mobile canvas clear when the collapsed editor is visible', async ({ page }) => {
+  test('opens the editor when a diagram is tapped on mobile', async ({ page }) => {
     const app = createApp(page)
 
     await app.startFlowchartDiagram()
+    // After creating a diagram the editor is open
+    await expect(app.editor.root).toBeVisible()
+
+    // Close the editor by toggling the sidebar
+    await page.getByTestId('toggle-sidebar-button').click()
     await app.mobile.shouldKeepCanvasClear()
 
+    // Tapping a diagram should re-open the editor
     await app.canvas.selectDiagram(1)
-    await app.mobile.shouldKeepCanvasClear()
+    await expect(app.editor.root).toBeVisible()
   })
 
   test('shows the important compact controls on mobile', async ({ page }) => {

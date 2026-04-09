@@ -25,7 +25,7 @@ export interface UseDiagramActionsOptions {
 }
 
 export interface DiagramActions {
-  addDiagram: () => string
+  addDiagram: (width?: number) => string
   selectDiagram: (diagramId: string) => void
   focusDiagram: (diagramId: string) => void
   renameDiagram: (diagramId: string, name: string) => void
@@ -49,14 +49,14 @@ export function useDiagramActions({
   pushUndoSnapshot,
   focusDiagramRef,
 }: UseDiagramActionsOptions): DiagramActions {
-  const addDiagram = useCallback((): string => {
+  const addDiagram = useCallback((width?: number): string => {
     pushUndoSnapshot()
     const position = nextDiagramPosition(activePage.diagrams)
     // Inherit the active diagram's theme so new diagrams feel consistent.
     const inheritedTheme = activeDiagram?.mermaidTheme ?? 'blueprint'
-    const diagram = queueDiagramRender(
-      createDiagram(`Diagram ${activePage.diagrams.length + 1}`, '', position, inheritedTheme),
-    )
+    const newDiagram = createDiagram(`Diagram ${activePage.diagrams.length + 1}`, '', position, inheritedTheme)
+    if (width !== undefined) newDiagram.width = width
+    const diagram = queueDiagramRender(newDiagram)
     dispatch({ type: 'diagram/add', pageId: activePage.id, diagram })
     setTimeout(() => focusDiagramRef.current?.(diagram.id), 50)
     return diagram.id

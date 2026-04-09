@@ -228,10 +228,13 @@ export default function App() {
 
   const handleSelectDiagram = useCallback((diagramId: string) => {
     selectDiagram(diagramId)
-    if (!isMobile || !sidebarOpen) return
+    if (!isMobile) return
+    // On mobile, tapping a diagram opens the sidebar so the user can edit it.
+    dispatch({ type: 'ui/set-sidebar-open', open: true })
     const diagram = activePage.diagrams.find((candidate) => candidate.id === diagramId)
-    setMobileSidebarCollapsed(Boolean(diagram?.code?.trim()))
-  }, [activePage.diagrams, isMobile, selectDiagram, sidebarOpen])
+    // Always expand the editor so user can see/edit the diagram
+    setMobileSidebarCollapsed(false)
+  }, [activePage.diagrams, dispatch, isMobile, selectDiagram])
 
   const handleToggleSidebar = useCallback(() => {
     const nextOpen = !sidebarOpen
@@ -473,14 +476,14 @@ export default function App() {
           <div
             data-testid={contextMenu.type === 'diagram' ? 'diagram-context-menu' : 'canvas-context-menu'}
             className={cn(
-              'absolute z-50 min-w-44 rounded-xl border p-1.5 shadow-xl',
+              'absolute z-50 min-w-[160px] max-w-[200px] rounded-xl border p-1 shadow-xl',
               mode === 'dark'
                 ? 'bg-[oklch(0.16_0.015_260)]/98 border-white/10 text-zinc-100'
                 : 'bg-white/98 border-black/8 text-zinc-800',
             )}
             style={{
               // Clamp to screen so menu never clips off right or bottom edge
-              left: Math.min(contextMenu.x, window.innerWidth - 192),
+              left: Math.min(contextMenu.x, window.innerWidth - 210),
               top: Math.min(contextMenu.y, window.innerHeight - 180),
             }}
             onMouseDown={(event) => event.stopPropagation()}
