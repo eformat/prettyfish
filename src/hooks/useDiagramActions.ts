@@ -52,13 +52,15 @@ export function useDiagramActions({
   const addDiagram = useCallback((): string => {
     pushUndoSnapshot()
     const position = nextDiagramPosition(activePage.diagrams)
+    // Inherit the active diagram's theme so new diagrams feel consistent.
+    const inheritedTheme = activeDiagram?.mermaidTheme ?? 'blueprint'
     const diagram = queueDiagramRender(
-      createDiagram(`Diagram ${activePage.diagrams.length + 1}`, '', position),
+      createDiagram(`Diagram ${activePage.diagrams.length + 1}`, '', position, inheritedTheme),
     )
     dispatch({ type: 'diagram/add', pageId: activePage.id, diagram })
     setTimeout(() => focusDiagramRef.current?.(diagram.id), 50)
     return diagram.id
-  }, [activePage, dispatch, focusDiagramRef, pushUndoSnapshot])
+  }, [activeDiagram, activePage, dispatch, focusDiagramRef, pushUndoSnapshot])
 
   const selectDiagram = useCallback((diagramId: string) => {
     dispatch({ type: 'diagram/select', pageId: activePage.id, diagramId })

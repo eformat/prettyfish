@@ -3,6 +3,7 @@ import { Button } from '@/components/ui/button'
 import {
   chromePillClass,
   chromePopoverClass,
+  chromeGlassPanelClass,
   chromeMenuItemClass,
   chromeDividerClass,
   chromeStatusClass,
@@ -41,16 +42,25 @@ import { ExportPopover } from '@/components/app/ExportPopover'
 import type { AppMode, AppState, MermaidTheme, DiagramPage } from '@/types'
 import { MERMAID_THEMES } from '@/types'
 import { captureEvent } from '@/lib/analytics'
-import { CUSTOM_THEME_PRESETS } from '@/lib/themePresets'
+import { ACTIVE_THEME_PRESETS } from '@/lib/themePresets'
 
 const THEME_SWATCHES: Record<string, [string, string, string]> = {
+  // Built-in themes
   default: ['#4f46e5', '#ede9fe', '#999'],
   neutral: ['#666', '#e5e7eb', '#bbb'],
   dark: ['#cdd5e0', '#1e2a3a', '#81909f'],
   forest: ['#157520', '#d4edda', '#3d9e42'],
   base: ['#4f46e5', '#e8e6ff', '#888'],
+  // Custom themes — hand-picked to be clearly visible (the raw theme colors are too light)
+  wireframe: ['#555555', '#aaaaaa', '#cccccc'],
+  corporate: ['#3b82f6', '#10b981', '#64b8e8'],
+  blueprint: ['#1a4a9a', '#3b6fd4', '#93b4e8'],
+  newsprint: ['#4a4540', '#8a7e6e', '#c8bfb0'],
+  rosepine: ['#907aa9', '#d7827e', '#f2e9e1'],
 }
-for (const [key, preset] of Object.entries(CUSTOM_THEME_PRESETS)) {
+// For any other active presets not manually specified above, fall back to theme variables
+for (const [key, preset] of Object.entries(ACTIVE_THEME_PRESETS)) {
+  if (key in THEME_SWATCHES) continue
   const tv = preset.themeVariables
   const primary = tv.primaryColor ?? '#4f46e5'
   const secondary = tv.secondaryColor ?? tv.mainBkg as string ?? '#eee'
@@ -575,10 +585,10 @@ function ThemeDropdown({ value, onChange, isDark }: { value: MermaidTheme; onCha
         <div
           data-testid="theme-dropdown-list"
           className={cn(
-          'absolute top-full left-0 mt-2 z-50 min-w-[190px] overflow-hidden max-h-[70vh] overflow-y-auto',
-          chromePopoverClass(),
-        )} style={{ boxShadow: isDark ? '0 8px 24px rgba(0,0,0,0.5)' : '0 8px 24px rgba(0,0,0,0.12)' }}>
-          <div className="py-1">
+          'absolute top-full left-0 mt-2 z-50 min-w-[190px] overflow-hidden',
+          chromeGlassPanelClass(isDark ? 'dark' : 'light'),
+        )}>
+          <div className="py-1 max-h-[70vh] overflow-y-auto">
             {MERMAID_THEMES.map((t, idx) => {
               const sw = THEME_SWATCHES[t.value]
               const active = t.value === value

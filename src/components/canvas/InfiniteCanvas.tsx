@@ -102,19 +102,25 @@ function InnerCanvas({
     if (!container) return
     const rect = container.getBoundingClientRect()
 
-    const sidebarWidth = document.querySelector('[data-sidebar-panel]')
-      ? Math.min(480, rect.width * 0.35)
-      : 0
+    // Read the actual sidebar element width instead of estimating, so the
+    // viewport centering is accurate across all device sizes.
+    const sidebarEl = document.querySelector('[data-sidebar-panel]') as HTMLElement | null
+    const sidebarWidth = sidebarEl ? sidebarEl.getBoundingClientRect().width : 0
     const availableWidth = rect.width - sidebarWidth
     const availableHeight = rect.height
 
     const escapedId = typeof CSS !== 'undefined' && 'escape' in CSS ? CSS.escape(diagram.id) : diagram.id
     const nodeEl = document.querySelector(`[data-diagram-id="${escapedId}"]`) as HTMLElement | null
     const diagramHeight = nodeEl?.offsetHeight ?? 480
-    const zoom = Math.min(1, Math.min(
-      (availableWidth * 0.8) / diagram.width,
-      (availableHeight * 0.8) / diagramHeight,
-    ))
+
+    // Use 0.85 padding factor so diagrams have comfortable breathing room.
+    // Do NOT cap at 1.0 — on small screens the diagram may need to be zoomed
+    // out below 100%, and on large screens with a small diagram, zooming in
+    // slightly (up to ~1.2×) gives a better initial view.
+    const zoom = Math.min(1.2, Math.max(0.1, Math.min(
+      (availableWidth * 0.85) / diagram.width,
+      (availableHeight * 0.85) / diagramHeight,
+    )))
 
     const centerX = sidebarWidth + availableWidth / 2
     const centerY = availableHeight / 2
@@ -201,23 +207,32 @@ function InnerCanvas({
     })
   }, [buildNodes, page.id, setNodes])
 
-  // Gently focus the active diagram when switching pages
+  // Track whether we've done the initial focus for this canvas mount
+  const hasInitialFocusedRef = useRef(false)
+
+  // Gently focus the active diagram when switching pages, and also on initial
+  // mount so our sidebar-aware zoom is used instead of ReactFlow's fitView.
   useEffect(() => {
     if (pageFocusTimerRef.current) {
       clearTimeout(pageFocusTimerRef.current)
       pageFocusTimerRef.current = null
     }
 
-    if (prevPageId.current !== page.id) {
+    const isPageSwitch = prevPageId.current !== page.id
+    const isInitialMount = !hasInitialFocusedRef.current
+
+    if (isPageSwitch) {
       prevPageId.current = page.id
-      if (page.activeDiagramId) {
-        pageFocusTimerRef.current = setTimeout(() => {
-          pfDebug('canvas', 'page switch focus fire', { pageId: page.id, diagramId: page.activeDiagramId })
-          const ab = page.diagrams.find(a => a.id === page.activeDiagramId)
-          if (!ab) return
-          focusDiagramViewport(ab)
-        }, 50)
-      }
+    }
+
+    if ((isPageSwitch || isInitialMount) && page.activeDiagramId) {
+      hasInitialFocusedRef.current = true
+      pageFocusTimerRef.current = setTimeout(() => {
+        pfDebug('canvas', isInitialMount ? 'initial mount focus fire' : 'page switch focus fire', { pageId: page.id, diagramId: page.activeDiagramId })
+        const ab = page.diagrams.find(a => a.id === page.activeDiagramId)
+        if (!ab) return
+        focusDiagramViewport(ab)
+      }, 50)
     }
 
     return () => {
@@ -292,8 +307,6 @@ function InnerCanvas({
       onNodesChange={handleNodesChange}
       onPaneClick={handlePaneClick}
       onPaneContextMenu={handlePaneContextMenu}
-      fitView
-      fitViewOptions={{ padding: 0.15 }}
       minZoom={0.1}
       maxZoom={2.5}
       snapToGrid

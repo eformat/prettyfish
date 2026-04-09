@@ -195,7 +195,7 @@ export function ConfigPanel({ config, code, onChange, mermaidTheme, onMermaidThe
           <div className="flex items-center gap-3">
             <Slider min={10} max={24} step={1} value={[config.fontSize]}
               onValueChange={(vals) => set('fontSize', sliderVal(vals))} className="flex-1" />
-            <span className="text-xs font-mono text-muted-foreground w-8 text-right tabular-nums">{config.fontSize}px</span>
+            <span className="text-xs font-mono text-foreground/55 w-8 text-right tabular-nums">{config.fontSize}px</span>
           </div>
         </Row>
       </Section>
@@ -276,7 +276,7 @@ export function ConfigPanel({ config, code, onChange, mermaidTheme, onMermaidThe
                 onCheckedChange={(v) => setSequence('showSequenceNumbers', v)} />
             </div>
             <div className="flex items-center justify-between">
-              <Label className="text-xs text-muted-foreground font-medium">Mirror Actors</Label>
+              <Label className="text-xs text-foreground/70 font-medium">Mirror Actors</Label>
               <Switch checked={config.sequence.mirrorActors}
                 onCheckedChange={(v) => setSequence('mirrorActors', v)} />
             </div>
@@ -325,7 +325,7 @@ export function ConfigPanel({ config, code, onChange, mermaidTheme, onMermaidThe
         <>
           <Divider />
           <Section title={diagramType === 'classDiagram' ? 'Class Diagram' : 'ER Diagram'}>
-            <p className="text-xs text-muted-foreground leading-relaxed">
+            <p className="text-xs text-foreground/60 leading-relaxed">
               Layout is controlled by the diagram syntax. Global settings above still apply.
             </p>
           </Section>

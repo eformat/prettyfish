@@ -1,6 +1,6 @@
 export type AppMode = 'light' | 'dark'
 export type MermaidBuiltinTheme = 'default' | 'neutral' | 'dark' | 'forest' | 'base'
-export type MermaidTheme = MermaidBuiltinTheme | 'wireframe' | 'corporate' | 'amethyst' | 'neon' | 'blueprint' | 'newsprint' | 'dataviz' | 'evergreen'
+export type MermaidTheme = MermaidBuiltinTheme | 'wireframe' | 'corporate' | 'amethyst' | 'neon' | 'blueprint' | 'newsprint' | 'dataviz' | 'evergreen' | 'rosepine' | 'bauhaus' | 'terracotta' | 'midnight' | 'ocean'
 
 export type DiagramConfigOverrides = {
   [K in keyof DiagramConfig]?: DiagramConfig[K] extends object ? Partial<DiagramConfig[K]> : DiagramConfig[K]
@@ -78,9 +78,19 @@ export const MERMAID_THEMES: { value: MermaidTheme; label: string; group: 'built
   { value: 'base', label: 'Base', group: 'builtin' },
   { value: 'wireframe', label: 'Wireframe', group: 'custom' },
   { value: 'corporate', label: 'Corporate', group: 'custom' },
-  { value: 'amethyst', label: 'Amethyst', group: 'custom' },
-  { value: 'neon', label: 'Neon', group: 'custom' },
   { value: 'blueprint', label: 'Blueprint', group: 'custom' },
+  { value: 'newsprint', label: 'Newsprint', group: 'custom' },
+  { value: 'rosepine', label: 'Rosé Pine', group: 'custom' },
+  // The following themes are disabled and hidden from the UI.
+  // They remain in MERMAID_THEMES only for rendering backwards-compatible saved documents.
+  // { value: 'amethyst', label: 'Amethyst', group: 'custom' },
+  // { value: 'neon', label: 'Neon', group: 'custom' },
+  // { value: 'dataviz', label: 'DataViz', group: 'custom' },
+  // { value: 'evergreen', label: 'Evergreen', group: 'custom' },
+  // { value: 'bauhaus', label: 'Bauhaus', group: 'custom' },
+  // { value: 'terracotta', label: 'Terracotta', group: 'custom' },
+  // { value: 'midnight', label: 'Midnight', group: 'custom' },
+  // { value: 'ocean', label: 'Ocean', group: 'custom' },
 ]
 
 export const BUILTIN_THEMES = new Set<string>(['default', 'neutral', 'dark', 'forest', 'base'])
@@ -116,6 +126,7 @@ export function createDiagram(
   name: string,
   code: string = DEFAULT_DIAGRAM,
   position?: { x: number; y: number },
+  mermaidTheme: MermaidTheme = 'blueprint',
 ): Diagram {
   return {
     id: crypto.randomUUID(),
@@ -124,7 +135,7 @@ export function createDiagram(
     x: position?.x ?? 0,
     y: position?.y ?? 0,
     width: ARTBOARD_DEFAULT_WIDTH,
-    mermaidTheme: 'blueprint',
+    mermaidTheme,
     configOverrides: {},
   }
 }

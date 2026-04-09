@@ -17,8 +17,18 @@ function toPreset(def: ThemePresetDef): ThemePreset {
   }
 }
 
+/** All theme presets, including disabled ones. Used for rendering saved documents that may reference a disabled theme. */
 export const CUSTOM_THEME_PRESETS: Record<string, ThemePreset> = Object.fromEntries(
   Object.entries(THEME_PRESET_DEFS).map(([key, def]) => [key, toPreset(def)]),
 )
 
 export const CUSTOM_THEME_IDS = Object.keys(CUSTOM_THEME_PRESETS) as (keyof typeof CUSTOM_THEME_PRESETS)[]
+
+/** Active (non-disabled) theme presets — used in the UI dropdown and theme selection. */
+export const ACTIVE_THEME_PRESETS: Record<string, ThemePreset> = Object.fromEntries(
+  Object.entries(THEME_PRESET_DEFS)
+    .filter(([, def]) => !def.disabled)
+    .map(([key, def]) => [key, toPreset(def)]),
+)
+
+export const ACTIVE_THEME_IDS = Object.keys(ACTIVE_THEME_PRESETS) as (keyof typeof ACTIVE_THEME_PRESETS)[]
