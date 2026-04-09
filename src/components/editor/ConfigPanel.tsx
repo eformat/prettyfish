@@ -64,7 +64,10 @@ const CURVES: { value: FlowchartCurve; label: string; path: string; dots?: strin
 // or from the system. Each has a googleFamily for font subsetting on export.
 const FONTS: { value: string; label: string; preview: string; googleFamily?: string }[] = [
   { value: '"DM Sans", system-ui, sans-serif', label: 'DM Sans', preview: 'DM Sans', googleFamily: 'DM+Sans' },
+  { value: '"Source Sans 3", "Segoe UI", sans-serif', label: 'Source Sans 3', preview: 'Source Sans 3', googleFamily: 'Source+Sans+3' },
   { value: '"Instrument Serif", Georgia, serif', label: 'Instrument Serif', preview: 'Instrument Serif', googleFamily: 'Instrument+Serif' },
+  { value: '"Lora", "Georgia", serif', label: 'Lora', preview: 'Lora', googleFamily: 'Lora' },
+  { value: '"Fraunces", "Georgia", serif', label: 'Fraunces', preview: 'Fraunces', googleFamily: 'Fraunces' },
   { value: '"JetBrains Mono", monospace', label: 'JetBrains Mono', preview: 'JetBrains Mono', googleFamily: 'JetBrains+Mono' },
   { value: 'system-ui, -apple-system, sans-serif', label: 'System UI', preview: 'System' },
   { value: 'Georgia, "Times New Roman", serif', label: 'Georgia', preview: 'Georgia' },

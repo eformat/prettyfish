@@ -5,7 +5,7 @@ const rosepine: ThemePresetDef = {
   description: 'Warm muted pastels with rose, gold, and pine accents',
   configOverrides: {
     look: 'classic' as const,
-    fontFamily: '"DM Sans", system-ui, sans-serif',
+    fontFamily: '"Fraunces", "Georgia", serif',
     fontSize: 14,
     flowchart: { curve: 'cardinal' as const, nodeSpacing: 50, rankSpacing: 54, padding: 16, diagramPadding: 10 },
     sequence: { showSequenceNumbers: false, mirrorActors: false, actorMargin: 50, messageMargin: 34, width: 148 },
@@ -26,7 +26,7 @@ const rosepine: ThemePresetDef = {
       tertiaryBorderColor: '#9893a5',
       lineColor: '#797593',
       titleColor: '#575279',
-      fontFamily: '"DM Sans", system-ui, sans-serif',
+      fontFamily: '"Fraunces", "Georgia", serif',
     },
     flowchart: {
       mainBkg: '#fffaf3',

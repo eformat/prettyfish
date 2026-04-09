@@ -5,7 +5,7 @@ const newsprint: ThemePresetDef = {
   description: 'Editorial serif palette inspired by quality broadsheets',
   configOverrides: {
     look: 'classic' as const,
-    fontFamily: '"Playfair Display", "Georgia", serif',
+    fontFamily: '"Lora", "Georgia", serif',
     fontSize: 15,
     flowchart: { curve: 'monotoneX' as const, nodeSpacing: 55, rankSpacing: 58, padding: 18, diagramPadding: 12 },
     sequence: { showSequenceNumbers: false, mirrorActors: false, actorMargin: 55, messageMargin: 36, width: 155 },
@@ -26,7 +26,7 @@ const newsprint: ThemePresetDef = {
       tertiaryBorderColor: '#b0a898',
       lineColor: '#4a4540',
       titleColor: '#1a1a1a',
-      fontFamily: '"Playfair Display", "Georgia", serif',
+      fontFamily: '"Lora", "Georgia", serif',
     },
     flowchart: {
       mainBkg: '#f0ece4',
