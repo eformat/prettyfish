@@ -103,10 +103,14 @@ function InnerCanvas({
     if (!container) return
     const rect = container.getBoundingClientRect()
 
-    // Read the actual sidebar element width instead of estimating, so the
-    // viewport centering is accurate across all device sizes.
+    // On mobile the sidebar is a full-width bottom sheet (not a left panel),
+    // so it doesn't reduce the available canvas width.
+    // On desktop it's a fixed-width left panel — read its actual DOM width.
     const sidebarEl = document.querySelector('[data-sidebar-panel]') as HTMLElement | null
-    const sidebarWidth = sidebarEl ? sidebarEl.getBoundingClientRect().width : 0
+    const sidebarIsBottomSheet = sidebarEl
+      ? sidebarEl.style.height !== '' // bottom-sheet has explicit height set, left panel has explicit width
+      : false
+    const sidebarWidth = (sidebarEl && !sidebarIsBottomSheet) ? sidebarEl.getBoundingClientRect().width : 0
     const availableWidth = rect.width - sidebarWidth
     const availableHeight = rect.height
 
@@ -264,7 +268,8 @@ function InnerCanvas({
     }
   }, [focusDiagramViewport, page.id, page.activeDiagramId, page.diagrams, focusDiagramInViewport])
 
-  // Re-focus when the active diagram's SVG renders for the first time (was empty before)
+  // Re-focus when the active diagram's SVG renders for the first time (was empty before).
+  // This fires after template selection when the SVG goes from null → rendered.
   const activeDiagram = page.diagrams.find(d => d.id === page.activeDiagramId)
   const activeSvg = activeDiagram?.render?.svg ?? null
   useEffect(() => {
@@ -273,7 +278,8 @@ function InnerCanvas({
     if (lastFocusedSvgRef.current === null && activeSvg) {
       lastFocusedSvgRef.current = activeSvg
       pfDebug('canvas', 'first svg render focus', { diagramId: activeDiagram.id })
-      focusDiagramViewport(activeDiagram)
+      // Small delay to let React Flow apply the new node dimensions first
+      setTimeout(() => focusDiagramViewport(activeDiagram), 100)
     }
   }, [activeSvg, activeDiagram, focusDiagramViewport])
 
