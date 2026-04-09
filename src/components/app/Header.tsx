@@ -575,7 +575,7 @@ function ThemeDropdown({ value, onChange, isDark }: { value: MermaidTheme; onCha
         <div
           data-testid="theme-dropdown-list"
           className={cn(
-          'absolute top-full left-0 mt-2 z-50 min-w-[190px] overflow-hidden',
+          'absolute top-full left-0 mt-2 z-50 min-w-[190px] overflow-hidden max-h-[70vh] overflow-y-auto',
           chromePopoverClass(),
         )} style={{ boxShadow: isDark ? '0 8px 24px rgba(0,0,0,0.5)' : '0 8px 24px rgba(0,0,0,0.12)' }}>
           <div className="py-1">

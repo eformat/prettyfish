@@ -555,19 +555,31 @@ export class PrettyFishApp {
     await expect(this.page.getByTestId('app-root')).toBeVisible({ timeout: 15000 })
     await this.header.shouldBeVisible()
     await this.canvas.shouldBeVisible()
-    await this.page.waitForTimeout(300)
+    // Wait for the app to fully settle: on desktop the sidebar template gallery should be visible
+    // (fresh empty diagram with no code). On mobile the sidebar is hidden by default so we skip this.
+    const isMobile = await this.page.evaluate(() => window.innerWidth < 768)
+    if (!isMobile) {
+      await expect(this.templates.root).toBeVisible({ timeout: 10000 })
+    } else {
+      await this.page.waitForTimeout(300)
+    }
   }
 
   async startFlowchartDiagram() {
     const templateVisible = await this.templates.root.isVisible().catch(() => false)
     if (!templateVisible) {
+      // Ensure the sidebar is open so the template gallery can appear
       const toggleSidebar = this.page.getByTestId('toggle-sidebar-button')
       if (await toggleSidebar.isVisible().catch(() => false)) {
         await toggleSidebar.click()
       }
-      try {
-        await expect(this.templates.root).toBeVisible({ timeout: 5000 })
-      } catch {
+      // Wait for the template gallery to appear after sidebar opens
+      const templateAfterOpen = await expect(this.templates.root)
+        .toBeVisible({ timeout: 5000 })
+        .then(() => true)
+        .catch(() => false)
+      // If still not visible, an empty diagram slot doesn't exist yet — create one
+      if (!templateAfterOpen) {
         const desktopAddVisible = await this.canvas.addDiagramButton.isVisible().catch(() => false)
         const mobileAddVisible = await this.canvas.mobileAddDiagramButton.isVisible().catch(() => false)
         if (desktopAddVisible) {
