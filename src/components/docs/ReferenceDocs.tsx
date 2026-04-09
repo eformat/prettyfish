@@ -28,11 +28,11 @@ export interface ReferenceDocsHandle {
 function useTheme(isDark: boolean) {
   return {
     border:    isDark ? 'rgba(255,255,255,0.07)' : 'rgba(0,0,0,0.06)',
-    muted:     isDark ? 'text-zinc-400'          : 'text-zinc-500',
+    muted:     'text-zinc-500 dark:text-zinc-400',
     hoverBg:   isDark ? 'hover:bg-white/4'       : 'hover:bg-black/3',
-    codeBg:    isDark ? 'bg-white/5 text-zinc-300' : 'bg-black/4 text-zinc-700',
-    codeText:  isDark ? 'text-zinc-300'          : 'text-zinc-700',
-    keyword:   isDark ? 'text-sky-300'           : 'text-sky-700',
+    codeBg:    'bg-black/4 text-zinc-700 dark:bg-white/5 dark:text-zinc-300',
+    codeText:  'text-zinc-700 dark:text-zinc-300',
+    keyword:   'text-sky-700 dark:text-sky-300',
   }
 }
 
@@ -88,9 +88,7 @@ function RefTypePicker({ selectedType, isDark, onSelect }: RefTypePickerProps) {
                 'px-1.5 py-0.5 rounded text-[9px] font-medium cursor-pointer transition-colors',
                 isActive
                   ? 'bg-primary text-primary-foreground'
-                  : isDark
-                    ? 'bg-white/6 text-zinc-300 hover:bg-white/10 hover:text-white'
-                    : 'bg-black/5 text-zinc-600 hover:bg-black/8 hover:text-zinc-900',
+                  : 'bg-black/5 text-zinc-600 hover:bg-black/8 hover:text-zinc-900 dark:bg-white/6 dark:text-zinc-300 dark:hover:bg-white/10 dark:hover:text-white',
               )}
             >
               {TYPE_LABELS[key] ?? key}
@@ -172,8 +170,8 @@ function RefCodePreview({ code, isDark }: RefCodePreviewProps) {
                 className={cn(
                   'opacity-0 group-hover/line:opacity-100 transition-opacity shrink-0 p-0.5 rounded cursor-pointer',
                   isCopied
-                    ? isDark ? 'text-green-400' : 'text-green-600'
-                    : isDark ? 'text-zinc-500 hover:text-zinc-300' : 'text-zinc-400 hover:text-zinc-700',
+                    ? 'text-green-600 dark:text-green-400'
+                    : 'text-zinc-400 hover:text-zinc-700 dark:text-zinc-500 dark:hover:text-zinc-300',
                 )}
               >
                 {isCopied
@@ -214,10 +212,8 @@ function RefExampleCard({ label, code, isDark, isInserted, onInsert }: RefExampl
           className={cn(
             'flex items-center gap-0.5 text-[10px] font-medium px-1.5 py-0.5 rounded transition-colors cursor-pointer',
             isInserted
-              ? 'bg-green-500/15 text-green-600'
-              : isDark
-                ? 'text-zinc-400 hover:text-white hover:bg-white/8'
-                : 'text-zinc-500 hover:text-zinc-900 hover:bg-black/6',
+              ? 'bg-green-500/15 text-green-600 dark:text-green-400'
+              : 'text-zinc-500 hover:text-zinc-900 hover:bg-black/6 dark:text-zinc-400 dark:hover:text-white dark:hover:bg-white/8',
           )}
         >
           <ArrowElbowDownLeft className="w-2.5 h-2.5" />
@@ -428,8 +424,8 @@ export const ReferenceDocs = forwardRef<ReferenceDocsHandle, ReferenceDocsProps>
               className={cn(
                 'w-full px-2.5 py-1.5 rounded-md text-xs outline-none transition-colors border',
                 isDark
-                  ? 'bg-white/5 border-white/8 text-zinc-200 placeholder:text-zinc-600 focus:border-primary/40'
-                  : 'bg-black/3 border-black/8 text-zinc-800 placeholder:text-zinc-400 focus:border-primary/40',
+                  ? 'bg-white/5 border-white/8 text-zinc-200 placeholder:text-zinc-600 focus:border-primary/40 dark:bg-white/5 dark:border-white/8 dark:text-zinc-200 dark:placeholder:text-zinc-600'
+                  : 'bg-black/3 border-black/8 text-zinc-800 placeholder:text-zinc-400 focus:border-primary/40 dark:bg-white/5 dark:border-white/8 dark:text-zinc-200 dark:placeholder:text-zinc-600',
               )}
             />
           </div>

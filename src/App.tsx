@@ -167,16 +167,6 @@ export default function App() {
   }, [mode])
 
   useEffect(() => {
-    if (!isMobile) {
-      setMobileSidebarCollapsed(false)
-      return
-    }
-    if (sidebarOpen) {
-      setMobileSidebarCollapsed(Boolean(activeDiagram?.code?.trim()))
-    }
-  }, [isMobile, sidebarOpen, activeDiagram?.id, activeDiagram?.code, activePageId])
-
-  useEffect(() => {
     if (!contextMenu) return
 
     const handleKeyDown = (event: KeyboardEvent) => {
@@ -227,9 +217,46 @@ export default function App() {
 
   const handleCanvasContextMenuNewDiagram = useCallback(() => {
     captureEvent('diagram_created', { source: 'context_menu' })
-    addDiagram()
+    const nextDiagramId = addDiagram()
+    if (isMobile) {
+      setMobileSidebarCollapsed(false)
+      dispatch({ type: 'ui/set-sidebar-open', open: true })
+      selectDiagram(nextDiagramId)
+    }
     dispatch({ type: 'ui/set-context-menu', menu: null })
-  }, [addDiagram, dispatch])
+  }, [addDiagram, dispatch, isMobile, selectDiagram])
+
+  const handleSelectDiagram = useCallback((diagramId: string) => {
+    selectDiagram(diagramId)
+    if (!isMobile || !sidebarOpen) return
+    const diagram = activePage.diagrams.find((candidate) => candidate.id === diagramId)
+    setMobileSidebarCollapsed(Boolean(diagram?.code?.trim()))
+  }, [activePage.diagrams, isMobile, selectDiagram, sidebarOpen])
+
+  const handleToggleSidebar = useCallback(() => {
+    const nextOpen = !sidebarOpen
+    if (isMobile && nextOpen) {
+      setMobileSidebarCollapsed(Boolean(activeDiagram?.code?.trim()))
+    }
+    dispatch({ type: 'ui/toggle-sidebar' })
+  }, [activeDiagram?.code, dispatch, isMobile, sidebarOpen])
+
+  const handleAddDiagram = useCallback((source: 'toolbar' | 'mobile_fab') => {
+    captureEvent('diagram_created', { source })
+    const nextDiagramId = addDiagram()
+    if (isMobile) {
+      setMobileSidebarCollapsed(false)
+      dispatch({ type: 'ui/set-sidebar-open', open: true })
+      selectDiagram(nextDiagramId)
+    }
+  }, [addDiagram, dispatch, isMobile, selectDiagram])
+
+  const handleDiagramCodeChange = useCallback((value: string) => {
+    if (isMobile && sidebarOpen && !activeDiagram?.code?.trim() && value.trim()) {
+      setMobileSidebarCollapsed(true)
+    }
+    updateCode(value)
+  }, [activeDiagram?.code, isMobile, sidebarOpen, updateCode])
 
   return (
     <div data-testid="app-root" className="w-screen h-screen relative bg-background text-foreground overflow-hidden">
@@ -238,7 +265,7 @@ export default function App() {
           <InfiniteCanvas
             page={activePage}
             mode={mode}
-            onSelectDiagram={selectDiagram}
+            onSelectDiagram={handleSelectDiagram}
             onRenameDiagram={renameDiagram}
             onUpdateDiagramDescription={updateDiagramDescription}
             onDeleteDiagram={deleteDiagram}
@@ -273,7 +300,7 @@ export default function App() {
         onModeChange={(nextMode) => dispatch({ type: 'document/set-mode', mode: nextMode })}
         onMermaidThemeChange={setMermaidTheme}
         isMobile={isMobile}
-        onToggleSidebar={() => dispatch({ type: 'ui/toggle-sidebar' })}
+        onToggleSidebar={handleToggleSidebar}
         onToggleDocs={() => {
           dispatch({ type: 'ui/set-docs-open', open: !docsOpen })
           if (!docsOpen && isMobile) {
@@ -319,7 +346,7 @@ export default function App() {
               <Sidebar
                 diagram={activeDiagram}
                 collapsed={isMobile ? mobileSidebarCollapsed : undefined}
-                onCollapsedChange={isMobile ? setMobileSidebarCollapsed : undefined}
+              onCollapsedChange={isMobile ? setMobileSidebarCollapsed : undefined}
                 mode={mode}
                 diagramConfig={diagramConfig}
                 renderError={activeDiagram?.render?.error ?? null}
@@ -331,7 +358,7 @@ export default function App() {
                   dispatch({ type: 'ui/set-docs-open', open: true })
                   setTimeout(() => referenceDocsRef.current?.scrollToElement(ref.diagramType, ref.elementName), 50)
                 }}
-                onChange={updateCode}
+                onChange={handleDiagramCodeChange}
                 mermaidTheme={mermaidTheme}
                 onConfigChange={setDiagramConfig}
                 onMermaidThemeChange={(theme) => setMermaidTheme(theme as MermaidTheme)}
@@ -380,7 +407,7 @@ export default function App() {
           <div className="pointer-events-auto flex items-center gap-2">
             <Button
               data-testid="add-diagram-button"
-              onClick={() => { captureEvent('diagram_created', { source: 'toolbar' }); addDiagram() }}
+              onClick={() => handleAddDiagram('toolbar')}
               variant="ghost"
               size="default"
               className={cn(
@@ -395,7 +422,7 @@ export default function App() {
             <DiagramDropdown
               diagrams={activePage.diagrams}
               activeDiagramId={activePage.activeDiagramId}
-              onSelectDiagram={selectDiagram}
+              onSelectDiagram={handleSelectDiagram}
               onFocusDiagram={focusDiagram}
               isDark={mode === 'dark'}
             />
@@ -409,7 +436,7 @@ export default function App() {
             data-testid="mobile-add-diagram-button"
             onClick={() => {
               captureEvent('diagram_created', { source: 'mobile_fab' })
-              addDiagram()
+              handleAddDiagram('mobile_fab')
             }}
             variant="ghost"
             size="default"
@@ -521,11 +548,8 @@ function DiagramDropdown({
         onClick={() => setOpen((current) => !current)}
         className={cn(
           chromeFloatingActionClass(isDark ? 'dark' : 'light'),
-          'flex items-center gap-1 h-8 max-w-36 px-2 rounded-lg text-xs font-medium cursor-pointer',
-          isDark
-            ? 'text-zinc-300'
-            : 'text-zinc-700',
-          open && (isDark ? 'bg-white/10 text-zinc-100 border-white/14' : 'bg-background/94 text-zinc-900 border-border'),
+          'flex items-center gap-1 h-8 max-w-36 px-2 rounded-lg text-xs font-medium cursor-pointer text-zinc-700 dark:text-zinc-300',
+          open && 'bg-background/94 text-zinc-900 border-border dark:bg-white/10 dark:text-zinc-100 dark:border-white/14',
         )}
       >
         <span className="truncate flex-1 text-left">

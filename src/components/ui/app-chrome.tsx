@@ -56,7 +56,7 @@ export function chromeFloatingActionClass(mode: ChromeMode): string {
   return cn(
     'rounded-xl border backdrop-blur-[6px] shadow-lg transition-[background-color,border-color,color,transform,box-shadow] active:scale-[0.985]',
     mode === 'dark'
-      ? 'bg-[oklch(0.16_0.015_260)]/70 border-white/10 text-zinc-100 hover:bg-[oklch(0.19_0.015_260)]/82 hover:border-white/16 hover:text-zinc-100 active:bg-[oklch(0.21_0.018_260)]/86'
+      ? 'bg-[oklch(0.16_0.015_260)]/70 border-white/10 text-foreground hover:bg-[oklch(0.19_0.015_260)]/82 hover:border-white/16 hover:text-foreground active:bg-[oklch(0.21_0.018_260)]/86'
       : 'bg-background/82 border-border text-foreground ring-1 ring-border/70 shadow-[0_8px_24px_rgba(0,0,0,0.08)] hover:bg-background hover:border-border hover:text-foreground active:bg-background/95',
   )
 }
@@ -67,7 +67,7 @@ export function chromeMenuItemClass(mode: ChromeMode, options?: { active?: boole
       'w-full flex items-center gap-2 px-2.5 py-2 rounded-lg text-xs text-left transition-colors',
       mode === 'dark'
         ? 'text-red-300 hover:bg-red-500/10'
-        : 'text-red-600 hover:bg-red-50',
+        : 'text-red-600 hover:bg-red-50 dark:text-red-300 dark:hover:bg-red-500/10',
     )
   }
 
@@ -83,15 +83,15 @@ export function chromeMenuItemClass(mode: ChromeMode, options?: { active?: boole
       'transition-colors',
       mode === 'dark'
         ? 'text-zinc-400 hover:text-zinc-100 hover:bg-white/6'
-        : 'text-zinc-500 hover:text-zinc-700 hover:bg-black/4',
+        : 'text-zinc-500 hover:text-zinc-700 hover:bg-black/4 dark:text-zinc-400 dark:hover:text-zinc-100 dark:hover:bg-white/6',
     )
   }
 
   return cn(
     'transition-colors',
     mode === 'dark'
-      ? 'text-zinc-100 hover:bg-white/6'
-      : 'text-zinc-700 hover:bg-black/4',
+      ? 'text-foreground hover:bg-white/6'
+      : 'text-zinc-700 hover:bg-black/4 dark:text-foreground dark:hover:bg-white/6',
   )
 }
 
