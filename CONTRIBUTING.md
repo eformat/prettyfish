@@ -42,6 +42,8 @@ npm run e2e
 npm run build
 ```
 
+`npm run e2e` includes the Playwright accessibility checks powered by Axe.
+
 ## Pull requests
 
 - Open an issue first for large features or architectural changes.

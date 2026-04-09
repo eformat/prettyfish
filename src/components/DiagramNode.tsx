@@ -144,6 +144,8 @@ export const DiagramNode = memo(function DiagramNode({
       >
         <input
           data-testid="diagram-name-input"
+          aria-label="Diagram name"
+          title="Diagram name"
           ref={nameInputRef}
           defaultValue={diagram.name}
           key={diagram.name}
@@ -177,6 +179,8 @@ export const DiagramNode = memo(function DiagramNode({
         <div style={{ padding: '0 10px 3px', height: 16, marginTop: 0, display: 'flex' }} className="nodrag">
           <input
             data-testid="diagram-description-input"
+            aria-label="Diagram description"
+            title="Diagram description"
             ref={descInputRef}
             defaultValue={diagram.description ?? ''}
             key={diagram.description ?? ''}

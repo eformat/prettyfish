@@ -14,7 +14,6 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog'
-import { Tooltip, TooltipTrigger, TooltipContent } from '@/components/ui/tooltip'
 import {
   SidebarSimple,
   CodeSimple,
@@ -32,6 +31,7 @@ import {
   PencilSimple,
   Trash,
   Heart,
+  GithubLogo,
 } from '@phosphor-icons/react'
 import { cn } from '@/lib/utils'
 import { copyShareUrl } from '../lib/share'
@@ -55,6 +55,8 @@ for (const [key, preset] of Object.entries(CUSTOM_THEME_PRESETS)) {
   const tertiary = tv.tertiaryColor ?? tv.lineColor ?? '#888'
   THEME_SWATCHES[key] = [primary, secondary, tertiary]
 }
+
+const GITHUB_REPO_URL = 'https://github.com/pastelsky/prettyfish'
 
 // ── Props ─────────────────────────────────────────────────────────────────────
 
@@ -155,7 +157,7 @@ export function Header({
   const pillClass = chromePillClass()
 
   return (
-    <div className={cn(
+    <header className={cn(
       'absolute top-0 left-0 right-0 z-30 flex items-start pointer-events-none',
       isMobile ? 'flex-col px-2 pt-2 gap-1' : 'justify-between px-4 pt-4',
     )}>
@@ -183,31 +185,34 @@ export function Header({
         <div className={cn('w-px h-4 mx-0.5 shrink-0', isDark ? 'bg-white/10' : 'bg-black/10')} />
 
         <div className="flex items-center gap-1 shrink-0">
-          <Tooltip>
-            <TooltipTrigger>
-              <ChromeIconButton type="button" data-testid="open-project-button" onClick={() => { captureEvent('project_loaded'); onLoadProject() }}>
-                <FolderOpen className="w-3.5 h-3.5" />
-              </ChromeIconButton>
-            </TooltipTrigger>
-            <TooltipContent side="bottom">Open project</TooltipContent>
-          </Tooltip>
-          <Tooltip>
-            <TooltipTrigger>
-              <ChromeIconButton type="button" data-testid="save-project-button" onClick={() => { captureEvent('project_saved'); onSaveProject() }}>
-                <FloppyDisk className="w-3.5 h-3.5" />
-              </ChromeIconButton>
-            </TooltipTrigger>
-            <TooltipContent side="bottom">Save project</TooltipContent>
-          </Tooltip>
+          <ChromeIconButton
+            type="button"
+            data-testid="open-project-button"
+            aria-label="Open project"
+            title="Open project"
+            onClick={() => { captureEvent('project_loaded'); onLoadProject() }}
+          >
+            <FolderOpen className="w-3.5 h-3.5" />
+          </ChromeIconButton>
+          <ChromeIconButton
+            type="button"
+            data-testid="save-project-button"
+            aria-label="Save project"
+            title="Save project"
+            onClick={() => { captureEvent('project_saved'); onSaveProject() }}
+          >
+            <FloppyDisk className="w-3.5 h-3.5" />
+          </ChromeIconButton>
           {!isMobile && (
-          <Tooltip>
-            <TooltipTrigger>
-              <ChromeIconButton type="button" data-testid="reset-workspace-button" onClick={() => setResetOpen(true)}>
-                <Trash className="w-3.5 h-3.5" />
-              </ChromeIconButton>
-            </TooltipTrigger>
-            <TooltipContent side="bottom">Reset workspace</TooltipContent>
-          </Tooltip>
+          <ChromeIconButton
+            type="button"
+            data-testid="reset-workspace-button"
+            aria-label="Reset workspace"
+            title="Reset workspace"
+            onClick={() => setResetOpen(true)}
+          >
+            <Trash className="w-3.5 h-3.5" />
+          </ChromeIconButton>
           )}
         </div>
 
@@ -229,6 +234,8 @@ export function Header({
             <div className="flex-1" />
             <ChromeIconButton
               data-testid="toggle-sidebar-button"
+              aria-label={sidebarOpen ? 'Hide editor' : 'Show editor'}
+              title={sidebarOpen ? 'Hide editor' : 'Show editor'}
               onClick={onToggleSidebar}
               active={sidebarOpen}
             >
@@ -237,17 +244,34 @@ export function Header({
             <ChromeIconButton
               data-testid="toggle-mode-button"
               aria-label={isDark ? 'Switch to light mode' : 'Switch to dark mode'}
+              title={isDark ? 'Switch to light mode' : 'Switch to dark mode'}
               onClick={() => onModeChange(isDark ? 'light' : 'dark')}
             >
               {isDark ? <SunHorizon className="w-3.5 h-3.5" /> : <Moon className="w-3.5 h-3.5" />}
             </ChromeIconButton>
             <ChromeIconButton
               data-testid="toggle-docs-button"
+              aria-label={docsOpen ? 'Hide reference docs' : 'Show reference docs'}
+              title={docsOpen ? 'Hide reference docs' : 'Show reference docs'}
               onClick={onToggleDocs}
               active={docsOpen}
             >
               <Books className="w-3.5 h-3.5" />
             </ChromeIconButton>
+            <a
+              href={GITHUB_REPO_URL}
+              target="_blank"
+              rel="noopener noreferrer"
+              aria-label="Open Pretty Fish on GitHub"
+              title="GitHub repository"
+              className={cn(
+                'inline-flex items-center justify-center w-7 h-7 rounded-lg transition-colors cursor-pointer',
+                'text-foreground/70 hover:text-foreground hover:bg-black/5',
+                'dark:hover:bg-white/8',
+              )}
+            >
+              <GithubLogo className="w-3.5 h-3.5" />
+            </a>
           </>
         )}
       </div>
@@ -273,18 +297,15 @@ export function Header({
       {!isMobile && (
       <div className={pillClass}>
         {/* Sidebar toggle */}
-        <Tooltip>
-          <TooltipTrigger>
-            <ChromeIconButton
-              data-testid="toggle-sidebar-button"
-              onClick={onToggleSidebar}
-              active={sidebarOpen}
-            >
-              <SidebarSimple className="w-3.5 h-3.5" />
-            </ChromeIconButton>
-          </TooltipTrigger>
-          <TooltipContent side="bottom">{sidebarOpen ? 'Hide' : 'Show'} editor (⌘\)</TooltipContent>
-        </Tooltip>
+        <ChromeIconButton
+          data-testid="toggle-sidebar-button"
+          aria-label={sidebarOpen ? 'Hide editor' : 'Show editor'}
+          title={`${sidebarOpen ? 'Hide' : 'Show'} editor (Ctrl+\\)`}
+          onClick={onToggleSidebar}
+          active={sidebarOpen}
+        >
+          <SidebarSimple className="w-3.5 h-3.5" />
+        </ChromeIconButton>
 
         <div className={cn('w-px h-4 mx-0.5', isDark ? 'bg-white/8' : 'bg-black/6')} />
 
@@ -292,96 +313,94 @@ export function Header({
         <ExportPopover svg={svg} code={code} previewBg={previewBg} pageName={exportName} />
 
         {/* Share */}
-        <Tooltip>
-          <TooltipTrigger>
-            <ChromeTextButton
-              data-testid="share-button"
-              onClick={handleShare}
-              className={cn(
-                copyState === 'copied' && 'text-emerald-500 hover:text-emerald-400',
-                copyState === 'error' && 'text-red-500 hover:text-red-400',
-              )}
-            >
-              {copyState === 'copied' ? <><Check className="w-3 h-3" /> Copied!</> :
-               copyState === 'error' ? <><X className="w-3 h-3" /> Failed</> :
-               <><ShareNetwork className="w-3 h-3" /> Share</>}
-            </ChromeTextButton>
-          </TooltipTrigger>
-          <TooltipContent side="bottom">Copy shareable diagram link</TooltipContent>
-        </Tooltip>
+        <ChromeTextButton
+          data-testid="share-button"
+          title="Copy shareable diagram link"
+          onClick={handleShare}
+          className={cn(
+            copyState === 'copied' && 'text-emerald-500 hover:text-emerald-400',
+            copyState === 'error' && 'text-red-500 hover:text-red-400',
+          )}
+        >
+          {copyState === 'copied' ? <><Check className="w-3 h-3" /> Copied!</> :
+           copyState === 'error' ? <><X className="w-3 h-3" /> Failed</> :
+           <><ShareNetwork className="w-3 h-3" /> Share</>}
+        </ChromeTextButton>
 
         <div className={cn('w-px h-4 mx-0.5', isDark ? 'bg-white/8' : 'bg-black/6')} />
 
         <ThemeDropdown value={mermaidTheme} onChange={onMermaidThemeChange} isDark={isDark} />
 
-        <Tooltip>
-          <TooltipTrigger>
-            <ChromeIconButton
-              data-testid="toggle-mode-button"
-              aria-label={isDark ? 'Switch to light mode' : 'Switch to dark mode'}
-              onClick={() => onModeChange(isDark ? 'light' : 'dark')}
-            >
-              {isDark ? <SunHorizon className="w-3.5 h-3.5" /> : <Moon className="w-3.5 h-3.5" />}
-            </ChromeIconButton>
-          </TooltipTrigger>
-          <TooltipContent side="bottom">{isDark ? 'Light mode' : 'Dark mode'} (Ctrl⇧D)</TooltipContent>
-        </Tooltip>
+        <ChromeIconButton
+          data-testid="toggle-mode-button"
+          aria-label={isDark ? 'Switch to light mode' : 'Switch to dark mode'}
+          title={`${isDark ? 'Light' : 'Dark'} mode (Ctrl+Shift+D)`}
+          onClick={() => onModeChange(isDark ? 'light' : 'dark')}
+        >
+          {isDark ? <SunHorizon className="w-3.5 h-3.5" /> : <Moon className="w-3.5 h-3.5" />}
+        </ChromeIconButton>
 
         <div className={cn('w-px h-4 mx-0.5', isDark ? 'bg-white/8' : 'bg-black/6')} />
 
         {/* Docs toggle */}
-        <Tooltip>
-          <TooltipTrigger>
-            <ChromeIconButton
-              data-testid="toggle-docs-button"
-              onClick={onToggleDocs}
-              active={docsOpen}
-            >
-              <Books className="w-3.5 h-3.5" />
-            </ChromeIconButton>
-          </TooltipTrigger>
-          <TooltipContent side="bottom">Reference docs</TooltipContent>
-        </Tooltip>
+        <ChromeIconButton
+          data-testid="toggle-docs-button"
+          aria-label={docsOpen ? 'Hide reference docs' : 'Show reference docs'}
+          title="Reference docs"
+          onClick={onToggleDocs}
+          active={docsOpen}
+        >
+          <Books className="w-3.5 h-3.5" />
+        </ChromeIconButton>
 
         {/* Help */}
-        <Tooltip>
-          <TooltipTrigger>
-            <ChromeIconButton
-              data-testid="open-help-button"
-              onClick={onOpenHelp}
-            >
-              <Question className="w-3.5 h-3.5" />
-            </ChromeIconButton>
-          </TooltipTrigger>
-          <TooltipContent side="bottom">Shortcuts (?)</TooltipContent>
-        </Tooltip>
+        <ChromeIconButton
+          data-testid="open-help-button"
+          aria-label="Open keyboard shortcuts help"
+          title="Shortcuts (?)"
+          onClick={onOpenHelp}
+        >
+          <Question className="w-3.5 h-3.5" />
+        </ChromeIconButton>
+
+        <a
+          href={GITHUB_REPO_URL}
+          target="_blank"
+          rel="noopener noreferrer"
+          aria-label="Open Pretty Fish on GitHub"
+          title="GitHub repository"
+          className={cn(
+            'inline-flex items-center justify-center w-7 h-7 rounded-lg transition-colors cursor-pointer',
+            'text-foreground/70 hover:text-foreground hover:bg-black/5',
+            'dark:hover:bg-white/8',
+          )}
+        >
+          <GithubLogo className="w-3.5 h-3.5" />
+        </a>
 
         <div className={cn('w-px h-4 mx-0.5', isDark ? 'bg-white/8' : 'bg-black/6')} />
 
         {/* Sponsor */}
-        <Tooltip>
-          <TooltipTrigger>
-            <a
-              href="https://github.com/sponsors/pastelsky"
-              target="_blank"
-              rel="noopener noreferrer"
-              className={cn(
-                'inline-flex items-center justify-center w-7 h-7 rounded-lg transition-colors cursor-pointer',
-                'text-pink-500 hover:bg-black/5',
-                'dark:text-pink-400 dark:hover:bg-white/8',
-              )}
-            >
-              <Heart className="w-3.5 h-3.5" weight="fill" />
-            </a>
-          </TooltipTrigger>
-          <TooltipContent side="bottom">Sponsor</TooltipContent>
-        </Tooltip>
+        <a
+          href="https://github.com/sponsors/pastelsky"
+          target="_blank"
+          rel="noopener noreferrer"
+          aria-label="Sponsor Pretty Fish"
+          title="Sponsor"
+          className={cn(
+            'inline-flex items-center justify-center w-7 h-7 rounded-lg transition-colors cursor-pointer',
+            'text-pink-500 hover:bg-black/5',
+            'dark:text-pink-400 dark:hover:bg-white/8',
+          )}
+        >
+          <Heart className="w-3.5 h-3.5" weight="fill" />
+        </a>
       </div>
       )}
 
       {/* Right spacer to balance logo */}
       {!isMobile && <div className="w-[100px]" />}
-    </div>
+    </header>
   )
 }
 

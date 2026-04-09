@@ -9,7 +9,6 @@ import { githubLight } from '@uiw/codemirror-theme-github'
 import { vscodeDark } from '@uiw/codemirror-theme-vscode'
 import { EditorView } from '@codemirror/view'
 import { Button } from '@/components/ui/button'
-import { Tooltip, TooltipTrigger, TooltipContent } from '@/components/ui/tooltip'
 import {
   GearSix,
   CaretUp,
@@ -61,7 +60,12 @@ import type { AppMode, DiagramConfig, MermaidRenderError } from '../types'
 // ── CodeMirror error line highlighting ──
 
 
-const EXTENSIONS_BASE = [EditorView.lineWrapping]
+const EXTENSIONS_BASE = [
+  EditorView.lineWrapping,
+  EditorView.contentAttributes.of({
+    'aria-label': 'Mermaid code editor',
+  }),
+]
 
 import type { Diagram } from '../types'
 
@@ -237,35 +241,34 @@ export function Sidebar({
 
         {/* Copy code */}
         {code.trim() !== '' && (
-          <Tooltip>
-            <TooltipTrigger>
-              <Button
-                data-testid="copy-code-button"
-                variant="ghost"
-                size="icon-sm"
-                onClick={() => {
-                  navigator.clipboard.writeText(code)
-                  setCodeCopied(true)
-                  if (copyTimerRef.current) clearTimeout(copyTimerRef.current)
-                  copyTimerRef.current = setTimeout(() => setCodeCopied(false), 1500)
-                }}
-                className={cn('shrink-0 rounded-lg', codeCopied ? 'text-emerald-500' : 'text-muted-foreground hover:text-foreground')}
-              >
-                {codeCopied ? <Check className="w-3.5 h-3.5" /> : <CopySimple className="w-3.5 h-3.5" />}
-              </Button>
-            </TooltipTrigger>
-            <TooltipContent>{codeCopied ? 'Copied!' : 'Copy code'}</TooltipContent>
-          </Tooltip>
+          <Button
+            data-testid="copy-code-button"
+            variant="ghost"
+            size="icon-sm"
+            aria-label={codeCopied ? 'Code copied' : 'Copy code'}
+            title={codeCopied ? 'Copied!' : 'Copy code'}
+            onClick={() => {
+              navigator.clipboard.writeText(code)
+              setCodeCopied(true)
+              if (copyTimerRef.current) clearTimeout(copyTimerRef.current)
+              copyTimerRef.current = setTimeout(() => setCodeCopied(false), 1500)
+            }}
+            className={cn('shrink-0 rounded-lg', codeCopied ? 'text-emerald-500' : 'text-muted-foreground hover:text-foreground')}
+          >
+            {codeCopied ? <Check className="w-3.5 h-3.5" /> : <CopySimple className="w-3.5 h-3.5" />}
+          </Button>
         )}
 
-        <Tooltip>
-          <TooltipTrigger>
-            <Button variant="ghost" size="icon-sm" onClick={toggleCollapsed} className="shrink-0 rounded-lg">
-              {collapsed ? <CaretDown className="w-3.5 h-3.5" /> : <CaretUp className="w-3.5 h-3.5" />}
-            </Button>
-          </TooltipTrigger>
-          <TooltipContent>{collapsed ? 'Expand' : 'Collapse'}</TooltipContent>
-        </Tooltip>
+        <Button
+          variant="ghost"
+          size="icon-sm"
+          aria-label={collapsed ? 'Expand editor panel' : 'Collapse editor panel'}
+          title={collapsed ? 'Expand' : 'Collapse'}
+          onClick={toggleCollapsed}
+          className="shrink-0 rounded-lg"
+        >
+          {collapsed ? <CaretDown className="w-3.5 h-3.5" /> : <CaretUp className="w-3.5 h-3.5" />}
+        </Button>
       </div>
 
       {!collapsed && (

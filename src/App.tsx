@@ -217,7 +217,7 @@ export default function App() {
 
   return (
     <div data-testid="app-root" className="w-screen h-screen relative bg-background text-foreground overflow-hidden">
-      <div className="absolute inset-0">
+      <main aria-label="Diagram workspace" className="absolute inset-0">
         <Suspense fallback={<div className="h-full w-full bg-background" />}>
           <InfiniteCanvas
             page={activePage}
@@ -233,7 +233,7 @@ export default function App() {
             onRegisterFocus={registerFocusDiagram}
           />
         </Suspense>
-      </div>
+      </main>
 
       <Header
         mode={mode}
@@ -279,9 +279,10 @@ export default function App() {
       )}
 
       {sidebarOpen && (
-        <div
+        <aside
           data-testid="sidebar-panel"
           data-sidebar-panel
+          aria-label="Diagram editor"
           className={isMobile ? 'absolute left-0 right-0 bottom-0 z-30 rounded-t-2xl overflow-hidden' : 'absolute top-16 bottom-4 left-4 z-20'}
           style={isMobile ? { height: '80vh', maxHeight: '80vh' } : { width: sidebarWidth ? `${sidebarWidth}px` : 'clamp(320px, 34vw, 480px)' }}
         >
@@ -316,12 +317,13 @@ export default function App() {
               />
             </Suspense>
           </ErrorBoundary>
-        </div>
+        </aside>
       )}
 
       {docsOpen && (
-        <div
+        <aside
           data-testid="reference-docs-panel"
+          aria-label="Reference docs"
           className={cn(
             isMobile
               ? 'absolute left-0 right-0 bottom-0 z-30 rounded-t-2xl border-t overflow-hidden flex flex-col'
@@ -341,7 +343,7 @@ export default function App() {
               />
             </Suspense>
           </ErrorBoundary>
-        </div>
+        </aside>
       )}
 
       {!isMobile && (

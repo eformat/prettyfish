@@ -8,7 +8,7 @@ export default defineConfig({
   workers: 1,
   reporter: [['html', { open: 'never' }], ['list']],
   use: {
-    baseURL: 'http://localhost:5175',
+    baseURL: 'http://127.0.0.1:4175',
     trace: 'on-first-retry',
     screenshot: 'on',
     video: 'off',
@@ -23,9 +23,9 @@ export default defineConfig({
     },
   ],
   webServer: {
-    command: 'npm run dev -- --port 5175',
-    url: 'http://localhost:5175',
-    reuseExistingServer: true,
+    command: 'npm run dev -- --host 127.0.0.1 --port 4175',
+    url: 'http://127.0.0.1:4175',
+    reuseExistingServer: false,
     timeout: 30000,
   },
 })

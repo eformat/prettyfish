@@ -1,168 +1,101 @@
-# Pretty Fish — Mermaid Diagram Editor
+# Pretty Fish
 
-A professional, browser-based Mermaid diagram editor with live preview, infinite canvas, multi-page projects, and full offline support (PWA).
+Pretty Fish is a browser-based Mermaid workspace for writing, arranging, and sharing diagrams without leaving the browser.
 
----
+It is built for a workflow that sits somewhere between a text editor and a diagram board: edit Mermaid source, preview the result immediately, keep multiple diagrams on a canvas, and organize work across pages.
 
-## Features
+## Screenshots
 
-- **Live preview** — renders Mermaid diagrams as you type with syntax error reporting
-- **Infinite canvas** — drag, resize, and arrange multiple diagrams per page
-- **Multi-page projects** — organise diagrams across named pages
-- **Custom themes** — built-in Mermaid themes plus a curated set of custom presets
-- **Export** — SVG, PNG (1×–4×), and `.mmd` source file
-- **Share** — encode the current diagram into a URL hash for one-click sharing
-- **Presentation mode** — open any diagram full-screen with pinch-to-zoom
-- **Offline support** — full PWA with service worker; works without a network connection
-- **Multi-tab sync** — changes in one tab are reflected in others via BroadcastChannel
+![Workspace overview](docs/screenshots/workspace-overview.png)
 
----
+![Reference docs panel](docs/screenshots/reference-docs.png)
+
+![Dark workspace](docs/screenshots/dark-workspace.png)
+
+## What It Does
+
+- Write Mermaid diagrams with a live preview.
+- Arrange multiple diagrams on an infinite canvas.
+- Group diagrams into multi-page projects.
+- Tune appearance with built-in themes and diagram settings.
+- Export diagrams as SVG, PNG, or Mermaid source.
+- Share diagrams through URL-encoded state.
+- Run as a PWA with offline support.
+
+## Why This README Is Short
+
+This project changes quickly. The README aims to stay useful over time, so it focuses on the product, the development workflow, and the major architectural ideas instead of mirroring every file or every feature toggle in the codebase.
+
+For contributor-specific guidance, see [CONTRIBUTING.md](CONTRIBUTING.md).
 
 ## Getting Started
 
-### Prerequisites
+### Requirements
 
-- Node.js ≥ 20
-- npm ≥ 10
+- Node.js 20+
+- npm 10+
 
-### Install dependencies
+### Install
 
 ```bash
 npm install
 ```
 
-### Environment variables
-
-Copy `.env.example` to `.env.local` if you want analytics during development:
-
-```env
-# Optional analytics
-VITE_POSTHOG_KEY=your_posthog_project_api_key
-VITE_POSTHOG_HOST=https://us.i.posthog.com
-```
-
-If `VITE_POSTHOG_KEY` is absent, analytics are disabled.
-
-### Run in development
+### Run locally
 
 ```bash
 npm run dev
 ```
 
-### Type-check
+### Optional analytics configuration
+
+If you want PostHog enabled during development, create `.env.local` from `.env.example`:
+
+```env
+VITE_POSTHOG_KEY=your_posthog_project_api_key
+VITE_POSTHOG_HOST=https://us.i.posthog.com
+```
+
+If `VITE_POSTHOG_KEY` is not set, analytics stay off.
+
+## Common Commands
 
 ```bash
-npm run typecheck
+npm run dev        # Vite dev server
+npm run typecheck  # TypeScript project check
+npm run lint       # ESLint + dark-mode audit
+npm test           # Vitest
+npm run e2e        # Playwright, including Axe accessibility checks
+npm run build      # Production build
+npm run preview    # Local Wrangler preview of the production build
+npm run deploy     # Deploy to Cloudflare
 ```
 
-### Lint
+## Architecture
 
-```bash
-npm run lint
-```
+Pretty Fish is a client-heavy React application with a few clear layers:
 
-### Unit tests (Vitest)
+- UI components for the editor, canvas, docs panel, export flows, and presentation mode
+- hooks that coordinate state, persistence, history, rendering, and keyboard behavior
+- a reducer-driven app store for document and UI state
+- Mermaid rendering, project serialization, sharing, and reference data under `src/lib`
 
-```bash
-npm test
-```
-
-### End-to-end tests (Playwright)
-
-```bash
-npm run e2e
-```
-
-### Build for production
-
-```bash
-npm run build
-```
-
-### Preview the production build locally (via Wrangler)
-
-```bash
-npm run preview
-```
-
----
-
-## Project Structure
-
-```
-src/
-  App.tsx                  # Root layout and context menu
-  main.tsx                 # Entry point — routing between app and /present
-  types.ts                 # All shared domain types and pure helpers
-  state/
-    appStore.ts            # Reducer, action types, store state shape
-  hooks/
-    useAppController.ts    # Application controller (state + actions facade)
-    useDocumentHistory.ts  # Generic undo/redo stack
-    useRenderQueue.ts      # Mermaid render queue (one diagram at a time)
-    usePersistenceSync.ts  # IndexedDB persistence + BroadcastChannel sync
-    useKeyboardShortcuts.ts
-    useIsMobile.ts
-  components/
-    InfiniteCanvas.tsx     # React Flow canvas for diagram layout
-    Sidebar.tsx            # CodeMirror editor panel
-    Header.tsx             # Top navigation bar
-    ConfigPanel.tsx        # Diagram style/config panel
-    DiagramNode.tsx        # React Flow custom node for a single diagram
-    ReferenceDocs.tsx      # In-app Mermaid reference documentation
-    TemplateGallery.tsx    # New diagram template picker
-    ExportPopover.tsx      # Export (SVG / PNG / MMD) popover
-    PresentationMode.tsx   # Standalone full-screen presentation view (/present)
-    ErrorBoundary.tsx
-    KeyboardHelp.tsx
-    ReloadPrompt.tsx       # PWA update / offline-ready toast
-    ui/                    # Primitive UI components (Button, Dialog, etc.)
-  lib/
-    render.ts              # Mermaid rendering + error parsing
-    storage.ts             # IndexedDB read/write via idb-keyval
-    share.ts               # URL hash encode/decode
-    file.ts                # Project file save/load (.prettyfish.json)
-    documentState.ts       # Normalization + migration of persisted state
-    templates.ts           # Diagram template definitions
-    themePresets.ts        # Custom Mermaid theme preset definitions
-    detectDiagram.ts       # Diagram type detection from code
-    mermaidHighlight.ts    # CodeMirror fallback syntax highlighter
-    mermaidAltClick.ts     # CodeMirror alt+click → docs extension
-    mermaidTokenLookup.ts  # Token → reference doc lookup
-    highlightCode.ts       # Static code highlighting for reference panel
-    reference.ts           # Mermaid reference documentation data
-    debug.ts               # Dev-only debug logging helper
-    utils.ts               # Tailwind class merge utility (cn)
-tests/
-  e2e/                     # Playwright end-to-end tests
-```
-
----
+The app is designed so most product behavior lives in typed state and small utility modules rather than inside large unstructured components.
 
 ## Deployment
 
-The app is deployed to **Cloudflare Pages** via Wrangler:
+The project is set up for Cloudflare via Wrangler. Build output is generated with Vite and the app can be deployed with:
 
 ```bash
 npm run deploy
 ```
 
-The `wrangler.jsonc` file configures the Cloudflare project. The `public/_redirects` file handles SPA fallback routing.
-
----
-
-## PWA & Offline
-
-The service worker is generated by `vite-plugin-pwa` (Workbox). It precaches all built assets and handles runtime caching for Google Fonts. The `ReloadPrompt` component notifies users when an update is available.
-
----
+Cloudflare configuration lives in [wrangler.jsonc](wrangler.jsonc).
 
 ## Contributing
 
-Community contributions are welcome. Start with `CONTRIBUTING.md`.
-
----
+Contributions are welcome. Start with [CONTRIBUTING.md](CONTRIBUTING.md).
 
 ## License
 
-Pretty Fish is licensed under the Apache License 2.0. See `LICENSE`.
+Licensed under Apache License 2.0. See [LICENSE](LICENSE).
