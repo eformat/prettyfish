@@ -1,4 +1,4 @@
-import { mkdir, writeFile } from 'node:fs/promises'
+import { copyFile, mkdir, writeFile } from 'node:fs/promises'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 
@@ -9,6 +9,8 @@ const __dirname = path.dirname(__filename)
 const projectRoot = path.resolve(__dirname, '..')
 const publicDir = path.join(projectRoot, 'public')
 const guidesDir = path.join(publicDir, 'guides')
+const screenshotsDir = path.join(publicDir, 'screenshots')
+const sourceScreenshotsDir = path.join(projectRoot, 'docs', 'screenshots')
 
 const BASE_URL = 'https://pretty.fish'
 
@@ -18,12 +20,26 @@ const GUIDE_CONFIG = {
     heading: 'Mermaid Flowchart Maker',
     intent: 'Build cleaner Mermaid flowcharts with live preview, better themes, and export-ready output.',
     useCases: ['process maps', 'decision trees', 'system diagrams'],
+    detail:
+      'Flowchart searches are usually high-intent: someone already knows the diagram they need, but wants a Mermaid workflow that does not leave them with bland default output. This page leans into that by pairing real syntax with a stronger visual presentation story.',
+    screenshot: {
+      src: '/screenshots/workspace-overview.png',
+      alt: 'Pretty Fish workspace showing a polished Mermaid flowchart on the infinite canvas',
+      caption: 'The main workspace is built for flowchart iteration: source on one side, polished output on the other, with room for multiple diagrams.',
+    },
   },
   sequenceDiagram: {
     slug: 'sequence-diagram-editor',
     heading: 'Mermaid Sequence Diagram Editor',
     intent: 'Write Mermaid sequence diagrams that are easier to style, present, and share.',
     useCases: ['API flows', 'service interactions', 'async request timelines'],
+    detail:
+      'Sequence diagrams need two things to be useful in practice: syntax that is easy to tweak and output that still looks good when dropped into an RFC, API review, or incident write-up. Pretty Fish is meant to improve exactly that workflow.',
+    screenshot: {
+      src: '/screenshots/reference-docs.png',
+      alt: 'Pretty Fish reference docs panel open next to Mermaid editing tools for sequence diagrams',
+      caption: 'Reference material stays close to the editor, which matters for sequence diagrams where small syntax changes can alter message order, actors, and grouping.',
+    },
   },
   classDiagram: {
     slug: 'class-diagram-tool',
@@ -42,6 +58,13 @@ const GUIDE_CONFIG = {
     heading: 'Mermaid ER Diagram Tool',
     intent: 'Create Mermaid ER diagrams and database relationship maps with cleaner styling.',
     useCases: ['database schemas', 'entity modeling', 'data design reviews'],
+    detail:
+      'ER diagram visitors usually care about readability first. If the relationship graph feels cramped or generic, it is hard to use in planning or review. The pitch here is simple: keep Mermaid, but make the output more presentation-ready.',
+    screenshot: {
+      src: '/screenshots/dark-workspace.png',
+      alt: 'Pretty Fish dark mode workspace with a Mermaid diagram styled for presentation',
+      caption: 'Theming is not cosmetic only. For ER diagrams, stronger contrast and cleaner linework make schema reviews easier to scan.',
+    },
   },
   gantt: {
     slug: 'gantt-chart-maker',
@@ -132,6 +155,13 @@ const GUIDE_CONFIG = {
     heading: 'Mermaid Architecture Diagram Maker',
     intent: 'Design Mermaid architecture diagrams with better themes, cleaner exports, and faster iteration.',
     useCases: ['cloud systems', 'service topology', 'technical overviews'],
+    detail:
+      'Architecture diagram searches often start as documentation work and end as communication work. The diagram has to survive not just the editor, but screenshots, design docs, planning decks, and review threads. These pages should speak to that end-to-end use case.',
+    screenshot: {
+      src: '/screenshots/workspace-overview.png',
+      alt: 'Pretty Fish showing a multi-diagram workspace useful for architecture modeling',
+      caption: 'Architecture work benefits from the multi-diagram canvas because one system usually needs several complementary Mermaid views, not one isolated chart.',
+    },
   },
 }
 
@@ -330,6 +360,21 @@ function buildGuideHtml(diagramId, diagram, config, guideLinks) {
       },
     })),
   }
+  const screenshotBlock = config.screenshot
+    ? `
+        <section class="panel panel--full panel--screenshot">
+          <div class="screenshot-copy">
+            <h2>What this looks like in Pretty Fish</h2>
+            <p>${escapeHtml(config.detail ?? `${diagram.label} work gets better when the editor and the final visual treatment both hold up under review.`)}</p>
+            <p>${escapeHtml(config.screenshot.caption)}</p>
+          </div>
+          <figure class="screenshot-frame">
+            <img src="${config.screenshot.src}" alt="${escapeHtml(config.screenshot.alt)}" loading="lazy" />
+            <figcaption>${escapeHtml(config.screenshot.caption)}</figcaption>
+          </figure>
+        </section>
+      `
+    : ''
 
   return `<!doctype html>
 <html lang="en">
@@ -344,11 +389,11 @@ function buildGuideHtml(diagramId, diagram, config, guideLinks) {
     <meta property="og:title" content="${escapeHtml(title)}" />
     <meta property="og:description" content="${escapeHtml(description)}" />
     <meta property="og:url" content="${pageUrl}" />
-    <meta property="og:image" content="${BASE_URL}/og-image.png" />
+    <meta property="og:image" content="${config.screenshot ? `${BASE_URL}${config.screenshot.src}` : `${BASE_URL}/og-image.png`}" />
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:title" content="${escapeHtml(title)}" />
     <meta name="twitter:description" content="${escapeHtml(description)}" />
-    <meta name="twitter:image" content="${BASE_URL}/og-image.png" />
+    <meta name="twitter:image" content="${config.screenshot ? `${BASE_URL}${config.screenshot.src}` : `${BASE_URL}/og-image.png`}" />
     <link rel="stylesheet" href="/seo-guides.css" />
     <script type="application/ld+json">${JSON.stringify(structuredData)}</script>
     <script type="application/ld+json">${JSON.stringify(faqStructuredData)}</script>
@@ -376,6 +421,8 @@ function buildGuideHtml(diagramId, diagram, config, guideLinks) {
           <h2>Why Pretty Fish fits Mermaid better</h2>
           <ul>${valueProps}</ul>
         </section>
+
+        ${screenshotBlock}
 
         <section class="panel panel--full">
           <h2>Open a Mermaid ${escapeHtml(diagram.label)} starter in the app</h2>
@@ -527,6 +574,18 @@ async function main() {
   })
 
   await mkdir(guidesDir, { recursive: true })
+  await mkdir(screenshotsDir, { recursive: true })
+
+  const screenshotFiles = new Set(
+    guideLinks
+      .map((guide) => guide.screenshot?.src)
+      .filter(Boolean)
+      .map((src) => src.split('/').at(-1)),
+  )
+
+  for (const fileName of screenshotFiles) {
+    await copyFile(path.join(sourceScreenshotsDir, fileName), path.join(screenshotsDir, fileName))
+  }
 
   for (const guide of guideLinks) {
     const diagram = DIAGRAM_REFS[guide.diagramId]
