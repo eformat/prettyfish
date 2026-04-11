@@ -64,6 +64,7 @@ const DEFAULT_APP_URL = 'https://pretty.fish/'
 const PUBLIC_ORIGIN_PATTERNS = [
   /^https:\/\/pretty\.fish$/,
   /^https:\/\/www\.pretty\.fish$/,
+  /^https:\/\/prettyfish\.binalgo\.workers\.dev$/,
   /^http:\/\/localhost:\d+$/,
   /^http:\/\/127\.0\.0\.1:\d+$/,
 ]
@@ -230,7 +231,8 @@ export default {
     const url = new URL(request.url)
     const requestOrigin = request.headers.get('origin')
 
-    if (request.method === 'OPTIONS' && url.pathname.startsWith('/api/relay/public/')) {
+    // Handle CORS preflight for all public API routes
+    if (request.method === 'OPTIONS') {
       return new Response(null, {
         status: 204,
         headers: corsHeaders(requestOrigin),

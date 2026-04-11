@@ -277,8 +277,10 @@ export function useRemoteAgentRelay(options: RemoteAgentRelayOptions): RemoteAge
     try {
       const response = await fetch(`${relayUrl.replace(/\/$/, '')}/api/relay/public/sessions`, {
         method: 'POST',
+        // Use text/plain to avoid a CORS preflight (simple request).
+        // The worker accepts both content-types and parses the body as JSON.
         headers: {
-          'content-type': 'application/json',
+          'content-type': 'text/plain;charset=UTF-8',
         },
         body: JSON.stringify({ createdBy: 'prettyfish-web' }),
       })
