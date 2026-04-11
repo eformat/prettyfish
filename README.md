@@ -79,12 +79,13 @@ Setup details are in [docs/local-agent-bridge.md](docs/local-agent-bridge.md).
 
 ## Remote Agent Relay
 
-There is also a phase-two Cloudflare relay scaffold for remote MCP-style control:
+There is also a hosted Cloudflare relay for remote MCP-style control:
 
 - Worker entry: `src/relay/worker.ts`
 - Durable Object session relay
 - Dedicated config: `wrangler.relay.jsonc`
-- Remote MCP wrapper: `npm run agent:remote-relay`
+- Hosted MCP endpoint per generated session
+- `npx` stdio fallback via `github:pastelsky/prettyfish`
 
 Details are in [docs/remote-agent-relay.md](docs/remote-agent-relay.md).
 

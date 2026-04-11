@@ -334,7 +334,7 @@ export default function App() {
         }}
         onOpenHelp={() => dispatch({ type: 'ui/set-help-open', open: true })}
         onOpenLocalAgent={() => setLocalAgentOpen(true)}
-        localAgentConnected={localAgentBridge.status === 'connected'}
+        localAgentConnected={localAgentBridge.status === 'connected' || remoteAgentRelay.status === 'connected'}
         sidebarWidth={sidebarOpen ? sidebarWidth : null}
       />
 

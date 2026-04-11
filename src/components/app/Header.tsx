@@ -355,16 +355,6 @@ export function Header({
           <Books className="w-3.5 h-3.5" />
         </ChromeIconButton>
 
-        <ChromeIconButton
-          data-testid="open-local-agent-button"
-          aria-label="Open local agent bridge"
-          title="Local agent bridge"
-          onClick={onOpenLocalAgent}
-          active={localAgentConnected}
-        >
-          <PlugsConnected className="w-3.5 h-3.5" />
-        </ChromeIconButton>
-
         {/* Help */}
         <ChromeIconButton
           data-testid="open-help-button"
@@ -394,8 +384,20 @@ export function Header({
       </div>
       )}
 
-      {/* Right spacer to balance logo */}
-      {!isMobile && <div className="w-[100px]" />}
+      {!isMobile && (
+        <div className={pillClass}>
+          <ChromeTextButton
+            data-testid="open-local-agent-button"
+            aria-label="Connect local MCP"
+            title="Connect local MCP"
+            onClick={onOpenLocalAgent}
+            className={cn(localAgentConnected && chromeStatusClass('success'))}
+          >
+            <PlugsConnected className="w-3.5 h-3.5" />
+            {localAgentConnected ? 'MCP Connected' : 'Connect MCP'}
+          </ChromeTextButton>
+        </div>
+      )}
     </header>
   )
 }

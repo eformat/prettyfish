@@ -3,8 +3,20 @@
 import crypto from 'node:crypto'
 import process from 'node:process'
 
-const RELAY_URL = (process.env.PRETTYFISH_RELAY_URL || '').replace(/\/$/, '')
-const RELAY_BOOTSTRAP_TOKEN = process.env.PRETTYFISH_RELAY_BOOTSTRAP_TOKEN || ''
+function readArg(name) {
+  const exact = process.argv.find((arg) => arg === name || arg.startsWith(`${name}=`))
+  if (!exact) return ''
+  if (exact === name) {
+    const index = process.argv.indexOf(exact)
+    return process.argv[index + 1] || ''
+  }
+  return exact.slice(name.length + 1)
+}
+
+const RELAY_URL = (readArg('--relay-url') || process.env.PRETTYFISH_RELAY_URL || '').replace(/\/$/, '')
+const RELAY_BOOTSTRAP_TOKEN = readArg('--bootstrap-token') || process.env.PRETTYFISH_RELAY_BOOTSTRAP_TOKEN || ''
+const PRESET_SESSION_ID = readArg('--session-id') || ''
+const PRESET_AGENT_TOKEN = readArg('--agent-token') || ''
 const APP_URL = process.env.PRETTYFISH_APP_URL || 'https://pretty.fish/'
 const PROTOCOL_VERSION = '2025-03-26'
 const SERVER_INFO = { name: 'prettyfish-remote-relay', version: '0.1.0' }
@@ -14,8 +26,13 @@ if (!RELAY_URL) {
   process.exit(1)
 }
 
-if (!RELAY_BOOTSTRAP_TOKEN) {
-  console.error('PRETTYFISH_RELAY_BOOTSTRAP_TOKEN is required')
+if (!PRESET_SESSION_ID && !RELAY_BOOTSTRAP_TOKEN) {
+  console.error('PRETTYFISH_RELAY_BOOTSTRAP_TOKEN is required when --session-id is not provided')
+  process.exit(1)
+}
+
+if (PRESET_SESSION_ID && !PRESET_AGENT_TOKEN) {
+  console.error('--agent-token is required when --session-id is provided')
   process.exit(1)
 }
 
@@ -34,6 +51,14 @@ function buildBrowserAttachUrl(session) {
 }
 
 async function createRelaySession() {
+  if (PRESET_SESSION_ID) {
+    return {
+      sessionId: PRESET_SESSION_ID,
+      browserToken: '',
+      agentToken: PRESET_AGENT_TOKEN,
+    }
+  }
+
   const response = await fetch(`${RELAY_URL}/api/relay/sessions`, {
     method: 'POST',
     headers: {
@@ -97,7 +122,9 @@ async function ensureRelayConnected() {
   if (!relaySession) {
     relaySession = await createRelaySession()
     console.error(`Relay session: ${relaySession.sessionId}`)
-    console.error(`Browser attach URL: ${buildBrowserAttachUrl(relaySession)}`)
+    if (relaySession.browserToken) {
+      console.error(`Browser attach URL: ${buildBrowserAttachUrl(relaySession)}`)
+    }
     connectRelaySocket(relaySession)
   }
   await waitForSocketOpen()
@@ -167,7 +194,7 @@ async function handleToolCall(name, args = {}) {
       return {
         relayUrl: RELAY_URL,
         sessionId: relaySession.sessionId,
-        browserAttachUrl: buildBrowserAttachUrl(relaySession),
+        browserAttachUrl: relaySession.browserToken ? buildBrowserAttachUrl(relaySession) : null,
       }
     case 'create_page':
       return sendRelayCommand('create_page', { name: args.name, code: args.code })

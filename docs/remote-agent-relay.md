@@ -1,6 +1,6 @@
 # Remote Agent Relay
 
-Phase two moves command transport out of localhost and into a Cloudflare Worker relay.
+Phase two moves command transport out of localhost and into a Cloudflare Worker relay, with a hosted MCP endpoint and a browser-generated session flow.
 
 ## Goals
 
@@ -16,54 +16,55 @@ Phase two moves command transport out of localhost and into a Cloudflare Worker 
 
 ## Session Model
 
-1. A trusted backend calls `POST /api/relay/sessions` with `RELAY_BOOTSTRAP_TOKEN`.
-2. The Worker creates a session in the Durable Object and returns:
+1. Pretty Fish can create a browser-scoped session by calling `POST /api/relay/public/sessions`.
+2. Operators can still create sessions directly with `POST /api/relay/sessions` plus `RELAY_BOOTSTRAP_TOKEN`.
+3. The Worker creates a session in the Durable Object and returns:
    - `sessionId`
    - `browserToken`
    - `agentToken`
-3. The browser connects by WebSocket to:
+   - `mcpUrl`
+   - `browserAttachUrl`
+4. The browser connects by WebSocket to:
    - `/api/relay/sessions/:sessionId/browser?token=...`
-4. The remote MCP side connects by WebSocket to:
-   - `/api/relay/sessions/:sessionId/agent?token=...`
-5. The Durable Object forwards:
+5. MCP clients can either:
+   - talk directly to the hosted endpoint at `/api/mcp/sessions/:sessionId?token=...`
+   - or use the stdio fallback wrapper with `npx`
+6. The Durable Object forwards:
    - `command` messages from agent to browser
    - `command_result` messages from browser to agent
 
 ## Current Scope
 
-This is a relay scaffold, not the full browser integration yet.
+Current scope:
 
-What it already provides:
-
-- session creation route
+- browser-generated hosted sessions
+- hosted MCP HTTP endpoint
+- `npx` stdio fallback wrapper
 - tokenized browser/agent websocket connection routes
 - per-session Durable Object coordination
-- message forwarding and simple peer-status notifications
+- browser-side command execution through the live Pretty Fish tab
 
-What still needs to be added:
+Still needed for a more hardened production rollout:
 
-- token issuance policy tied to your auth or operator flow
+- stronger public session issuance policy
 - expiry, revocation, and audit logging
+- optional custom domain routing so the MCP endpoint sits directly under `pretty.fish`
 
 ## Remote MCP Process
 
-Use the remote MCP wrapper to create a relay session and print a browser attach URL:
+Use the remote MCP wrapper when your MCP client only supports local stdio:
 
 ```bash
-PRETTYFISH_RELAY_URL="https://your-relay.example.workers.dev" \
-PRETTYFISH_RELAY_BOOTSTRAP_TOKEN="your-secret" \
-npm run agent:remote-relay
+npx -y github:pastelsky/prettyfish \
+  --relay-url="https://your-relay.example.workers.dev" \
+  --session-id="your-session-id" \
+  --agent-token="your-agent-token"
 ```
 
-The process will print:
+The app UI now generates the session and gives you both:
 
-- the relay session ID
-- a browser attach URL containing:
-  - `relayUrl`
-  - `relaySessionId`
-  - `relayBrowserToken`
-
-Opening that URL in Pretty Fish will auto-connect the browser tab to the relay.
+- a hosted MCP URL for direct remote MCP clients
+- an `npx` fallback snippet for stdio-only clients
 
 ## Local Development
 
@@ -71,7 +72,7 @@ Opening that URL in Pretty Fish will auto-connect the browser tab to the relay.
 wrangler dev -c wrangler.relay.jsonc
 ```
 
-Set a real bootstrap token before using it:
+Set a real bootstrap token before using the operator-only session creation route:
 
 ```bash
 export RELAY_BOOTSTRAP_TOKEN="your-secret"

@@ -1,13 +1,17 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 
 import { useAgentCommandExecutor, type BrowserCommandEnvelope } from '@/hooks/useAgentCommandExecutor'
+import type { PublicRelaySessionResponse, RelayEnvelope } from '@/relay/protocol'
 import type { AppStoreState } from '@/state/appStore'
 import type { AppState } from '@/types'
-import type { RelayEnvelope } from '@/relay/protocol'
+
+const DEFAULT_RELAY_URL = ((import.meta as ImportMeta & { env?: Record<string, string> }).env?.VITE_PRETTYFISH_RELAY_URL || 'https://prettyfish-relay.binalgo.workers.dev').replace(/\/$/, '')
+const GITHUB_NPX_PACKAGE = 'github:pastelsky/prettyfish'
 
 const RELAY_URL_KEY = 'prettyfish:relay-url'
 const RELAY_SESSION_ID_KEY = 'prettyfish:relay-session-id'
 const RELAY_BROWSER_TOKEN_KEY = 'prettyfish:relay-browser-token'
+const RELAY_AGENT_TOKEN_KEY = 'prettyfish:relay-agent-token'
 
 interface RemoteAgentRelayOptions {
   state: AppStoreState
@@ -28,19 +32,38 @@ export interface RemoteAgentRelayControls {
   relayUrl: string
   sessionId: string
   browserToken: string
+  agentToken: string
+  browserAttachUrl: string
+  mcpUrl: string
+  displayId: string | null
   error: string | null
   setRelayUrl: (value: string) => void
   setSessionId: (value: string) => void
   setBrowserToken: (value: string) => void
+  setAgentToken: (value: string) => void
   connect: () => Promise<void>
   disconnect: () => void
+  createHostedSession: () => Promise<void>
+  resetSession: () => void
+  getHostedConfigSnippet: () => string
+  getNpxConfigSnippet: () => string
+  getNpxCommand: () => string
 }
 
-function readStoredValue(key: string): string {
+function readStoredValue(key: string, fallback = ''): string {
   try {
-    return localStorage.getItem(key) || ''
+    return localStorage.getItem(key) || fallback
   } catch {
-    return ''
+    return fallback
+  }
+}
+
+function persistValue(key: string, value: string) {
+  try {
+    if (value) localStorage.setItem(key, value)
+    else localStorage.removeItem(key)
+  } catch {
+    // ignore
   }
 }
 
@@ -52,15 +75,62 @@ function toWebSocketUrl(relayUrl: string, sessionId: string, browserToken: strin
   return `${base}/api/relay/sessions/${sessionId}/browser?token=${encodeURIComponent(browserToken)}`
 }
 
+function buildHostedConfigSnippet(mcpUrl: string): string {
+  return `{
+  "mcpServers": {
+    "prettyfish": {
+      "url": "${mcpUrl}"
+    }
+  }
+}`
+}
+
+function buildNpxConfigSnippet(relayUrl: string, sessionId: string, agentToken: string): string {
+  return `{
+  "mcpServers": {
+    "prettyfish": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "${GITHUB_NPX_PACKAGE}",
+        "--relay-url=${relayUrl}",
+        "--session-id=${sessionId}",
+        "--agent-token=${agentToken}"
+      ]
+    }
+  }
+}`
+}
+
+function buildNpxCommand(relayUrl: string, sessionId: string, agentToken: string): string {
+  return `npx -y ${GITHUB_NPX_PACKAGE} --relay-url=${relayUrl} --session-id=${sessionId} --agent-token=${agentToken}`
+}
+
 export function useRemoteAgentRelay(options: RemoteAgentRelayOptions): RemoteAgentRelayControls {
   const [status, setStatus] = useState<RemoteAgentRelayControls['status']>('disconnected')
-  const [relayUrl, setRelayUrlState] = useState(() => readStoredValue(RELAY_URL_KEY))
+  const [relayUrl, setRelayUrlState] = useState(() => readStoredValue(RELAY_URL_KEY, DEFAULT_RELAY_URL))
   const [sessionId, setSessionIdState] = useState(() => readStoredValue(RELAY_SESSION_ID_KEY))
   const [browserToken, setBrowserTokenState] = useState(() => readStoredValue(RELAY_BROWSER_TOKEN_KEY))
+  const [agentToken, setAgentTokenState] = useState(() => readStoredValue(RELAY_AGENT_TOKEN_KEY))
+  const [browserAttachUrl, setBrowserAttachUrl] = useState('')
+  const [mcpUrl, setMcpUrl] = useState('')
   const [error, setError] = useState<string | null>(null)
   const socketRef = useRef<WebSocket | null>(null)
   const attemptedAutoConnectRef = useRef(false)
   const { executeCommand } = useAgentCommandExecutor(options)
+
+  const applySession = useCallback((session: PublicRelaySessionResponse) => {
+    setRelayUrlState(session.relayUrl)
+    setSessionIdState(session.sessionId)
+    setBrowserTokenState(session.browserToken)
+    setAgentTokenState(session.agentToken)
+    setBrowserAttachUrl(session.browserAttachUrl)
+    setMcpUrl(session.mcpUrl)
+    persistValue(RELAY_URL_KEY, session.relayUrl)
+    persistValue(RELAY_SESSION_ID_KEY, session.sessionId)
+    persistValue(RELAY_BROWSER_TOKEN_KEY, session.browserToken)
+    persistValue(RELAY_AGENT_TOKEN_KEY, session.agentToken)
+  }, [])
 
   useEffect(() => {
     try {
@@ -68,37 +138,60 @@ export function useRemoteAgentRelay(options: RemoteAgentRelayOptions): RemoteAge
       const relayUrlParam = url.searchParams.get('relayUrl')
       const relaySessionIdParam = url.searchParams.get('relaySessionId')
       const relayBrowserTokenParam = url.searchParams.get('relayBrowserToken')
-      if (relayUrlParam) setRelayUrlState(relayUrlParam)
-      if (relaySessionIdParam) setSessionIdState(relaySessionIdParam)
-      if (relayBrowserTokenParam) setBrowserTokenState(relayBrowserTokenParam)
+      if (relayUrlParam) {
+        setRelayUrlState(relayUrlParam)
+        persistValue(RELAY_URL_KEY, relayUrlParam)
+      }
+      if (relaySessionIdParam) {
+        setSessionIdState(relaySessionIdParam)
+        persistValue(RELAY_SESSION_ID_KEY, relaySessionIdParam)
+      }
+      if (relayBrowserTokenParam) {
+        setBrowserTokenState(relayBrowserTokenParam)
+        persistValue(RELAY_BROWSER_TOKEN_KEY, relayBrowserTokenParam)
+      }
     } catch {
       // ignore
     }
   }, [])
 
-  const persist = useCallback((key: string, value: string) => {
-    try {
-      if (value) localStorage.setItem(key, value)
-      else localStorage.removeItem(key)
-    } catch {
-      // ignore
+  useEffect(() => {
+    if (!relayUrl || !sessionId || !agentToken) {
+      setBrowserAttachUrl('')
+      setMcpUrl('')
+      return
     }
-  }, [])
+
+    const attachUrl = new URL('https://pretty.fish/')
+    attachUrl.searchParams.set('relayUrl', relayUrl)
+    attachUrl.searchParams.set('relaySessionId', sessionId)
+    attachUrl.searchParams.set('relayBrowserToken', browserToken)
+    setBrowserAttachUrl(attachUrl.toString())
+
+    const nextMcpUrl = new URL(`${relayUrl}/api/mcp/sessions/${sessionId}`)
+    nextMcpUrl.searchParams.set('token', agentToken)
+    setMcpUrl(nextMcpUrl.toString())
+  }, [agentToken, browserToken, relayUrl, sessionId])
 
   const setRelayUrl = useCallback((value: string) => {
     setRelayUrlState(value)
-    persist(RELAY_URL_KEY, value)
-  }, [persist])
+    persistValue(RELAY_URL_KEY, value)
+  }, [])
 
   const setSessionId = useCallback((value: string) => {
     setSessionIdState(value)
-    persist(RELAY_SESSION_ID_KEY, value)
-  }, [persist])
+    persistValue(RELAY_SESSION_ID_KEY, value)
+  }, [])
 
   const setBrowserToken = useCallback((value: string) => {
     setBrowserTokenState(value)
-    persist(RELAY_BROWSER_TOKEN_KEY, value)
-  }, [persist])
+    persistValue(RELAY_BROWSER_TOKEN_KEY, value)
+  }, [])
+
+  const setAgentToken = useCallback((value: string) => {
+    setAgentTokenState(value)
+    persistValue(RELAY_AGENT_TOKEN_KEY, value)
+  }, [])
 
   const disconnect = useCallback(() => {
     socketRef.current?.close()
@@ -107,18 +200,19 @@ export function useRemoteAgentRelay(options: RemoteAgentRelayOptions): RemoteAge
     setError(null)
   }, [])
 
-  const connect = useCallback(async () => {
-    if (!relayUrl || !sessionId || !browserToken) {
+  const connectWithSession = useCallback(async (nextRelayUrl: string, nextSessionId: string, nextBrowserToken: string) => {
+    if (!nextRelayUrl || !nextSessionId || !nextBrowserToken) {
       setStatus('error')
       setError('Relay URL, session ID, and browser token are required')
       return
     }
 
+    socketRef.current?.close()
     setStatus('connecting')
     setError(null)
 
     await new Promise<void>((resolve, reject) => {
-      const socket = new WebSocket(toWebSocketUrl(relayUrl, sessionId, browserToken))
+      const socket = new WebSocket(toWebSocketUrl(nextRelayUrl, nextSessionId, nextBrowserToken))
       socketRef.current = socket
 
       socket.addEventListener('open', () => {
@@ -180,7 +274,50 @@ export function useRemoteAgentRelay(options: RemoteAgentRelayOptions): RemoteAge
         }
       })
     }).catch(() => undefined)
-  }, [browserToken, executeCommand, relayUrl, sessionId])
+  }, [executeCommand])
+
+  const resetSession = useCallback(() => {
+    disconnect()
+    setSessionIdState('')
+    setBrowserTokenState('')
+    setAgentTokenState('')
+    setBrowserAttachUrl('')
+    setMcpUrl('')
+    persistValue(RELAY_SESSION_ID_KEY, '')
+    persistValue(RELAY_BROWSER_TOKEN_KEY, '')
+    persistValue(RELAY_AGENT_TOKEN_KEY, '')
+  }, [disconnect])
+
+  const connect = useCallback(async () => {
+    await connectWithSession(relayUrl, sessionId, browserToken)
+  }, [browserToken, connectWithSession, relayUrl, sessionId])
+
+  const createHostedSession = useCallback(async () => {
+    disconnect()
+    setStatus('connecting')
+    setError(null)
+
+    try {
+      const response = await fetch(`${relayUrl.replace(/\/$/, '')}/api/relay/public/sessions`, {
+        method: 'POST',
+        headers: {
+          'content-type': 'application/json',
+        },
+        body: JSON.stringify({ createdBy: 'prettyfish-web' }),
+      })
+
+      if (!response.ok) {
+        throw new Error(`Failed to create hosted MCP session (${response.status})`)
+      }
+
+      const session = await response.json() as PublicRelaySessionResponse
+      applySession(session)
+      await connectWithSession(session.relayUrl, session.sessionId, session.browserToken)
+    } catch (sessionError) {
+      setStatus('error')
+      setError(sessionError instanceof Error ? sessionError.message : 'Failed to create hosted session')
+    }
+  }, [applySession, connectWithSession, disconnect, relayUrl])
 
   useEffect(() => () => {
     socketRef.current?.close()
@@ -193,16 +330,46 @@ export function useRemoteAgentRelay(options: RemoteAgentRelayOptions): RemoteAge
     void connect()
   }, [browserToken, connect, relayUrl, sessionId])
 
+  const displayId = sessionId ? sessionId.slice(0, 8) : null
+
   return useMemo(() => ({
     status,
     relayUrl,
     sessionId,
     browserToken,
+    agentToken,
+    browserAttachUrl,
+    mcpUrl,
+    displayId,
     error,
     setRelayUrl,
     setSessionId,
     setBrowserToken,
+    setAgentToken,
     connect,
     disconnect,
-  }), [browserToken, connect, disconnect, error, relayUrl, sessionId, setBrowserToken, setRelayUrl, setSessionId, status])
+    createHostedSession,
+    resetSession,
+    getHostedConfigSnippet: () => buildHostedConfigSnippet(mcpUrl),
+    getNpxConfigSnippet: () => buildNpxConfigSnippet(relayUrl, sessionId, agentToken),
+    getNpxCommand: () => buildNpxCommand(relayUrl, sessionId, agentToken),
+  }), [
+    agentToken,
+    browserAttachUrl,
+    browserToken,
+    connect,
+    createHostedSession,
+    disconnect,
+    displayId,
+    error,
+    mcpUrl,
+    relayUrl,
+    resetSession,
+    sessionId,
+    setAgentToken,
+    setBrowserToken,
+    setRelayUrl,
+    setSessionId,
+    status,
+  ])
 }

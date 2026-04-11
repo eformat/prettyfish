@@ -12,6 +12,9 @@
   "bugs": {
     "url": "https://github.com/pastelsky/prettyfish/issues"
   },
+  "bin": {
+    "prettyfish-remote-mcp": "./scripts/prettyfish-remote-mcp.mjs"
+  },
   "engines": {
     "node": ">=24"
   },
