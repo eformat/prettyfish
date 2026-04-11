@@ -16,8 +16,9 @@
     "node": ">=24"
   },
   "scripts": {
-    "dev": "vite",
-    "build": "vite build",
+    "seo:generate": "node --experimental-strip-types scripts/generate-seo-pages.mjs",
+    "dev": "npm run seo:generate && vite",
+    "build": "npm run seo:generate && vite build",
     "typecheck": "tsc -b --noEmit",
     "lint": "eslint . --max-warnings 0 && npm run check:dark",
     "preview": "npm run build && wrangler dev",

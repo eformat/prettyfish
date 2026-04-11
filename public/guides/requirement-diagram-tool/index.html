@@ -1,0 +1,208 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Mermaid Requirement Diagram Tool | Pretty Fish</title>
+    <meta name="description" content="Organize Mermaid requirement diagrams with stronger visual hierarchy and export options. Pretty Fish is a prettier Mermaid editor with themes, live preview, multi-page canvases, and export-friendly output." />
+    <meta name="robots" content="index,follow,max-snippet:-1,max-image-preview:large,max-video-preview:-1" />
+    <link rel="canonical" href="https://pretty.fish/guides/requirement-diagram-tool/" />
+    <meta property="og:type" content="article" />
+    <meta property="og:title" content="Mermaid Requirement Diagram Tool | Pretty Fish" />
+    <meta property="og:description" content="Organize Mermaid requirement diagrams with stronger visual hierarchy and export options. Pretty Fish is a prettier Mermaid editor with themes, live preview, multi-page canvases, and export-friendly output." />
+    <meta property="og:url" content="https://pretty.fish/guides/requirement-diagram-tool/" />
+    <meta property="og:image" content="https://pretty.fish/og-image.png" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="Mermaid Requirement Diagram Tool | Pretty Fish" />
+    <meta name="twitter:description" content="Organize Mermaid requirement diagrams with stronger visual hierarchy and export options. Pretty Fish is a prettier Mermaid editor with themes, live preview, multi-page canvases, and export-friendly output." />
+    <meta name="twitter:image" content="https://pretty.fish/og-image.png" />
+    <link rel="stylesheet" href="/seo-guides.css" />
+    <script type="application/ld+json">{"@context":"https://schema.org","@type":"TechArticle","headline":"Mermaid Requirement Diagram Tool","description":"Organize Mermaid requirement diagrams with stronger visual hierarchy and export options. Pretty Fish is a prettier Mermaid editor with themes, live preview, multi-page canvases, and export-friendly output.","author":{"@type":"Organization","name":"Pretty Fish"},"publisher":{"@type":"Organization","name":"Pretty Fish","logo":{"@type":"ImageObject","url":"https://pretty.fish/favicon.svg"}},"mainEntityOfPage":"https://pretty.fish/guides/requirement-diagram-tool/","about":{"@type":"SoftwareApplication","name":"Pretty Fish","applicationCategory":"DeveloperApplication","operatingSystem":"Any","url":"https://pretty.fish"},"keywords":["Requirement mermaid editor","Requirement mermaid examples","Requirement maker","pretty mermaid diagrams","mermaid themes"]}</script>
+    <script type="application/ld+json">{"@context":"https://schema.org","@type":"FAQPage","mainEntity":[{"@type":"Question","name":"How do I start a Mermaid requirement in Pretty Fish?","acceptedAnswer":{"@type":"Answer","text":"Open one of the starter examples on this page, edit the Mermaid source, and keep iterating until the diagram is ready to export or share."}},{"@type":"Question","name":"Why use Pretty Fish instead of a plain Mermaid requirement editor?","acceptedAnswer":{"@type":"Answer","text":"Pretty Fish keeps Mermaid as the source of truth, but improves the working experience with stronger themes, prettier defaults, a multi-diagram canvas, and quick exports."}},{"@type":"Question","name":"Can I export this Mermaid requirement once it looks right?","acceptedAnswer":{"@type":"Answer","text":"Yes. The editor is built around shipping diagrams into docs, specs, and slides, so SVG and PNG export are first-class flows."}}]}</script>
+  </head>
+  <body>
+    <div class="page-shell">
+      <header class="hero">
+        <div class="hero__eyebrow">Pretty Fish Mermaid Guides</div>
+        <h1>Mermaid Requirement Diagram Tool</h1>
+        <p>Organize Mermaid requirement diagrams with stronger visual hierarchy and export options. Pretty Fish keeps the Mermaid source front and center, but gives the output a more polished feel with stronger themes and a faster editing loop than a plain Mermaid sandbox.</p>
+        <div class="hero__actions">
+          <a class="button button--primary" href="/">Open Pretty Fish</a>
+          <a class="button" href="/guides/">Browse all Mermaid guides</a>
+        </div>
+      </header>
+
+      <main class="content-grid">
+        <section class="panel">
+          <h2>Why teams use this Mermaid requirement page</h2>
+          <p>This page is built around actual Mermaid requirement syntax, starter examples, and editor entry points. It is meant to help someone complete the task, not just land on a keyword page.</p>
+          <ul><li>system requirements</li><li>traceability docs</li><li>planning artifacts</li></ul>
+        </section>
+
+        <section class="panel">
+          <h2>Why Pretty Fish fits Mermaid better</h2>
+          <ul><li>Prettier Mermaid themes that make diagrams feel presentation-ready</li><li>Live editing with immediate visual feedback</li><li>Multi-diagram canvas for organizing related work</li><li>Fast export to SVG, PNG, or raw Mermaid</li><li>Shareable URLs for reviews and async collaboration</li></ul>
+        </section>
+
+        <section class="panel panel--full">
+          <h2>Open a Mermaid Requirement starter in the app</h2>
+          <p>These links open directly in Pretty Fish with a real Mermaid example loaded into the editor. That keeps each guide useful as a marketing page and as a working starting point.</p>
+          <div class="starter-links">
+            <a class="button" href="https://pretty.fish/#/d/eyJ2ZXJzaW9uIjoxLCJhY3RpdmVQYWdlSWQiOiJwYWdlLTEiLCJtb2RlIjoibGlnaHQiLCJlZGl0b3JMaWdhdHVyZXMiOnRydWUsImF1dG9Gb3JtYXQiOnRydWUsInBhZ2VzIjpbeyJpZCI6InBhZ2UtMSIsIm5hbWUiOiJSZXF1aXJlbWVudCBFeGFtcGxlcyIsImFjdGl2ZURpYWdyYW1JZCI6ImRpYWdyYW0tMSIsImRpYWdyYW1zIjpbeyJpZCI6ImRpYWdyYW0tMSIsIm5hbWUiOiJyZXF1aXJlbWVudERpYWdyYW0gwrcgQmFzaWMiLCJkZXNjcmlwdGlvbiI6IlJlcXVpcmVtZW50IHN0YXJ0ZXIgZXhhbXBsZSIsImNvZGUiOiJyZXF1aXJlbWVudERpYWdyYW1cbiAgcmVxdWlyZW1lbnQgcjEge1xuICAgIGlkOiAxXG4gICAgdGV4dDogTXVzdCB3b3JrXG4gICAgcmlzazogbG93XG4gICAgdmVyaWZ5bWV0aG9kOiB0ZXN0XG4gIH0iLCJ4IjowLCJ5IjowLCJ3aWR0aCI6NjQwLCJtZXJtYWlkVGhlbWUiOiJibHVlcHJpbnQiLCJjb25maWdPdmVycmlkZXMiOnt9fV19XX0=">requirementDiagram · Basic</a><a class="button" href="https://pretty.fish/#/d/eyJ2ZXJzaW9uIjoxLCJhY3RpdmVQYWdlSWQiOiJwYWdlLTEiLCJtb2RlIjoibGlnaHQiLCJlZGl0b3JMaWdhdHVyZXMiOnRydWUsImF1dG9Gb3JtYXQiOnRydWUsInBhZ2VzIjpbeyJpZCI6InBhZ2UtMSIsIm5hbWUiOiJSZXF1aXJlbWVudCBFeGFtcGxlcyIsImFjdGl2ZURpYWdyYW1JZCI6ImRpYWdyYW0tMSIsImRpYWdyYW1zIjpbeyJpZCI6ImRpYWdyYW0tMSIsIm5hbWUiOiJyZXF1aXJlbWVudCDCtyBSZXF1aXJlbWVudCIsImRlc2NyaXB0aW9uIjoiUmVxdWlyZW1lbnQgc3RhcnRlciBleGFtcGxlIiwiY29kZSI6InJlcXVpcmVtZW50RGlhZ3JhbVxuICByZXF1aXJlbWVudCBhdXRoIHtcbiAgICBpZDogMVxuICAgIHRleHQ6IFwiTXVzdCBhdXRoZW50aWNhdGVcIlxuICAgIHJpc2s6IGhpZ2hcbiAgICB2ZXJpZnltZXRob2Q6IHRlc3RcbiAgfSIsIngiOjAsInkiOjAsIndpZHRoIjo2NDAsIm1lcm1haWRUaGVtZSI6ImJsdWVwcmludCIsImNvbmZpZ092ZXJyaWRlcyI6e319XX1dfQ==">requirement · Requirement</a><a class="button" href="https://pretty.fish/#/d/eyJ2ZXJzaW9uIjoxLCJhY3RpdmVQYWdlSWQiOiJwYWdlLTEiLCJtb2RlIjoibGlnaHQiLCJlZGl0b3JMaWdhdHVyZXMiOnRydWUsImF1dG9Gb3JtYXQiOnRydWUsInBhZ2VzIjpbeyJpZCI6InBhZ2UtMSIsIm5hbWUiOiJSZXF1aXJlbWVudCBFeGFtcGxlcyIsImFjdGl2ZURpYWdyYW1JZCI6ImRpYWdyYW0tMSIsImRpYWdyYW1zIjpbeyJpZCI6ImRpYWdyYW0tMSIsIm5hbWUiOiJlbGVtZW50IMK3IEVsZW1lbnQiLCJkZXNjcmlwdGlvbiI6IlJlcXVpcmVtZW50IHN0YXJ0ZXIgZXhhbXBsZSIsImNvZGUiOiJyZXF1aXJlbWVudERpYWdyYW1cbiAgZWxlbWVudCBhcHAge1xuICAgIHR5cGU6IGFwcGxpY2F0aW9uXG4gIH0iLCJ4IjowLCJ5IjowLCJ3aWR0aCI6NjQwLCJtZXJtYWlkVGhlbWUiOiJibHVlcHJpbnQiLCJjb25maWdPdmVycmlkZXMiOnt9fV19XX0=">element · Element</a><a class="button" href="https://pretty.fish/#/d/eyJ2ZXJzaW9uIjoxLCJhY3RpdmVQYWdlSWQiOiJwYWdlLTEiLCJtb2RlIjoibGlnaHQiLCJlZGl0b3JMaWdhdHVyZXMiOnRydWUsImF1dG9Gb3JtYXQiOnRydWUsInBhZ2VzIjpbeyJpZCI6InBhZ2UtMSIsIm5hbWUiOiJSZXF1aXJlbWVudCBFeGFtcGxlcyIsImFjdGl2ZURpYWdyYW1JZCI6ImRpYWdyYW0tMSIsImRpYWdyYW1zIjpbeyJpZCI6ImRpYWdyYW0tMSIsIm5hbWUiOiJyZWxhdGlvbnNoaXAgwrcgU2F0aXNmaWVzIiwiZGVzY3JpcHRpb24iOiJSZXF1aXJlbWVudCBzdGFydGVyIGV4YW1wbGUiLCJjb2RlIjoicmVxdWlyZW1lbnREaWFncmFtXG4gIHJlcXVpcmVtZW50IHIxIHtcbiAgICBpZDogMVxuICAgIHRleHQ6IFwiTXVzdCB3b3JrXCJcbiAgICByaXNrOiBsb3dcbiAgfVxuICBlbGVtZW50IGFwcCB7XG4gICAgdHlwZTogYXBwbGljYXRpb25cbiAgfVxuICBhcHAgLSBzYXRpc2ZpZXMgLT4gcjEiLCJ4IjowLCJ5IjowLCJ3aWR0aCI6NjQwLCJtZXJtYWlkVGhlbWUiOiJibHVlcHJpbnQiLCJjb25maWdPdmVycmlkZXMiOnt9fV19XX0=">relationship · Satisfies</a>
+          </div>
+        </section>
+
+        <section class="panel panel--full">
+          <h2>Mermaid Requirement syntax examples</h2>
+          <div class="example-grid">
+            
+    <article class="example-card">
+      <h3>requirementDiagram · Basic</h3>
+      <p>A working Mermaid requirement starter you can open directly in Pretty Fish.</p>
+      <pre><code>requirementDiagram
+  requirement r1 {
+    id: 1
+    text: Must work
+    risk: low
+    verifymethod: test
+  }</code></pre>
+      <div class="example-card__actions">
+        <a class="button button--primary" href="https://pretty.fish/#/d/eyJ2ZXJzaW9uIjoxLCJhY3RpdmVQYWdlSWQiOiJwYWdlLTEiLCJtb2RlIjoibGlnaHQiLCJlZGl0b3JMaWdhdHVyZXMiOnRydWUsImF1dG9Gb3JtYXQiOnRydWUsInBhZ2VzIjpbeyJpZCI6InBhZ2UtMSIsIm5hbWUiOiJSZXF1aXJlbWVudCBFeGFtcGxlcyIsImFjdGl2ZURpYWdyYW1JZCI6ImRpYWdyYW0tMSIsImRpYWdyYW1zIjpbeyJpZCI6ImRpYWdyYW0tMSIsIm5hbWUiOiJyZXF1aXJlbWVudERpYWdyYW0gwrcgQmFzaWMiLCJkZXNjcmlwdGlvbiI6IlJlcXVpcmVtZW50IHN0YXJ0ZXIgZXhhbXBsZSIsImNvZGUiOiJyZXF1aXJlbWVudERpYWdyYW1cbiAgcmVxdWlyZW1lbnQgcjEge1xuICAgIGlkOiAxXG4gICAgdGV4dDogTXVzdCB3b3JrXG4gICAgcmlzazogbG93XG4gICAgdmVyaWZ5bWV0aG9kOiB0ZXN0XG4gIH0iLCJ4IjowLCJ5IjowLCJ3aWR0aCI6NjQwLCJtZXJtYWlkVGhlbWUiOiJibHVlcHJpbnQiLCJjb25maWdPdmVycmlkZXMiOnt9fV19XX0=">Open this example</a>
+      </div>
+    </article>
+  
+    <article class="example-card">
+      <h3>requirement · Requirement</h3>
+      <p>A working Mermaid requirement starter you can open directly in Pretty Fish.</p>
+      <pre><code>requirementDiagram
+  requirement auth {
+    id: 1
+    text: &quot;Must authenticate&quot;
+    risk: high
+    verifymethod: test
+  }</code></pre>
+      <div class="example-card__actions">
+        <a class="button button--primary" href="https://pretty.fish/#/d/eyJ2ZXJzaW9uIjoxLCJhY3RpdmVQYWdlSWQiOiJwYWdlLTEiLCJtb2RlIjoibGlnaHQiLCJlZGl0b3JMaWdhdHVyZXMiOnRydWUsImF1dG9Gb3JtYXQiOnRydWUsInBhZ2VzIjpbeyJpZCI6InBhZ2UtMSIsIm5hbWUiOiJSZXF1aXJlbWVudCBFeGFtcGxlcyIsImFjdGl2ZURpYWdyYW1JZCI6ImRpYWdyYW0tMSIsImRpYWdyYW1zIjpbeyJpZCI6ImRpYWdyYW0tMSIsIm5hbWUiOiJyZXF1aXJlbWVudCDCtyBSZXF1aXJlbWVudCIsImRlc2NyaXB0aW9uIjoiUmVxdWlyZW1lbnQgc3RhcnRlciBleGFtcGxlIiwiY29kZSI6InJlcXVpcmVtZW50RGlhZ3JhbVxuICByZXF1aXJlbWVudCBhdXRoIHtcbiAgICBpZDogMVxuICAgIHRleHQ6IFwiTXVzdCBhdXRoZW50aWNhdGVcIlxuICAgIHJpc2s6IGhpZ2hcbiAgICB2ZXJpZnltZXRob2Q6IHRlc3RcbiAgfSIsIngiOjAsInkiOjAsIndpZHRoIjo2NDAsIm1lcm1haWRUaGVtZSI6ImJsdWVwcmludCIsImNvbmZpZ092ZXJyaWRlcyI6e319XX1dfQ==">Open this example</a>
+      </div>
+    </article>
+  
+    <article class="example-card">
+      <h3>element · Element</h3>
+      <p>A working Mermaid requirement starter you can open directly in Pretty Fish.</p>
+      <pre><code>requirementDiagram
+  element app {
+    type: application
+  }</code></pre>
+      <div class="example-card__actions">
+        <a class="button button--primary" href="https://pretty.fish/#/d/eyJ2ZXJzaW9uIjoxLCJhY3RpdmVQYWdlSWQiOiJwYWdlLTEiLCJtb2RlIjoibGlnaHQiLCJlZGl0b3JMaWdhdHVyZXMiOnRydWUsImF1dG9Gb3JtYXQiOnRydWUsInBhZ2VzIjpbeyJpZCI6InBhZ2UtMSIsIm5hbWUiOiJSZXF1aXJlbWVudCBFeGFtcGxlcyIsImFjdGl2ZURpYWdyYW1JZCI6ImRpYWdyYW0tMSIsImRpYWdyYW1zIjpbeyJpZCI6ImRpYWdyYW0tMSIsIm5hbWUiOiJlbGVtZW50IMK3IEVsZW1lbnQiLCJkZXNjcmlwdGlvbiI6IlJlcXVpcmVtZW50IHN0YXJ0ZXIgZXhhbXBsZSIsImNvZGUiOiJyZXF1aXJlbWVudERpYWdyYW1cbiAgZWxlbWVudCBhcHAge1xuICAgIHR5cGU6IGFwcGxpY2F0aW9uXG4gIH0iLCJ4IjowLCJ5IjowLCJ3aWR0aCI6NjQwLCJtZXJtYWlkVGhlbWUiOiJibHVlcHJpbnQiLCJjb25maWdPdmVycmlkZXMiOnt9fV19XX0=">Open this example</a>
+      </div>
+    </article>
+  
+    <article class="example-card">
+      <h3>relationship · Satisfies</h3>
+      <p>A working Mermaid requirement starter you can open directly in Pretty Fish.</p>
+      <pre><code>requirementDiagram
+  requirement r1 {
+    id: 1
+    text: &quot;Must work&quot;
+    risk: low
+  }
+  element app {
+    type: application
+  }
+  app - satisfies -&gt; r1</code></pre>
+      <div class="example-card__actions">
+        <a class="button button--primary" href="https://pretty.fish/#/d/eyJ2ZXJzaW9uIjoxLCJhY3RpdmVQYWdlSWQiOiJwYWdlLTEiLCJtb2RlIjoibGlnaHQiLCJlZGl0b3JMaWdhdHVyZXMiOnRydWUsImF1dG9Gb3JtYXQiOnRydWUsInBhZ2VzIjpbeyJpZCI6InBhZ2UtMSIsIm5hbWUiOiJSZXF1aXJlbWVudCBFeGFtcGxlcyIsImFjdGl2ZURpYWdyYW1JZCI6ImRpYWdyYW0tMSIsImRpYWdyYW1zIjpbeyJpZCI6ImRpYWdyYW0tMSIsIm5hbWUiOiJyZWxhdGlvbnNoaXAgwrcgU2F0aXNmaWVzIiwiZGVzY3JpcHRpb24iOiJSZXF1aXJlbWVudCBzdGFydGVyIGV4YW1wbGUiLCJjb2RlIjoicmVxdWlyZW1lbnREaWFncmFtXG4gIHJlcXVpcmVtZW50IHIxIHtcbiAgICBpZDogMVxuICAgIHRleHQ6IFwiTXVzdCB3b3JrXCJcbiAgICByaXNrOiBsb3dcbiAgfVxuICBlbGVtZW50IGFwcCB7XG4gICAgdHlwZTogYXBwbGljYXRpb25cbiAgfVxuICBhcHAgLSBzYXRpc2ZpZXMgLT4gcjEiLCJ4IjowLCJ5IjowLCJ3aWR0aCI6NjQwLCJtZXJtYWlkVGhlbWUiOiJibHVlcHJpbnQiLCJjb25maWdPdmVycmlkZXMiOnt9fV19XX0=">Open this example</a>
+      </div>
+    </article>
+  
+          </div>
+        </section>
+
+        <section class="panel">
+          <h2>Most useful Mermaid Requirement patterns</h2>
+          <ul><li><strong>requirementDiagram:</strong> Declares a requirement diagram</li><li><strong>requirement:</strong> Defines a requirement with id, text, risk, verifymethod</li><li><strong>element:</strong> Defines a design element</li><li><strong>relationship:</strong> Links elements to requirements (satisfies, traces, contains, derives, refines, verifies)</li></ul>
+        </section>
+
+        <section class="panel">
+          <h2>Use this page when you need</h2>
+          <p>A Mermaid requirement page that helps with both discovery and execution: examples to borrow, syntax to reference, and a direct jump into a prettier Mermaid editing workflow.</p>
+        </section>
+
+        <section class="panel panel--full">
+          <h2>Useful Mermaid Requirement syntax</h2>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Element</th>
+                  <th>Syntax</th>
+                  <th>What it does</th>
+                </tr>
+              </thead>
+              <tbody>
+                
+    <tr>
+      <td>requirementDiagram</td>
+      <td><code>requirementDiagram</code></td>
+      <td>Declares a requirement diagram</td>
+    </tr>
+  
+    <tr>
+      <td>requirement</td>
+      <td><code>requirement name { ... }</code></td>
+      <td>Defines a requirement with id, text, risk, verifymethod</td>
+    </tr>
+  
+    <tr>
+      <td>element</td>
+      <td><code>element name { type: ... }</code></td>
+      <td>Defines a design element</td>
+    </tr>
+  
+    <tr>
+      <td>relationship</td>
+      <td><code>el - type -&gt; req</code></td>
+      <td>Links elements to requirements (satisfies, traces, contains, derives, refines, verifies)</td>
+    </tr>
+  
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        <section class="panel">
+          <h2>What to optimize for</h2>
+          <p>If someone is searching for a Mermaid requirement editor, they usually want three things: correct syntax, a fast feedback loop, and visuals that are good enough to ship into docs, specs, or slides.</p>
+        </section>
+
+        <section class="panel">
+          <h2>Common questions</h2>
+          <div class="faq-list">
+            
+    <details class="faq-item">
+      <summary>How do I start a Mermaid requirement in Pretty Fish?</summary>
+      <p>Open one of the starter examples on this page, edit the Mermaid source, and keep iterating until the diagram is ready to export or share.</p>
+    </details>
+  
+    <details class="faq-item">
+      <summary>Why use Pretty Fish instead of a plain Mermaid requirement editor?</summary>
+      <p>Pretty Fish keeps Mermaid as the source of truth, but improves the working experience with stronger themes, prettier defaults, a multi-diagram canvas, and quick exports.</p>
+    </details>
+  
+    <details class="faq-item">
+      <summary>Can I export this Mermaid requirement once it looks right?</summary>
+      <p>Yes. The editor is built around shipping diagrams into docs, specs, and slides, so SVG and PNG export are first-class flows.</p>
+    </details>
+  
+          </div>
+        </section>
+
+        <section class="panel">
+          <h2>Related Mermaid guides</h2>
+          <ul><li><a href="/guides/flowchart-maker/">Flowchart</a></li><li><a href="/guides/sequence-diagram-editor/">Sequence</a></li><li><a href="/guides/class-diagram-tool/">Class</a></li><li><a href="/guides/state-diagram-editor/">State</a></li><li><a href="/guides/er-diagram-tool/">ER Diagram</a></li><li><a href="/guides/gantt-chart-maker/">Gantt</a></li></ul>
+        </section>
+      </main>
+    </div>
+  </body>
+</html>

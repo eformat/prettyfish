@@ -1,0 +1,253 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Mermaid Git Graph Editor | Pretty Fish</title>
+    <meta name="description" content="Show branching strategies and release history with a better-looking Mermaid gitGraph view. Pretty Fish is a prettier Mermaid editor with themes, live preview, multi-page canvases, and export-friendly output." />
+    <meta name="robots" content="index,follow,max-snippet:-1,max-image-preview:large,max-video-preview:-1" />
+    <link rel="canonical" href="https://pretty.fish/guides/gitgraph-editor/" />
+    <meta property="og:type" content="article" />
+    <meta property="og:title" content="Mermaid Git Graph Editor | Pretty Fish" />
+    <meta property="og:description" content="Show branching strategies and release history with a better-looking Mermaid gitGraph view. Pretty Fish is a prettier Mermaid editor with themes, live preview, multi-page canvases, and export-friendly output." />
+    <meta property="og:url" content="https://pretty.fish/guides/gitgraph-editor/" />
+    <meta property="og:image" content="https://pretty.fish/og-image.png" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="Mermaid Git Graph Editor | Pretty Fish" />
+    <meta name="twitter:description" content="Show branching strategies and release history with a better-looking Mermaid gitGraph view. Pretty Fish is a prettier Mermaid editor with themes, live preview, multi-page canvases, and export-friendly output." />
+    <meta name="twitter:image" content="https://pretty.fish/og-image.png" />
+    <link rel="stylesheet" href="/seo-guides.css" />
+    <script type="application/ld+json">{"@context":"https://schema.org","@type":"TechArticle","headline":"Mermaid Git Graph Editor","description":"Show branching strategies and release history with a better-looking Mermaid gitGraph view. Pretty Fish is a prettier Mermaid editor with themes, live preview, multi-page canvases, and export-friendly output.","author":{"@type":"Organization","name":"Pretty Fish"},"publisher":{"@type":"Organization","name":"Pretty Fish","logo":{"@type":"ImageObject","url":"https://pretty.fish/favicon.svg"}},"mainEntityOfPage":"https://pretty.fish/guides/gitgraph-editor/","about":{"@type":"SoftwareApplication","name":"Pretty Fish","applicationCategory":"DeveloperApplication","operatingSystem":"Any","url":"https://pretty.fish"},"keywords":["Git Graph mermaid editor","Git Graph mermaid examples","Git Graph maker","pretty mermaid diagrams","mermaid themes"]}</script>
+    <script type="application/ld+json">{"@context":"https://schema.org","@type":"FAQPage","mainEntity":[{"@type":"Question","name":"How do I start a Mermaid git graph in Pretty Fish?","acceptedAnswer":{"@type":"Answer","text":"Open one of the starter examples on this page, edit the Mermaid source, and keep iterating until the diagram is ready to export or share."}},{"@type":"Question","name":"Why use Pretty Fish instead of a plain Mermaid git graph editor?","acceptedAnswer":{"@type":"Answer","text":"Pretty Fish keeps Mermaid as the source of truth, but improves the working experience with stronger themes, prettier defaults, a multi-diagram canvas, and quick exports."}},{"@type":"Question","name":"Can I export this Mermaid git graph once it looks right?","acceptedAnswer":{"@type":"Answer","text":"Yes. The editor is built around shipping diagrams into docs, specs, and slides, so SVG and PNG export are first-class flows."}}]}</script>
+  </head>
+  <body>
+    <div class="page-shell">
+      <header class="hero">
+        <div class="hero__eyebrow">Pretty Fish Mermaid Guides</div>
+        <h1>Mermaid Git Graph Editor</h1>
+        <p>Show branching strategies and release history with a better-looking Mermaid gitGraph view. Pretty Fish keeps the Mermaid source front and center, but gives the output a more polished feel with stronger themes and a faster editing loop than a plain Mermaid sandbox.</p>
+        <div class="hero__actions">
+          <a class="button button--primary" href="/">Open Pretty Fish</a>
+          <a class="button" href="/guides/">Browse all Mermaid guides</a>
+        </div>
+      </header>
+
+      <main class="content-grid">
+        <section class="panel">
+          <h2>Why teams use this Mermaid git graph page</h2>
+          <p>This page is built around actual Mermaid git graph syntax, starter examples, and editor entry points. It is meant to help someone complete the task, not just land on a keyword page.</p>
+          <ul><li>release flows</li><li>branching models</li><li>Git training docs</li></ul>
+        </section>
+
+        <section class="panel">
+          <h2>Why Pretty Fish fits Mermaid better</h2>
+          <ul><li>Prettier Mermaid themes that make diagrams feel presentation-ready</li><li>Live editing with immediate visual feedback</li><li>Multi-diagram canvas for organizing related work</li><li>Fast export to SVG, PNG, or raw Mermaid</li><li>Shareable URLs for reviews and async collaboration</li></ul>
+        </section>
+
+        <section class="panel panel--full">
+          <h2>Open a Mermaid Git Graph starter in the app</h2>
+          <p>These links open directly in Pretty Fish with a real Mermaid example loaded into the editor. That keeps each guide useful as a marketing page and as a working starting point.</p>
+          <div class="starter-links">
+            <a class="button" href="https://pretty.fish/#/d/eyJ2ZXJzaW9uIjoxLCJhY3RpdmVQYWdlSWQiOiJwYWdlLTEiLCJtb2RlIjoibGlnaHQiLCJlZGl0b3JMaWdhdHVyZXMiOnRydWUsImF1dG9Gb3JtYXQiOnRydWUsInBhZ2VzIjpbeyJpZCI6InBhZ2UtMSIsIm5hbWUiOiJHaXQgR3JhcGggRXhhbXBsZXMiLCJhY3RpdmVEaWFncmFtSWQiOiJkaWFncmFtLTEiLCJkaWFncmFtcyI6W3siaWQiOiJkaWFncmFtLTEiLCJuYW1lIjoiZ2l0R3JhcGggZGVjbGFyYXRpb24gwrcgQmFzaWMiLCJkZXNjcmlwdGlvbiI6IkdpdCBHcmFwaCBzdGFydGVyIGV4YW1wbGUiLCJjb2RlIjoiZ2l0R3JhcGhcbiAgY29tbWl0XG4gIGNvbW1pdFxuICBjb21taXQiLCJ4IjowLCJ5IjowLCJ3aWR0aCI6NjQwLCJtZXJtYWlkVGhlbWUiOiJibHVlcHJpbnQiLCJjb25maWdPdmVycmlkZXMiOnt9fV19XX0=">gitGraph declaration · Basic</a><a class="button" href="https://pretty.fish/#/d/eyJ2ZXJzaW9uIjoxLCJhY3RpdmVQYWdlSWQiOiJwYWdlLTEiLCJtb2RlIjoibGlnaHQiLCJlZGl0b3JMaWdhdHVyZXMiOnRydWUsImF1dG9Gb3JtYXQiOnRydWUsInBhZ2VzIjpbeyJpZCI6InBhZ2UtMSIsIm5hbWUiOiJHaXQgR3JhcGggRXhhbXBsZXMiLCJhY3RpdmVEaWFncmFtSWQiOiJkaWFncmFtLTEiLCJkaWFncmFtcyI6W3siaWQiOiJkaWFncmFtLTEiLCJuYW1lIjoiY29tbWl0IHNpbXBsZSDCtyBTaW1wbGUiLCJkZXNjcmlwdGlvbiI6IkdpdCBHcmFwaCBzdGFydGVyIGV4YW1wbGUiLCJjb2RlIjoiZ2l0R3JhcGhcbiAgY29tbWl0XG4gIGNvbW1pdCIsIngiOjAsInkiOjAsIndpZHRoIjo2NDAsIm1lcm1haWRUaGVtZSI6ImJsdWVwcmludCIsImNvbmZpZ092ZXJyaWRlcyI6e319XX1dfQ==">commit simple · Simple</a><a class="button" href="https://pretty.fish/#/d/eyJ2ZXJzaW9uIjoxLCJhY3RpdmVQYWdlSWQiOiJwYWdlLTEiLCJtb2RlIjoibGlnaHQiLCJlZGl0b3JMaWdhdHVyZXMiOnRydWUsImF1dG9Gb3JtYXQiOnRydWUsInBhZ2VzIjpbeyJpZCI6InBhZ2UtMSIsIm5hbWUiOiJHaXQgR3JhcGggRXhhbXBsZXMiLCJhY3RpdmVEaWFncmFtSWQiOiJkaWFncmFtLTEiLCJkaWFncmFtcyI6W3siaWQiOiJkaWFncmFtLTEiLCJuYW1lIjoiY29tbWl0IHdpdGggbWVzc2FnZSDCtyBNZXNzYWdlIiwiZGVzY3JpcHRpb24iOiJHaXQgR3JhcGggc3RhcnRlciBleGFtcGxlIiwiY29kZSI6ImdpdEdyYXBoXG4gIGNvbW1pdCBpZDogXCJpbml0XCJcbiAgY29tbWl0IGlkOiBcImFkZCBmZWF0dXJlXCIiLCJ4IjowLCJ5IjowLCJ3aWR0aCI6NjQwLCJtZXJtYWlkVGhlbWUiOiJibHVlcHJpbnQiLCJjb25maWdPdmVycmlkZXMiOnt9fV19XX0=">commit with message · Message</a><a class="button" href="https://pretty.fish/#/d/eyJ2ZXJzaW9uIjoxLCJhY3RpdmVQYWdlSWQiOiJwYWdlLTEiLCJtb2RlIjoibGlnaHQiLCJlZGl0b3JMaWdhdHVyZXMiOnRydWUsImF1dG9Gb3JtYXQiOnRydWUsInBhZ2VzIjpbeyJpZCI6InBhZ2UtMSIsIm5hbWUiOiJHaXQgR3JhcGggRXhhbXBsZXMiLCJhY3RpdmVEaWFncmFtSWQiOiJkaWFncmFtLTEiLCJkaWFncmFtcyI6W3siaWQiOiJkaWFncmFtLTEiLCJuYW1lIjoiY29tbWl0IHdpdGggdGFnIMK3IFRhZyIsImRlc2NyaXB0aW9uIjoiR2l0IEdyYXBoIHN0YXJ0ZXIgZXhhbXBsZSIsImNvZGUiOiJnaXRHcmFwaFxuICBjb21taXQgaWQ6IFwicmVsZWFzZVwiIHRhZzogXCJ2MS4wXCIiLCJ4IjowLCJ5IjowLCJ3aWR0aCI6NjQwLCJtZXJtYWlkVGhlbWUiOiJibHVlcHJpbnQiLCJjb25maWdPdmVycmlkZXMiOnt9fV19XX0=">commit with tag · Tag</a>
+          </div>
+        </section>
+
+        <section class="panel panel--full">
+          <h2>Mermaid Git Graph syntax examples</h2>
+          <div class="example-grid">
+            
+    <article class="example-card">
+      <h3>gitGraph declaration · Basic</h3>
+      <p>A working Mermaid git graph starter you can open directly in Pretty Fish.</p>
+      <pre><code>gitGraph
+  commit
+  commit
+  commit</code></pre>
+      <div class="example-card__actions">
+        <a class="button button--primary" href="https://pretty.fish/#/d/eyJ2ZXJzaW9uIjoxLCJhY3RpdmVQYWdlSWQiOiJwYWdlLTEiLCJtb2RlIjoibGlnaHQiLCJlZGl0b3JMaWdhdHVyZXMiOnRydWUsImF1dG9Gb3JtYXQiOnRydWUsInBhZ2VzIjpbeyJpZCI6InBhZ2UtMSIsIm5hbWUiOiJHaXQgR3JhcGggRXhhbXBsZXMiLCJhY3RpdmVEaWFncmFtSWQiOiJkaWFncmFtLTEiLCJkaWFncmFtcyI6W3siaWQiOiJkaWFncmFtLTEiLCJuYW1lIjoiZ2l0R3JhcGggZGVjbGFyYXRpb24gwrcgQmFzaWMiLCJkZXNjcmlwdGlvbiI6IkdpdCBHcmFwaCBzdGFydGVyIGV4YW1wbGUiLCJjb2RlIjoiZ2l0R3JhcGhcbiAgY29tbWl0XG4gIGNvbW1pdFxuICBjb21taXQiLCJ4IjowLCJ5IjowLCJ3aWR0aCI6NjQwLCJtZXJtYWlkVGhlbWUiOiJibHVlcHJpbnQiLCJjb25maWdPdmVycmlkZXMiOnt9fV19XX0=">Open this example</a>
+      </div>
+    </article>
+  
+    <article class="example-card">
+      <h3>commit simple · Simple</h3>
+      <p>A working Mermaid git graph starter you can open directly in Pretty Fish.</p>
+      <pre><code>gitGraph
+  commit
+  commit</code></pre>
+      <div class="example-card__actions">
+        <a class="button button--primary" href="https://pretty.fish/#/d/eyJ2ZXJzaW9uIjoxLCJhY3RpdmVQYWdlSWQiOiJwYWdlLTEiLCJtb2RlIjoibGlnaHQiLCJlZGl0b3JMaWdhdHVyZXMiOnRydWUsImF1dG9Gb3JtYXQiOnRydWUsInBhZ2VzIjpbeyJpZCI6InBhZ2UtMSIsIm5hbWUiOiJHaXQgR3JhcGggRXhhbXBsZXMiLCJhY3RpdmVEaWFncmFtSWQiOiJkaWFncmFtLTEiLCJkaWFncmFtcyI6W3siaWQiOiJkaWFncmFtLTEiLCJuYW1lIjoiY29tbWl0IHNpbXBsZSDCtyBTaW1wbGUiLCJkZXNjcmlwdGlvbiI6IkdpdCBHcmFwaCBzdGFydGVyIGV4YW1wbGUiLCJjb2RlIjoiZ2l0R3JhcGhcbiAgY29tbWl0XG4gIGNvbW1pdCIsIngiOjAsInkiOjAsIndpZHRoIjo2NDAsIm1lcm1haWRUaGVtZSI6ImJsdWVwcmludCIsImNvbmZpZ092ZXJyaWRlcyI6e319XX1dfQ==">Open this example</a>
+      </div>
+    </article>
+  
+    <article class="example-card">
+      <h3>commit with message · Message</h3>
+      <p>A working Mermaid git graph starter you can open directly in Pretty Fish.</p>
+      <pre><code>gitGraph
+  commit id: &quot;init&quot;
+  commit id: &quot;add feature&quot;</code></pre>
+      <div class="example-card__actions">
+        <a class="button button--primary" href="https://pretty.fish/#/d/eyJ2ZXJzaW9uIjoxLCJhY3RpdmVQYWdlSWQiOiJwYWdlLTEiLCJtb2RlIjoibGlnaHQiLCJlZGl0b3JMaWdhdHVyZXMiOnRydWUsImF1dG9Gb3JtYXQiOnRydWUsInBhZ2VzIjpbeyJpZCI6InBhZ2UtMSIsIm5hbWUiOiJHaXQgR3JhcGggRXhhbXBsZXMiLCJhY3RpdmVEaWFncmFtSWQiOiJkaWFncmFtLTEiLCJkaWFncmFtcyI6W3siaWQiOiJkaWFncmFtLTEiLCJuYW1lIjoiY29tbWl0IHdpdGggbWVzc2FnZSDCtyBNZXNzYWdlIiwiZGVzY3JpcHRpb24iOiJHaXQgR3JhcGggc3RhcnRlciBleGFtcGxlIiwiY29kZSI6ImdpdEdyYXBoXG4gIGNvbW1pdCBpZDogXCJpbml0XCJcbiAgY29tbWl0IGlkOiBcImFkZCBmZWF0dXJlXCIiLCJ4IjowLCJ5IjowLCJ3aWR0aCI6NjQwLCJtZXJtYWlkVGhlbWUiOiJibHVlcHJpbnQiLCJjb25maWdPdmVycmlkZXMiOnt9fV19XX0=">Open this example</a>
+      </div>
+    </article>
+  
+    <article class="example-card">
+      <h3>commit with tag · Tag</h3>
+      <p>A working Mermaid git graph starter you can open directly in Pretty Fish.</p>
+      <pre><code>gitGraph
+  commit id: &quot;release&quot; tag: &quot;v1.0&quot;</code></pre>
+      <div class="example-card__actions">
+        <a class="button button--primary" href="https://pretty.fish/#/d/eyJ2ZXJzaW9uIjoxLCJhY3RpdmVQYWdlSWQiOiJwYWdlLTEiLCJtb2RlIjoibGlnaHQiLCJlZGl0b3JMaWdhdHVyZXMiOnRydWUsImF1dG9Gb3JtYXQiOnRydWUsInBhZ2VzIjpbeyJpZCI6InBhZ2UtMSIsIm5hbWUiOiJHaXQgR3JhcGggRXhhbXBsZXMiLCJhY3RpdmVEaWFncmFtSWQiOiJkaWFncmFtLTEiLCJkaWFncmFtcyI6W3siaWQiOiJkaWFncmFtLTEiLCJuYW1lIjoiY29tbWl0IHdpdGggdGFnIMK3IFRhZyIsImRlc2NyaXB0aW9uIjoiR2l0IEdyYXBoIHN0YXJ0ZXIgZXhhbXBsZSIsImNvZGUiOiJnaXRHcmFwaFxuICBjb21taXQgaWQ6IFwicmVsZWFzZVwiIHRhZzogXCJ2MS4wXCIiLCJ4IjowLCJ5IjowLCJ3aWR0aCI6NjQwLCJtZXJtYWlkVGhlbWUiOiJibHVlcHJpbnQiLCJjb25maWdPdmVycmlkZXMiOnt9fV19XX0=">Open this example</a>
+      </div>
+    </article>
+  
+          </div>
+        </section>
+
+        <section class="panel">
+          <h2>Most useful Mermaid Git Graph patterns</h2>
+          <ul><li><strong>gitGraph declaration:</strong> Declare a git commit graph diagram</li><li><strong>commit simple:</strong> Add a commit to the current branch</li><li><strong>commit with message:</strong> Commit with custom ID/message</li><li><strong>commit with tag:</strong> Commit with version tag label</li><li><strong>commit type NORMAL:</strong> Regular commit (default type)</li><li><strong>commit type REVERSE:</strong> Reverse/undo commit visualization</li><li><strong>commit type HIGHLIGHT:</strong> Highlighted/important commit</li><li><strong>branch creation:</strong> Create and checkout a new branch</li></ul>
+        </section>
+
+        <section class="panel">
+          <h2>Use this page when you need</h2>
+          <p>A Mermaid git graph page that helps with both discovery and execution: examples to borrow, syntax to reference, and a direct jump into a prettier Mermaid editing workflow.</p>
+        </section>
+
+        <section class="panel panel--full">
+          <h2>Useful Mermaid Git Graph syntax</h2>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Element</th>
+                  <th>Syntax</th>
+                  <th>What it does</th>
+                </tr>
+              </thead>
+              <tbody>
+                
+    <tr>
+      <td>gitGraph declaration</td>
+      <td><code>gitGraph</code></td>
+      <td>Declare a git commit graph diagram</td>
+    </tr>
+  
+    <tr>
+      <td>commit simple</td>
+      <td><code>commit</code></td>
+      <td>Add a commit to the current branch</td>
+    </tr>
+  
+    <tr>
+      <td>commit with message</td>
+      <td><code>commit id: &quot;message&quot;</code></td>
+      <td>Commit with custom ID/message</td>
+    </tr>
+  
+    <tr>
+      <td>commit with tag</td>
+      <td><code>commit id: &quot;msg&quot; tag: &quot;v1.0&quot;</code></td>
+      <td>Commit with version tag label</td>
+    </tr>
+  
+    <tr>
+      <td>commit type NORMAL</td>
+      <td><code>commit type: NORMAL</code></td>
+      <td>Regular commit (default type)</td>
+    </tr>
+  
+    <tr>
+      <td>commit type REVERSE</td>
+      <td><code>commit type: REVERSE</code></td>
+      <td>Reverse/undo commit visualization</td>
+    </tr>
+  
+    <tr>
+      <td>commit type HIGHLIGHT</td>
+      <td><code>commit type: HIGHLIGHT</code></td>
+      <td>Highlighted/important commit</td>
+    </tr>
+  
+    <tr>
+      <td>branch creation</td>
+      <td><code>branch branchName</code></td>
+      <td>Create and checkout a new branch</td>
+    </tr>
+  
+    <tr>
+      <td>branch with order</td>
+      <td><code>branch branchName order: 2</code></td>
+      <td>Create branch with specific display order</td>
+    </tr>
+  
+    <tr>
+      <td>checkout branch</td>
+      <td><code>checkout branchName</code></td>
+      <td>Switch to a different branch</td>
+    </tr>
+  
+    <tr>
+      <td>merge branch</td>
+      <td><code>merge branchName</code></td>
+      <td>Merge a branch into current branch</td>
+    </tr>
+  
+    <tr>
+      <td>merge with tag</td>
+      <td><code>merge branchName tag: &quot;v1.1&quot;</code></td>
+      <td>Merge with version tag</td>
+    </tr>
+  
+    <tr>
+      <td>cherry-pick commit</td>
+      <td><code>cherry-pick id: &quot;commitId&quot;</code></td>
+      <td>Apply a specific commit to current branch</td>
+    </tr>
+  
+    <tr>
+      <td>LR direction</td>
+      <td><code>gitGraph
+%%{init: { &quot;gitGraph&quot;: {&quot;mainBranchName&quot;: &quot;main&quot;}} }%%</code></td>
+      <td>Display graph horizontally (left-right)</td>
+    </tr>
+  
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        <section class="panel">
+          <h2>What to optimize for</h2>
+          <p>If someone is searching for a Mermaid git graph editor, they usually want three things: correct syntax, a fast feedback loop, and visuals that are good enough to ship into docs, specs, or slides.</p>
+        </section>
+
+        <section class="panel">
+          <h2>Common questions</h2>
+          <div class="faq-list">
+            
+    <details class="faq-item">
+      <summary>How do I start a Mermaid git graph in Pretty Fish?</summary>
+      <p>Open one of the starter examples on this page, edit the Mermaid source, and keep iterating until the diagram is ready to export or share.</p>
+    </details>
+  
+    <details class="faq-item">
+      <summary>Why use Pretty Fish instead of a plain Mermaid git graph editor?</summary>
+      <p>Pretty Fish keeps Mermaid as the source of truth, but improves the working experience with stronger themes, prettier defaults, a multi-diagram canvas, and quick exports.</p>
+    </details>
+  
+    <details class="faq-item">
+      <summary>Can I export this Mermaid git graph once it looks right?</summary>
+      <p>Yes. The editor is built around shipping diagrams into docs, specs, and slides, so SVG and PNG export are first-class flows.</p>
+    </details>
+  
+          </div>
+        </section>
+
+        <section class="panel">
+          <h2>Related Mermaid guides</h2>
+          <ul><li><a href="/guides/flowchart-maker/">Flowchart</a></li><li><a href="/guides/sequence-diagram-editor/">Sequence</a></li><li><a href="/guides/class-diagram-tool/">Class</a></li><li><a href="/guides/state-diagram-editor/">State</a></li><li><a href="/guides/er-diagram-tool/">ER Diagram</a></li><li><a href="/guides/gantt-chart-maker/">Gantt</a></li></ul>
+        </section>
+      </main>
+    </div>
+  </body>
+</html>

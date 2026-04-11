@@ -362,6 +362,20 @@ export function Header({
 
         <div className={chromeDividerClass()} />
 
+        <a
+          href="/guides/"
+          aria-label="Browse Mermaid guides"
+          title="Browse Mermaid guides"
+          className={cn(
+            'inline-flex items-center rounded-lg px-2 h-7 text-xs font-medium transition-colors',
+            'text-ui-ink-soft hover:text-ui-ink-strong hover:bg-ui-surface-hover',
+          )}
+        >
+          Guides
+        </a>
+
+        <div className={chromeDividerClass()} />
+
         {/* Sponsor */}
         <a
           href="https://github.com/sponsors/pastelsky"

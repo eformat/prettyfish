@@ -1,0 +1,321 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Mermaid Class Diagram Tool | Pretty Fish</title>
+    <meta name="description" content="Model Mermaid class diagrams with a prettier visual style and faster iteration loop. Pretty Fish is a prettier Mermaid editor with themes, live preview, multi-page canvases, and export-friendly output." />
+    <meta name="robots" content="index,follow,max-snippet:-1,max-image-preview:large,max-video-preview:-1" />
+    <link rel="canonical" href="https://pretty.fish/guides/class-diagram-tool/" />
+    <meta property="og:type" content="article" />
+    <meta property="og:title" content="Mermaid Class Diagram Tool | Pretty Fish" />
+    <meta property="og:description" content="Model Mermaid class diagrams with a prettier visual style and faster iteration loop. Pretty Fish is a prettier Mermaid editor with themes, live preview, multi-page canvases, and export-friendly output." />
+    <meta property="og:url" content="https://pretty.fish/guides/class-diagram-tool/" />
+    <meta property="og:image" content="https://pretty.fish/og-image.png" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="Mermaid Class Diagram Tool | Pretty Fish" />
+    <meta name="twitter:description" content="Model Mermaid class diagrams with a prettier visual style and faster iteration loop. Pretty Fish is a prettier Mermaid editor with themes, live preview, multi-page canvases, and export-friendly output." />
+    <meta name="twitter:image" content="https://pretty.fish/og-image.png" />
+    <link rel="stylesheet" href="/seo-guides.css" />
+    <script type="application/ld+json">{"@context":"https://schema.org","@type":"TechArticle","headline":"Mermaid Class Diagram Tool","description":"Model Mermaid class diagrams with a prettier visual style and faster iteration loop. Pretty Fish is a prettier Mermaid editor with themes, live preview, multi-page canvases, and export-friendly output.","author":{"@type":"Organization","name":"Pretty Fish"},"publisher":{"@type":"Organization","name":"Pretty Fish","logo":{"@type":"ImageObject","url":"https://pretty.fish/favicon.svg"}},"mainEntityOfPage":"https://pretty.fish/guides/class-diagram-tool/","about":{"@type":"SoftwareApplication","name":"Pretty Fish","applicationCategory":"DeveloperApplication","operatingSystem":"Any","url":"https://pretty.fish"},"keywords":["Class mermaid editor","Class mermaid examples","Class maker","pretty mermaid diagrams","mermaid themes"]}</script>
+    <script type="application/ld+json">{"@context":"https://schema.org","@type":"FAQPage","mainEntity":[{"@type":"Question","name":"How do I start a Mermaid class in Pretty Fish?","acceptedAnswer":{"@type":"Answer","text":"Open one of the starter examples on this page, edit the Mermaid source, and keep iterating until the diagram is ready to export or share."}},{"@type":"Question","name":"Why use Pretty Fish instead of a plain Mermaid class editor?","acceptedAnswer":{"@type":"Answer","text":"Pretty Fish keeps Mermaid as the source of truth, but improves the working experience with stronger themes, prettier defaults, a multi-diagram canvas, and quick exports."}},{"@type":"Question","name":"Can I export this Mermaid class once it looks right?","acceptedAnswer":{"@type":"Answer","text":"Yes. The editor is built around shipping diagrams into docs, specs, and slides, so SVG and PNG export are first-class flows."}}]}</script>
+  </head>
+  <body>
+    <div class="page-shell">
+      <header class="hero">
+        <div class="hero__eyebrow">Pretty Fish Mermaid Guides</div>
+        <h1>Mermaid Class Diagram Tool</h1>
+        <p>Model Mermaid class diagrams with a prettier visual style and faster iteration loop. Pretty Fish keeps the Mermaid source front and center, but gives the output a more polished feel with stronger themes and a faster editing loop than a plain Mermaid sandbox.</p>
+        <div class="hero__actions">
+          <a class="button button--primary" href="/">Open Pretty Fish</a>
+          <a class="button" href="/guides/">Browse all Mermaid guides</a>
+        </div>
+      </header>
+
+      <main class="content-grid">
+        <section class="panel">
+          <h2>Why teams use this Mermaid class page</h2>
+          <p>This page is built around actual Mermaid class syntax, starter examples, and editor entry points. It is meant to help someone complete the task, not just land on a keyword page.</p>
+          <ul><li>domain models</li><li>OO design reviews</li><li>UML sketches</li></ul>
+        </section>
+
+        <section class="panel">
+          <h2>Why Pretty Fish fits Mermaid better</h2>
+          <ul><li>Prettier Mermaid themes that make diagrams feel presentation-ready</li><li>Live editing with immediate visual feedback</li><li>Multi-diagram canvas for organizing related work</li><li>Fast export to SVG, PNG, or raw Mermaid</li><li>Shareable URLs for reviews and async collaboration</li></ul>
+        </section>
+
+        <section class="panel panel--full">
+          <h2>Open a Mermaid Class starter in the app</h2>
+          <p>These links open directly in Pretty Fish with a real Mermaid example loaded into the editor. That keeps each guide useful as a marketing page and as a working starting point.</p>
+          <div class="starter-links">
+            <a class="button" href="https://pretty.fish/#/d/eyJ2ZXJzaW9uIjoxLCJhY3RpdmVQYWdlSWQiOiJwYWdlLTEiLCJtb2RlIjoibGlnaHQiLCJlZGl0b3JMaWdhdHVyZXMiOnRydWUsImF1dG9Gb3JtYXQiOnRydWUsInBhZ2VzIjpbeyJpZCI6InBhZ2UtMSIsIm5hbWUiOiJDbGFzcyBFeGFtcGxlcyIsImFjdGl2ZURpYWdyYW1JZCI6ImRpYWdyYW0tMSIsImRpYWdyYW1zIjpbeyJpZCI6ImRpYWdyYW0tMSIsIm5hbWUiOiJjbGFzcyDCtyBTaW1wbGUgY2xhc3MiLCJkZXNjcmlwdGlvbiI6IkNsYXNzIHN0YXJ0ZXIgZXhhbXBsZSIsImNvZGUiOiJjbGFzc0RpYWdyYW1cbiAgY2xhc3MgQW5pbWFsIHtcbiAgICArU3RyaW5nIG5hbWVcbiAgICAraW50IGFnZVxuICAgICttYWtlU291bmQoKSB2b2lkXG4gIH0iLCJ4IjowLCJ5IjowLCJ3aWR0aCI6NjQwLCJtZXJtYWlkVGhlbWUiOiJibHVlcHJpbnQiLCJjb25maWdPdmVycmlkZXMiOnt9fV19XX0=">class · Simple class</a><a class="button" href="https://pretty.fish/#/d/eyJ2ZXJzaW9uIjoxLCJhY3RpdmVQYWdlSWQiOiJwYWdlLTEiLCJtb2RlIjoibGlnaHQiLCJlZGl0b3JMaWdhdHVyZXMiOnRydWUsImF1dG9Gb3JtYXQiOnRydWUsInBhZ2VzIjpbeyJpZCI6InBhZ2UtMSIsIm5hbWUiOiJDbGFzcyBFeGFtcGxlcyIsImFjdGl2ZURpYWdyYW1JZCI6ImRpYWdyYW0tMSIsImRpYWdyYW1zIjpbeyJpZCI6ImRpYWdyYW0tMSIsIm5hbWUiOiJpbnRlcmZhY2UgwrcgSW50ZXJmYWNlIiwiZGVzY3JpcHRpb24iOiJDbGFzcyBzdGFydGVyIGV4YW1wbGUiLCJjb2RlIjoiY2xhc3NEaWFncmFtXG4gIGNsYXNzIERyYXdhYmxlIHtcbiAgICA8PGludGVyZmFjZT4+XG4gICAgK2RyYXcoKSB2b2lkXG4gIH0iLCJ4IjowLCJ5IjowLCJ3aWR0aCI6NjQwLCJtZXJtYWlkVGhlbWUiOiJibHVlcHJpbnQiLCJjb25maWdPdmVycmlkZXMiOnt9fV19XX0=">interface · Interface</a><a class="button" href="https://pretty.fish/#/d/eyJ2ZXJzaW9uIjoxLCJhY3RpdmVQYWdlSWQiOiJwYWdlLTEiLCJtb2RlIjoibGlnaHQiLCJlZGl0b3JMaWdhdHVyZXMiOnRydWUsImF1dG9Gb3JtYXQiOnRydWUsInBhZ2VzIjpbeyJpZCI6InBhZ2UtMSIsIm5hbWUiOiJDbGFzcyBFeGFtcGxlcyIsImFjdGl2ZURpYWdyYW1JZCI6ImRpYWdyYW0tMSIsImRpYWdyYW1zIjpbeyJpZCI6ImRpYWdyYW0tMSIsIm5hbWUiOiJhYnN0cmFjdCBjbGFzcyDCtyBBYnN0cmFjdCIsImRlc2NyaXB0aW9uIjoiQ2xhc3Mgc3RhcnRlciBleGFtcGxlIiwiY29kZSI6ImNsYXNzRGlhZ3JhbVxuICBjbGFzcyBTaGFwZSB7XG4gICAgPDxhYnN0cmFjdD4+XG4gICAgK2FyZWEoKSBmbG9hdFxuICB9IiwieCI6MCwieSI6MCwid2lkdGgiOjY0MCwibWVybWFpZFRoZW1lIjoiYmx1ZXByaW50IiwiY29uZmlnT3ZlcnJpZGVzIjp7fX1dfV19">abstract class · Abstract</a><a class="button" href="https://pretty.fish/#/d/eyJ2ZXJzaW9uIjoxLCJhY3RpdmVQYWdlSWQiOiJwYWdlLTEiLCJtb2RlIjoibGlnaHQiLCJlZGl0b3JMaWdhdHVyZXMiOnRydWUsImF1dG9Gb3JtYXQiOnRydWUsInBhZ2VzIjpbeyJpZCI6InBhZ2UtMSIsIm5hbWUiOiJDbGFzcyBFeGFtcGxlcyIsImFjdGl2ZURpYWdyYW1JZCI6ImRpYWdyYW0tMSIsImRpYWdyYW1zIjpbeyJpZCI6ImRpYWdyYW0tMSIsIm5hbWUiOiJlbnVtIMK3IEVudW0iLCJkZXNjcmlwdGlvbiI6IkNsYXNzIHN0YXJ0ZXIgZXhhbXBsZSIsImNvZGUiOiJjbGFzc0RpYWdyYW1cbiAgY2xhc3MgU3RhdHVzIHtcbiAgICA8PGVudW1lcmF0aW9uPj5cbiAgICBQRU5ESU5HXG4gICAgQVBQUk9WRURcbiAgICBSRUpFQ1RFRFxuICB9IiwieCI6MCwieSI6MCwid2lkdGgiOjY0MCwibWVybWFpZFRoZW1lIjoiYmx1ZXByaW50IiwiY29uZmlnT3ZlcnJpZGVzIjp7fX1dfV19">enum · Enum</a>
+          </div>
+        </section>
+
+        <section class="panel panel--full">
+          <h2>Mermaid Class syntax examples</h2>
+          <div class="example-grid">
+            
+    <article class="example-card">
+      <h3>class · Simple class</h3>
+      <p>A working Mermaid class starter you can open directly in Pretty Fish.</p>
+      <pre><code>classDiagram
+  class Animal {
+    +String name
+    +int age
+    +makeSound() void
+  }</code></pre>
+      <div class="example-card__actions">
+        <a class="button button--primary" href="https://pretty.fish/#/d/eyJ2ZXJzaW9uIjoxLCJhY3RpdmVQYWdlSWQiOiJwYWdlLTEiLCJtb2RlIjoibGlnaHQiLCJlZGl0b3JMaWdhdHVyZXMiOnRydWUsImF1dG9Gb3JtYXQiOnRydWUsInBhZ2VzIjpbeyJpZCI6InBhZ2UtMSIsIm5hbWUiOiJDbGFzcyBFeGFtcGxlcyIsImFjdGl2ZURpYWdyYW1JZCI6ImRpYWdyYW0tMSIsImRpYWdyYW1zIjpbeyJpZCI6ImRpYWdyYW0tMSIsIm5hbWUiOiJjbGFzcyDCtyBTaW1wbGUgY2xhc3MiLCJkZXNjcmlwdGlvbiI6IkNsYXNzIHN0YXJ0ZXIgZXhhbXBsZSIsImNvZGUiOiJjbGFzc0RpYWdyYW1cbiAgY2xhc3MgQW5pbWFsIHtcbiAgICArU3RyaW5nIG5hbWVcbiAgICAraW50IGFnZVxuICAgICttYWtlU291bmQoKSB2b2lkXG4gIH0iLCJ4IjowLCJ5IjowLCJ3aWR0aCI6NjQwLCJtZXJtYWlkVGhlbWUiOiJibHVlcHJpbnQiLCJjb25maWdPdmVycmlkZXMiOnt9fV19XX0=">Open this example</a>
+      </div>
+    </article>
+  
+    <article class="example-card">
+      <h3>interface · Interface</h3>
+      <p>A working Mermaid class starter you can open directly in Pretty Fish.</p>
+      <pre><code>classDiagram
+  class Drawable {
+    &lt;&lt;interface&gt;&gt;
+    +draw() void
+  }</code></pre>
+      <div class="example-card__actions">
+        <a class="button button--primary" href="https://pretty.fish/#/d/eyJ2ZXJzaW9uIjoxLCJhY3RpdmVQYWdlSWQiOiJwYWdlLTEiLCJtb2RlIjoibGlnaHQiLCJlZGl0b3JMaWdhdHVyZXMiOnRydWUsImF1dG9Gb3JtYXQiOnRydWUsInBhZ2VzIjpbeyJpZCI6InBhZ2UtMSIsIm5hbWUiOiJDbGFzcyBFeGFtcGxlcyIsImFjdGl2ZURpYWdyYW1JZCI6ImRpYWdyYW0tMSIsImRpYWdyYW1zIjpbeyJpZCI6ImRpYWdyYW0tMSIsIm5hbWUiOiJpbnRlcmZhY2UgwrcgSW50ZXJmYWNlIiwiZGVzY3JpcHRpb24iOiJDbGFzcyBzdGFydGVyIGV4YW1wbGUiLCJjb2RlIjoiY2xhc3NEaWFncmFtXG4gIGNsYXNzIERyYXdhYmxlIHtcbiAgICA8PGludGVyZmFjZT4+XG4gICAgK2RyYXcoKSB2b2lkXG4gIH0iLCJ4IjowLCJ5IjowLCJ3aWR0aCI6NjQwLCJtZXJtYWlkVGhlbWUiOiJibHVlcHJpbnQiLCJjb25maWdPdmVycmlkZXMiOnt9fV19XX0=">Open this example</a>
+      </div>
+    </article>
+  
+    <article class="example-card">
+      <h3>abstract class · Abstract</h3>
+      <p>A working Mermaid class starter you can open directly in Pretty Fish.</p>
+      <pre><code>classDiagram
+  class Shape {
+    &lt;&lt;abstract&gt;&gt;
+    +area() float
+  }</code></pre>
+      <div class="example-card__actions">
+        <a class="button button--primary" href="https://pretty.fish/#/d/eyJ2ZXJzaW9uIjoxLCJhY3RpdmVQYWdlSWQiOiJwYWdlLTEiLCJtb2RlIjoibGlnaHQiLCJlZGl0b3JMaWdhdHVyZXMiOnRydWUsImF1dG9Gb3JtYXQiOnRydWUsInBhZ2VzIjpbeyJpZCI6InBhZ2UtMSIsIm5hbWUiOiJDbGFzcyBFeGFtcGxlcyIsImFjdGl2ZURpYWdyYW1JZCI6ImRpYWdyYW0tMSIsImRpYWdyYW1zIjpbeyJpZCI6ImRpYWdyYW0tMSIsIm5hbWUiOiJhYnN0cmFjdCBjbGFzcyDCtyBBYnN0cmFjdCIsImRlc2NyaXB0aW9uIjoiQ2xhc3Mgc3RhcnRlciBleGFtcGxlIiwiY29kZSI6ImNsYXNzRGlhZ3JhbVxuICBjbGFzcyBTaGFwZSB7XG4gICAgPDxhYnN0cmFjdD4+XG4gICAgK2FyZWEoKSBmbG9hdFxuICB9IiwieCI6MCwieSI6MCwid2lkdGgiOjY0MCwibWVybWFpZFRoZW1lIjoiYmx1ZXByaW50IiwiY29uZmlnT3ZlcnJpZGVzIjp7fX1dfV19">Open this example</a>
+      </div>
+    </article>
+  
+    <article class="example-card">
+      <h3>enum · Enum</h3>
+      <p>A working Mermaid class starter you can open directly in Pretty Fish.</p>
+      <pre><code>classDiagram
+  class Status {
+    &lt;&lt;enumeration&gt;&gt;
+    PENDING
+    APPROVED
+    REJECTED
+  }</code></pre>
+      <div class="example-card__actions">
+        <a class="button button--primary" href="https://pretty.fish/#/d/eyJ2ZXJzaW9uIjoxLCJhY3RpdmVQYWdlSWQiOiJwYWdlLTEiLCJtb2RlIjoibGlnaHQiLCJlZGl0b3JMaWdhdHVyZXMiOnRydWUsImF1dG9Gb3JtYXQiOnRydWUsInBhZ2VzIjpbeyJpZCI6InBhZ2UtMSIsIm5hbWUiOiJDbGFzcyBFeGFtcGxlcyIsImFjdGl2ZURpYWdyYW1JZCI6ImRpYWdyYW0tMSIsImRpYWdyYW1zIjpbeyJpZCI6ImRpYWdyYW0tMSIsIm5hbWUiOiJlbnVtIMK3IEVudW0iLCJkZXNjcmlwdGlvbiI6IkNsYXNzIHN0YXJ0ZXIgZXhhbXBsZSIsImNvZGUiOiJjbGFzc0RpYWdyYW1cbiAgY2xhc3MgU3RhdHVzIHtcbiAgICA8PGVudW1lcmF0aW9uPj5cbiAgICBQRU5ESU5HXG4gICAgQVBQUk9WRURcbiAgICBSRUpFQ1RFRFxuICB9IiwieCI6MCwieSI6MCwid2lkdGgiOjY0MCwibWVybWFpZFRoZW1lIjoiYmx1ZXByaW50IiwiY29uZmlnT3ZlcnJpZGVzIjp7fX1dfV19">Open this example</a>
+      </div>
+    </article>
+  
+          </div>
+        </section>
+
+        <section class="panel">
+          <h2>Most useful Mermaid Class patterns</h2>
+          <ul><li><strong>class:</strong> Declare a class with optional attributes and methods</li><li><strong>interface:</strong> Declare an interface (implemented using stereotype)</li><li><strong>abstract class:</strong> Declare an abstract class using stereotype</li><li><strong>enum:</strong> Declare an enumeration class</li><li><strong>public visibility:</strong> Public member with plus prefix</li><li><strong>private visibility:</strong> Private member with minus prefix</li><li><strong>protected visibility:</strong> Protected member with hash prefix</li><li><strong>package visibility:</strong> Package-private member with tilde prefix</li></ul>
+        </section>
+
+        <section class="panel">
+          <h2>Use this page when you need</h2>
+          <p>A Mermaid class page that helps with both discovery and execution: examples to borrow, syntax to reference, and a direct jump into a prettier Mermaid editing workflow.</p>
+        </section>
+
+        <section class="panel panel--full">
+          <h2>Useful Mermaid Class syntax</h2>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Element</th>
+                  <th>Syntax</th>
+                  <th>What it does</th>
+                </tr>
+              </thead>
+              <tbody>
+                
+    <tr>
+      <td>class</td>
+      <td><code>class ClassName {members}</code></td>
+      <td>Declare a class with optional attributes and methods</td>
+    </tr>
+  
+    <tr>
+      <td>interface</td>
+      <td><code>class ClassName {
+  &lt;&lt;interface&gt;&gt;
+}</code></td>
+      <td>Declare an interface (implemented using stereotype)</td>
+    </tr>
+  
+    <tr>
+      <td>abstract class</td>
+      <td><code>class ClassName {
+  &lt;&lt;abstract&gt;&gt;
+}</code></td>
+      <td>Declare an abstract class using stereotype</td>
+    </tr>
+  
+    <tr>
+      <td>enum</td>
+      <td><code>class EnumName {
+  &lt;&lt;enumeration&gt;&gt;
+}</code></td>
+      <td>Declare an enumeration class</td>
+    </tr>
+  
+    <tr>
+      <td>public visibility</td>
+      <td><code>+memberName: Type</code></td>
+      <td>Public member with plus prefix</td>
+    </tr>
+  
+    <tr>
+      <td>private visibility</td>
+      <td><code>-memberName: Type</code></td>
+      <td>Private member with minus prefix</td>
+    </tr>
+  
+    <tr>
+      <td>protected visibility</td>
+      <td><code>#memberName: Type</code></td>
+      <td>Protected member with hash prefix</td>
+    </tr>
+  
+    <tr>
+      <td>package visibility</td>
+      <td><code>~memberName: Type</code></td>
+      <td>Package-private member with tilde prefix</td>
+    </tr>
+  
+    <tr>
+      <td>static member</td>
+      <td><code>$memberName: Type</code></td>
+      <td>Static/class member with dollar prefix</td>
+    </tr>
+  
+    <tr>
+      <td>inheritance</td>
+      <td><code>Child &lt;|-- Parent</code></td>
+      <td>Inheritance relationship (is-a)</td>
+    </tr>
+  
+    <tr>
+      <td>composition</td>
+      <td><code>Whole *-- Part</code></td>
+      <td>Composition relationship (owns)</td>
+    </tr>
+  
+    <tr>
+      <td>aggregation</td>
+      <td><code>Container o-- Item</code></td>
+      <td>Aggregation relationship (has-a, can exist independently)</td>
+    </tr>
+  
+    <tr>
+      <td>association</td>
+      <td><code>Class1 --&gt; Class2</code></td>
+      <td>Association relationship (uses)</td>
+    </tr>
+  
+    <tr>
+      <td>dependency</td>
+      <td><code>Class1 ..&gt; Class2</code></td>
+      <td>Dependency relationship (uses temporarily)</td>
+    </tr>
+  
+    <tr>
+      <td>realization</td>
+      <td><code>Class ..|&gt; Interface</code></td>
+      <td>Realization relationship (implements interface)</td>
+    </tr>
+  
+    <tr>
+      <td>multiplicity</td>
+      <td><code>A &quot;1&quot; --&gt; &quot;0..1&quot; B</code></td>
+      <td>Add cardinality/multiplicity labels to relationships</td>
+    </tr>
+  
+    <tr>
+      <td>relationship label</td>
+      <td><code>A --&gt; B : label</code></td>
+      <td>Add descriptive label to relationship</td>
+    </tr>
+  
+    <tr>
+      <td>generic class</td>
+      <td><code>class Name~Type~</code></td>
+      <td>Generic/template class with type parameter</td>
+    </tr>
+  
+    <tr>
+      <td>namespace</td>
+      <td><code>namespace Name {
+  class ...
+}</code></td>
+      <td>Group classes into a namespace container</td>
+    </tr>
+  
+    <tr>
+      <td>annotation</td>
+      <td><code>class Name {
+  &lt;&lt;annotation&gt;&gt;
+}</code></td>
+      <td>Mark class as annotation using stereotype</td>
+    </tr>
+  
+    <tr>
+      <td>note</td>
+      <td><code>Note right of ClassName : text</code></td>
+      <td>Attach a note comment to a class</td>
+    </tr>
+  
+    <tr>
+      <td>click</td>
+      <td><code>click ClassName &quot;url&quot; &quot;tooltip&quot;</code></td>
+      <td>Make a class clickable with URL</td>
+    </tr>
+  
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        <section class="panel">
+          <h2>What to optimize for</h2>
+          <p>If someone is searching for a Mermaid class editor, they usually want three things: correct syntax, a fast feedback loop, and visuals that are good enough to ship into docs, specs, or slides.</p>
+        </section>
+
+        <section class="panel">
+          <h2>Common questions</h2>
+          <div class="faq-list">
+            
+    <details class="faq-item">
+      <summary>How do I start a Mermaid class in Pretty Fish?</summary>
+      <p>Open one of the starter examples on this page, edit the Mermaid source, and keep iterating until the diagram is ready to export or share.</p>
+    </details>
+  
+    <details class="faq-item">
+      <summary>Why use Pretty Fish instead of a plain Mermaid class editor?</summary>
+      <p>Pretty Fish keeps Mermaid as the source of truth, but improves the working experience with stronger themes, prettier defaults, a multi-diagram canvas, and quick exports.</p>
+    </details>
+  
+    <details class="faq-item">
+      <summary>Can I export this Mermaid class once it looks right?</summary>
+      <p>Yes. The editor is built around shipping diagrams into docs, specs, and slides, so SVG and PNG export are first-class flows.</p>
+    </details>
+  
+          </div>
+        </section>
+
+        <section class="panel">
+          <h2>Related Mermaid guides</h2>
+          <ul><li><a href="/guides/flowchart-maker/">Flowchart</a></li><li><a href="/guides/sequence-diagram-editor/">Sequence</a></li><li><a href="/guides/state-diagram-editor/">State</a></li><li><a href="/guides/er-diagram-tool/">ER Diagram</a></li><li><a href="/guides/gantt-chart-maker/">Gantt</a></li><li><a href="/guides/pie-chart-maker/">Pie Chart</a></li></ul>
+        </section>
+      </main>
+    </div>
+  </body>
+</html>

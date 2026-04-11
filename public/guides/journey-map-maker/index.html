@@ -1,0 +1,195 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Mermaid Journey Map Maker | Pretty Fish</title>
+    <meta name="description" content="Create Mermaid journey diagrams that are easier to review in product and UX work. Pretty Fish is a prettier Mermaid editor with themes, live preview, multi-page canvases, and export-friendly output." />
+    <meta name="robots" content="index,follow,max-snippet:-1,max-image-preview:large,max-video-preview:-1" />
+    <link rel="canonical" href="https://pretty.fish/guides/journey-map-maker/" />
+    <meta property="og:type" content="article" />
+    <meta property="og:title" content="Mermaid Journey Map Maker | Pretty Fish" />
+    <meta property="og:description" content="Create Mermaid journey diagrams that are easier to review in product and UX work. Pretty Fish is a prettier Mermaid editor with themes, live preview, multi-page canvases, and export-friendly output." />
+    <meta property="og:url" content="https://pretty.fish/guides/journey-map-maker/" />
+    <meta property="og:image" content="https://pretty.fish/og-image.png" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="Mermaid Journey Map Maker | Pretty Fish" />
+    <meta name="twitter:description" content="Create Mermaid journey diagrams that are easier to review in product and UX work. Pretty Fish is a prettier Mermaid editor with themes, live preview, multi-page canvases, and export-friendly output." />
+    <meta name="twitter:image" content="https://pretty.fish/og-image.png" />
+    <link rel="stylesheet" href="/seo-guides.css" />
+    <script type="application/ld+json">{"@context":"https://schema.org","@type":"TechArticle","headline":"Mermaid Journey Map Maker","description":"Create Mermaid journey diagrams that are easier to review in product and UX work. Pretty Fish is a prettier Mermaid editor with themes, live preview, multi-page canvases, and export-friendly output.","author":{"@type":"Organization","name":"Pretty Fish"},"publisher":{"@type":"Organization","name":"Pretty Fish","logo":{"@type":"ImageObject","url":"https://pretty.fish/favicon.svg"}},"mainEntityOfPage":"https://pretty.fish/guides/journey-map-maker/","about":{"@type":"SoftwareApplication","name":"Pretty Fish","applicationCategory":"DeveloperApplication","operatingSystem":"Any","url":"https://pretty.fish"},"keywords":["Journey mermaid editor","Journey mermaid examples","Journey maker","pretty mermaid diagrams","mermaid themes"]}</script>
+    <script type="application/ld+json">{"@context":"https://schema.org","@type":"FAQPage","mainEntity":[{"@type":"Question","name":"How do I start a Mermaid journey in Pretty Fish?","acceptedAnswer":{"@type":"Answer","text":"Open one of the starter examples on this page, edit the Mermaid source, and keep iterating until the diagram is ready to export or share."}},{"@type":"Question","name":"Why use Pretty Fish instead of a plain Mermaid journey editor?","acceptedAnswer":{"@type":"Answer","text":"Pretty Fish keeps Mermaid as the source of truth, but improves the working experience with stronger themes, prettier defaults, a multi-diagram canvas, and quick exports."}},{"@type":"Question","name":"Can I export this Mermaid journey once it looks right?","acceptedAnswer":{"@type":"Answer","text":"Yes. The editor is built around shipping diagrams into docs, specs, and slides, so SVG and PNG export are first-class flows."}}]}</script>
+  </head>
+  <body>
+    <div class="page-shell">
+      <header class="hero">
+        <div class="hero__eyebrow">Pretty Fish Mermaid Guides</div>
+        <h1>Mermaid Journey Map Maker</h1>
+        <p>Create Mermaid journey diagrams that are easier to review in product and UX work. Pretty Fish keeps the Mermaid source front and center, but gives the output a more polished feel with stronger themes and a faster editing loop than a plain Mermaid sandbox.</p>
+        <div class="hero__actions">
+          <a class="button button--primary" href="/">Open Pretty Fish</a>
+          <a class="button" href="/guides/">Browse all Mermaid guides</a>
+        </div>
+      </header>
+
+      <main class="content-grid">
+        <section class="panel">
+          <h2>Why teams use this Mermaid journey page</h2>
+          <p>This page is built around actual Mermaid journey syntax, starter examples, and editor entry points. It is meant to help someone complete the task, not just land on a keyword page.</p>
+          <ul><li>customer journeys</li><li>user onboarding</li><li>service design</li></ul>
+        </section>
+
+        <section class="panel">
+          <h2>Why Pretty Fish fits Mermaid better</h2>
+          <ul><li>Prettier Mermaid themes that make diagrams feel presentation-ready</li><li>Live editing with immediate visual feedback</li><li>Multi-diagram canvas for organizing related work</li><li>Fast export to SVG, PNG, or raw Mermaid</li><li>Shareable URLs for reviews and async collaboration</li></ul>
+        </section>
+
+        <section class="panel panel--full">
+          <h2>Open a Mermaid Journey starter in the app</h2>
+          <p>These links open directly in Pretty Fish with a real Mermaid example loaded into the editor. That keeps each guide useful as a marketing page and as a working starting point.</p>
+          <div class="starter-links">
+            <a class="button" href="https://pretty.fish/#/d/eyJ2ZXJzaW9uIjoxLCJhY3RpdmVQYWdlSWQiOiJwYWdlLTEiLCJtb2RlIjoibGlnaHQiLCJlZGl0b3JMaWdhdHVyZXMiOnRydWUsImF1dG9Gb3JtYXQiOnRydWUsInBhZ2VzIjpbeyJpZCI6InBhZ2UtMSIsIm5hbWUiOiJKb3VybmV5IEV4YW1wbGVzIiwiYWN0aXZlRGlhZ3JhbUlkIjoiZGlhZ3JhbS0xIiwiZGlhZ3JhbXMiOlt7ImlkIjoiZGlhZ3JhbS0xIiwibmFtZSI6ImpvdXJuZXkgwrcgQmFzaWMiLCJkZXNjcmlwdGlvbiI6IkpvdXJuZXkgc3RhcnRlciBleGFtcGxlIiwiY29kZSI6ImpvdXJuZXlcbiAgdGl0bGUgTXkgSm91cm5leVxuICBzZWN0aW9uIEdvXG4gICAgVGFzazogNTogTWUiLCJ4IjowLCJ5IjowLCJ3aWR0aCI6NjQwLCJtZXJtYWlkVGhlbWUiOiJibHVlcHJpbnQiLCJjb25maWdPdmVycmlkZXMiOnt9fV19XX0=">journey · Basic</a><a class="button" href="https://pretty.fish/#/d/eyJ2ZXJzaW9uIjoxLCJhY3RpdmVQYWdlSWQiOiJwYWdlLTEiLCJtb2RlIjoibGlnaHQiLCJlZGl0b3JMaWdhdHVyZXMiOnRydWUsImF1dG9Gb3JtYXQiOnRydWUsInBhZ2VzIjpbeyJpZCI6InBhZ2UtMSIsIm5hbWUiOiJKb3VybmV5IEV4YW1wbGVzIiwiYWN0aXZlRGlhZ3JhbUlkIjoiZGlhZ3JhbS0xIiwiZGlhZ3JhbXMiOlt7ImlkIjoiZGlhZ3JhbS0xIiwibmFtZSI6InRpdGxlIMK3IFRpdGxlIiwiZGVzY3JpcHRpb24iOiJKb3VybmV5IHN0YXJ0ZXIgZXhhbXBsZSIsImNvZGUiOiJqb3VybmV5XG4gIHRpdGxlIFNob3BwaW5nIEV4cGVyaWVuY2UiLCJ4IjowLCJ5IjowLCJ3aWR0aCI6NjQwLCJtZXJtYWlkVGhlbWUiOiJibHVlcHJpbnQiLCJjb25maWdPdmVycmlkZXMiOnt9fV19XX0=">title · Title</a><a class="button" href="https://pretty.fish/#/d/eyJ2ZXJzaW9uIjoxLCJhY3RpdmVQYWdlSWQiOiJwYWdlLTEiLCJtb2RlIjoibGlnaHQiLCJlZGl0b3JMaWdhdHVyZXMiOnRydWUsImF1dG9Gb3JtYXQiOnRydWUsInBhZ2VzIjpbeyJpZCI6InBhZ2UtMSIsIm5hbWUiOiJKb3VybmV5IEV4YW1wbGVzIiwiYWN0aXZlRGlhZ3JhbUlkIjoiZGlhZ3JhbS0xIiwiZGlhZ3JhbXMiOlt7ImlkIjoiZGlhZ3JhbS0xIiwibmFtZSI6InNlY3Rpb24gwrcgU2VjdGlvbnMiLCJkZXNjcmlwdGlvbiI6IkpvdXJuZXkgc3RhcnRlciBleGFtcGxlIiwiY29kZSI6ImpvdXJuZXlcbiAgc2VjdGlvbiBCcm93c2VcbiAgICBWaWV3IGl0ZW1zOiA0OiBVc2VyXG4gIHNlY3Rpb24gQnV5XG4gICAgQ2hlY2tvdXQ6IDM6IFVzZXIiLCJ4IjowLCJ5IjowLCJ3aWR0aCI6NjQwLCJtZXJtYWlkVGhlbWUiOiJibHVlcHJpbnQiLCJjb25maWdPdmVycmlkZXMiOnt9fV19XX0=">section · Sections</a><a class="button" href="https://pretty.fish/#/d/eyJ2ZXJzaW9uIjoxLCJhY3RpdmVQYWdlSWQiOiJwYWdlLTEiLCJtb2RlIjoibGlnaHQiLCJlZGl0b3JMaWdhdHVyZXMiOnRydWUsImF1dG9Gb3JtYXQiOnRydWUsInBhZ2VzIjpbeyJpZCI6InBhZ2UtMSIsIm5hbWUiOiJKb3VybmV5IEV4YW1wbGVzIiwiYWN0aXZlRGlhZ3JhbUlkIjoiZGlhZ3JhbS0xIiwiZGlhZ3JhbXMiOlt7ImlkIjoiZGlhZ3JhbS0xIiwibmFtZSI6InRhc2sgwrcgVGFzayIsImRlc2NyaXB0aW9uIjoiSm91cm5leSBzdGFydGVyIGV4YW1wbGUiLCJjb2RlIjoiam91cm5leVxuICBzZWN0aW9uIFVzZVxuICAgIExvZ2luOiA1OiBVc2VyXG4gICAgU2VhcmNoOiAzOiBVc2VyLCBTeXN0ZW0iLCJ4IjowLCJ5IjowLCJ3aWR0aCI6NjQwLCJtZXJtYWlkVGhlbWUiOiJibHVlcHJpbnQiLCJjb25maWdPdmVycmlkZXMiOnt9fV19XX0=">task · Task</a>
+          </div>
+        </section>
+
+        <section class="panel panel--full">
+          <h2>Mermaid Journey syntax examples</h2>
+          <div class="example-grid">
+            
+    <article class="example-card">
+      <h3>journey · Basic</h3>
+      <p>A working Mermaid journey starter you can open directly in Pretty Fish.</p>
+      <pre><code>journey
+  title My Journey
+  section Go
+    Task: 5: Me</code></pre>
+      <div class="example-card__actions">
+        <a class="button button--primary" href="https://pretty.fish/#/d/eyJ2ZXJzaW9uIjoxLCJhY3RpdmVQYWdlSWQiOiJwYWdlLTEiLCJtb2RlIjoibGlnaHQiLCJlZGl0b3JMaWdhdHVyZXMiOnRydWUsImF1dG9Gb3JtYXQiOnRydWUsInBhZ2VzIjpbeyJpZCI6InBhZ2UtMSIsIm5hbWUiOiJKb3VybmV5IEV4YW1wbGVzIiwiYWN0aXZlRGlhZ3JhbUlkIjoiZGlhZ3JhbS0xIiwiZGlhZ3JhbXMiOlt7ImlkIjoiZGlhZ3JhbS0xIiwibmFtZSI6ImpvdXJuZXkgwrcgQmFzaWMiLCJkZXNjcmlwdGlvbiI6IkpvdXJuZXkgc3RhcnRlciBleGFtcGxlIiwiY29kZSI6ImpvdXJuZXlcbiAgdGl0bGUgTXkgSm91cm5leVxuICBzZWN0aW9uIEdvXG4gICAgVGFzazogNTogTWUiLCJ4IjowLCJ5IjowLCJ3aWR0aCI6NjQwLCJtZXJtYWlkVGhlbWUiOiJibHVlcHJpbnQiLCJjb25maWdPdmVycmlkZXMiOnt9fV19XX0=">Open this example</a>
+      </div>
+    </article>
+  
+    <article class="example-card">
+      <h3>title · Title</h3>
+      <p>A working Mermaid journey starter you can open directly in Pretty Fish.</p>
+      <pre><code>journey
+  title Shopping Experience</code></pre>
+      <div class="example-card__actions">
+        <a class="button button--primary" href="https://pretty.fish/#/d/eyJ2ZXJzaW9uIjoxLCJhY3RpdmVQYWdlSWQiOiJwYWdlLTEiLCJtb2RlIjoibGlnaHQiLCJlZGl0b3JMaWdhdHVyZXMiOnRydWUsImF1dG9Gb3JtYXQiOnRydWUsInBhZ2VzIjpbeyJpZCI6InBhZ2UtMSIsIm5hbWUiOiJKb3VybmV5IEV4YW1wbGVzIiwiYWN0aXZlRGlhZ3JhbUlkIjoiZGlhZ3JhbS0xIiwiZGlhZ3JhbXMiOlt7ImlkIjoiZGlhZ3JhbS0xIiwibmFtZSI6InRpdGxlIMK3IFRpdGxlIiwiZGVzY3JpcHRpb24iOiJKb3VybmV5IHN0YXJ0ZXIgZXhhbXBsZSIsImNvZGUiOiJqb3VybmV5XG4gIHRpdGxlIFNob3BwaW5nIEV4cGVyaWVuY2UiLCJ4IjowLCJ5IjowLCJ3aWR0aCI6NjQwLCJtZXJtYWlkVGhlbWUiOiJibHVlcHJpbnQiLCJjb25maWdPdmVycmlkZXMiOnt9fV19XX0=">Open this example</a>
+      </div>
+    </article>
+  
+    <article class="example-card">
+      <h3>section · Sections</h3>
+      <p>A working Mermaid journey starter you can open directly in Pretty Fish.</p>
+      <pre><code>journey
+  section Browse
+    View items: 4: User
+  section Buy
+    Checkout: 3: User</code></pre>
+      <div class="example-card__actions">
+        <a class="button button--primary" href="https://pretty.fish/#/d/eyJ2ZXJzaW9uIjoxLCJhY3RpdmVQYWdlSWQiOiJwYWdlLTEiLCJtb2RlIjoibGlnaHQiLCJlZGl0b3JMaWdhdHVyZXMiOnRydWUsImF1dG9Gb3JtYXQiOnRydWUsInBhZ2VzIjpbeyJpZCI6InBhZ2UtMSIsIm5hbWUiOiJKb3VybmV5IEV4YW1wbGVzIiwiYWN0aXZlRGlhZ3JhbUlkIjoiZGlhZ3JhbS0xIiwiZGlhZ3JhbXMiOlt7ImlkIjoiZGlhZ3JhbS0xIiwibmFtZSI6InNlY3Rpb24gwrcgU2VjdGlvbnMiLCJkZXNjcmlwdGlvbiI6IkpvdXJuZXkgc3RhcnRlciBleGFtcGxlIiwiY29kZSI6ImpvdXJuZXlcbiAgc2VjdGlvbiBCcm93c2VcbiAgICBWaWV3IGl0ZW1zOiA0OiBVc2VyXG4gIHNlY3Rpb24gQnV5XG4gICAgQ2hlY2tvdXQ6IDM6IFVzZXIiLCJ4IjowLCJ5IjowLCJ3aWR0aCI6NjQwLCJtZXJtYWlkVGhlbWUiOiJibHVlcHJpbnQiLCJjb25maWdPdmVycmlkZXMiOnt9fV19XX0=">Open this example</a>
+      </div>
+    </article>
+  
+    <article class="example-card">
+      <h3>task · Task</h3>
+      <p>A working Mermaid journey starter you can open directly in Pretty Fish.</p>
+      <pre><code>journey
+  section Use
+    Login: 5: User
+    Search: 3: User, System</code></pre>
+      <div class="example-card__actions">
+        <a class="button button--primary" href="https://pretty.fish/#/d/eyJ2ZXJzaW9uIjoxLCJhY3RpdmVQYWdlSWQiOiJwYWdlLTEiLCJtb2RlIjoibGlnaHQiLCJlZGl0b3JMaWdhdHVyZXMiOnRydWUsImF1dG9Gb3JtYXQiOnRydWUsInBhZ2VzIjpbeyJpZCI6InBhZ2UtMSIsIm5hbWUiOiJKb3VybmV5IEV4YW1wbGVzIiwiYWN0aXZlRGlhZ3JhbUlkIjoiZGlhZ3JhbS0xIiwiZGlhZ3JhbXMiOlt7ImlkIjoiZGlhZ3JhbS0xIiwibmFtZSI6InRhc2sgwrcgVGFzayIsImRlc2NyaXB0aW9uIjoiSm91cm5leSBzdGFydGVyIGV4YW1wbGUiLCJjb2RlIjoiam91cm5leVxuICBzZWN0aW9uIFVzZVxuICAgIExvZ2luOiA1OiBVc2VyXG4gICAgU2VhcmNoOiAzOiBVc2VyLCBTeXN0ZW0iLCJ4IjowLCJ5IjowLCJ3aWR0aCI6NjQwLCJtZXJtYWlkVGhlbWUiOiJibHVlcHJpbnQiLCJjb25maWdPdmVycmlkZXMiOnt9fV19XX0=">Open this example</a>
+      </div>
+    </article>
+  
+          </div>
+        </section>
+
+        <section class="panel">
+          <h2>Most useful Mermaid Journey patterns</h2>
+          <ul><li><strong>journey:</strong> Declares a user journey diagram</li><li><strong>title:</strong> Sets the diagram title</li><li><strong>section:</strong> Groups tasks into a named section</li><li><strong>task:</strong> A task with satisfaction score (1-5) and actors</li></ul>
+        </section>
+
+        <section class="panel">
+          <h2>Use this page when you need</h2>
+          <p>A Mermaid journey page that helps with both discovery and execution: examples to borrow, syntax to reference, and a direct jump into a prettier Mermaid editing workflow.</p>
+        </section>
+
+        <section class="panel panel--full">
+          <h2>Useful Mermaid Journey syntax</h2>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Element</th>
+                  <th>Syntax</th>
+                  <th>What it does</th>
+                </tr>
+              </thead>
+              <tbody>
+                
+    <tr>
+      <td>journey</td>
+      <td><code>journey</code></td>
+      <td>Declares a user journey diagram</td>
+    </tr>
+  
+    <tr>
+      <td>title</td>
+      <td><code>title Text</code></td>
+      <td>Sets the diagram title</td>
+    </tr>
+  
+    <tr>
+      <td>section</td>
+      <td><code>section Name</code></td>
+      <td>Groups tasks into a named section</td>
+    </tr>
+  
+    <tr>
+      <td>task</td>
+      <td><code>Task name: score: Actor1, Actor2</code></td>
+      <td>A task with satisfaction score (1-5) and actors</td>
+    </tr>
+  
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        <section class="panel">
+          <h2>What to optimize for</h2>
+          <p>If someone is searching for a Mermaid journey editor, they usually want three things: correct syntax, a fast feedback loop, and visuals that are good enough to ship into docs, specs, or slides.</p>
+        </section>
+
+        <section class="panel">
+          <h2>Common questions</h2>
+          <div class="faq-list">
+            
+    <details class="faq-item">
+      <summary>How do I start a Mermaid journey in Pretty Fish?</summary>
+      <p>Open one of the starter examples on this page, edit the Mermaid source, and keep iterating until the diagram is ready to export or share.</p>
+    </details>
+  
+    <details class="faq-item">
+      <summary>Why use Pretty Fish instead of a plain Mermaid journey editor?</summary>
+      <p>Pretty Fish keeps Mermaid as the source of truth, but improves the working experience with stronger themes, prettier defaults, a multi-diagram canvas, and quick exports.</p>
+    </details>
+  
+    <details class="faq-item">
+      <summary>Can I export this Mermaid journey once it looks right?</summary>
+      <p>Yes. The editor is built around shipping diagrams into docs, specs, and slides, so SVG and PNG export are first-class flows.</p>
+    </details>
+  
+          </div>
+        </section>
+
+        <section class="panel">
+          <h2>Related Mermaid guides</h2>
+          <ul><li><a href="/guides/flowchart-maker/">Flowchart</a></li><li><a href="/guides/sequence-diagram-editor/">Sequence</a></li><li><a href="/guides/class-diagram-tool/">Class</a></li><li><a href="/guides/state-diagram-editor/">State</a></li><li><a href="/guides/er-diagram-tool/">ER Diagram</a></li><li><a href="/guides/gantt-chart-maker/">Gantt</a></li></ul>
+        </section>
+      </main>
+    </div>
+  </body>
+</html>

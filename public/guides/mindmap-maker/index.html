@@ -1,0 +1,245 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Mermaid Mindmap Maker | Pretty Fish</title>
+    <meta name="description" content="Build Mermaid mindmaps that feel more polished and easier to present. Pretty Fish is a prettier Mermaid editor with themes, live preview, multi-page canvases, and export-friendly output." />
+    <meta name="robots" content="index,follow,max-snippet:-1,max-image-preview:large,max-video-preview:-1" />
+    <link rel="canonical" href="https://pretty.fish/guides/mindmap-maker/" />
+    <meta property="og:type" content="article" />
+    <meta property="og:title" content="Mermaid Mindmap Maker | Pretty Fish" />
+    <meta property="og:description" content="Build Mermaid mindmaps that feel more polished and easier to present. Pretty Fish is a prettier Mermaid editor with themes, live preview, multi-page canvases, and export-friendly output." />
+    <meta property="og:url" content="https://pretty.fish/guides/mindmap-maker/" />
+    <meta property="og:image" content="https://pretty.fish/og-image.png" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="Mermaid Mindmap Maker | Pretty Fish" />
+    <meta name="twitter:description" content="Build Mermaid mindmaps that feel more polished and easier to present. Pretty Fish is a prettier Mermaid editor with themes, live preview, multi-page canvases, and export-friendly output." />
+    <meta name="twitter:image" content="https://pretty.fish/og-image.png" />
+    <link rel="stylesheet" href="/seo-guides.css" />
+    <script type="application/ld+json">{"@context":"https://schema.org","@type":"TechArticle","headline":"Mermaid Mindmap Maker","description":"Build Mermaid mindmaps that feel more polished and easier to present. Pretty Fish is a prettier Mermaid editor with themes, live preview, multi-page canvases, and export-friendly output.","author":{"@type":"Organization","name":"Pretty Fish"},"publisher":{"@type":"Organization","name":"Pretty Fish","logo":{"@type":"ImageObject","url":"https://pretty.fish/favicon.svg"}},"mainEntityOfPage":"https://pretty.fish/guides/mindmap-maker/","about":{"@type":"SoftwareApplication","name":"Pretty Fish","applicationCategory":"DeveloperApplication","operatingSystem":"Any","url":"https://pretty.fish"},"keywords":["Mindmap mermaid editor","Mindmap mermaid examples","Mindmap maker","pretty mermaid diagrams","mermaid themes"]}</script>
+    <script type="application/ld+json">{"@context":"https://schema.org","@type":"FAQPage","mainEntity":[{"@type":"Question","name":"How do I start a Mermaid mindmap in Pretty Fish?","acceptedAnswer":{"@type":"Answer","text":"Open one of the starter examples on this page, edit the Mermaid source, and keep iterating until the diagram is ready to export or share."}},{"@type":"Question","name":"Why use Pretty Fish instead of a plain Mermaid mindmap editor?","acceptedAnswer":{"@type":"Answer","text":"Pretty Fish keeps Mermaid as the source of truth, but improves the working experience with stronger themes, prettier defaults, a multi-diagram canvas, and quick exports."}},{"@type":"Question","name":"Can I export this Mermaid mindmap once it looks right?","acceptedAnswer":{"@type":"Answer","text":"Yes. The editor is built around shipping diagrams into docs, specs, and slides, so SVG and PNG export are first-class flows."}}]}</script>
+  </head>
+  <body>
+    <div class="page-shell">
+      <header class="hero">
+        <div class="hero__eyebrow">Pretty Fish Mermaid Guides</div>
+        <h1>Mermaid Mindmap Maker</h1>
+        <p>Build Mermaid mindmaps that feel more polished and easier to present. Pretty Fish keeps the Mermaid source front and center, but gives the output a more polished feel with stronger themes and a faster editing loop than a plain Mermaid sandbox.</p>
+        <div class="hero__actions">
+          <a class="button button--primary" href="/">Open Pretty Fish</a>
+          <a class="button" href="/guides/">Browse all Mermaid guides</a>
+        </div>
+      </header>
+
+      <main class="content-grid">
+        <section class="panel">
+          <h2>Why teams use this Mermaid mindmap page</h2>
+          <p>This page is built around actual Mermaid mindmap syntax, starter examples, and editor entry points. It is meant to help someone complete the task, not just land on a keyword page.</p>
+          <ul><li>brainstorming</li><li>knowledge maps</li><li>planning sessions</li></ul>
+        </section>
+
+        <section class="panel">
+          <h2>Why Pretty Fish fits Mermaid better</h2>
+          <ul><li>Prettier Mermaid themes that make diagrams feel presentation-ready</li><li>Live editing with immediate visual feedback</li><li>Multi-diagram canvas for organizing related work</li><li>Fast export to SVG, PNG, or raw Mermaid</li><li>Shareable URLs for reviews and async collaboration</li></ul>
+        </section>
+
+        <section class="panel panel--full">
+          <h2>Open a Mermaid Mindmap starter in the app</h2>
+          <p>These links open directly in Pretty Fish with a real Mermaid example loaded into the editor. That keeps each guide useful as a marketing page and as a working starting point.</p>
+          <div class="starter-links">
+            <a class="button" href="https://pretty.fish/#/d/eyJ2ZXJzaW9uIjoxLCJhY3RpdmVQYWdlSWQiOiJwYWdlLTEiLCJtb2RlIjoibGlnaHQiLCJlZGl0b3JMaWdhdHVyZXMiOnRydWUsImF1dG9Gb3JtYXQiOnRydWUsInBhZ2VzIjpbeyJpZCI6InBhZ2UtMSIsIm5hbWUiOiJNaW5kbWFwIEV4YW1wbGVzIiwiYWN0aXZlRGlhZ3JhbUlkIjoiZGlhZ3JhbS0xIiwiZGlhZ3JhbXMiOlt7ImlkIjoiZGlhZ3JhbS0xIiwibmFtZSI6Im1pbmRtYXAgZGVjbGFyYXRpb24gwrcgQmFzaWMiLCJkZXNjcmlwdGlvbiI6Ik1pbmRtYXAgc3RhcnRlciBleGFtcGxlIiwiY29kZSI6Im1pbmRtYXBcbiAgcm9vdCgoVG9waWMpKVxuICAgIEJyYW5jaCAxXG4gICAgQnJhbmNoIDIiLCJ4IjowLCJ5IjowLCJ3aWR0aCI6NjQwLCJtZXJtYWlkVGhlbWUiOiJibHVlcHJpbnQiLCJjb25maWdPdmVycmlkZXMiOnt9fV19XX0=">mindmap declaration · Basic</a><a class="button" href="https://pretty.fish/#/d/eyJ2ZXJzaW9uIjoxLCJhY3RpdmVQYWdlSWQiOiJwYWdlLTEiLCJtb2RlIjoibGlnaHQiLCJlZGl0b3JMaWdhdHVyZXMiOnRydWUsImF1dG9Gb3JtYXQiOnRydWUsInBhZ2VzIjpbeyJpZCI6InBhZ2UtMSIsIm5hbWUiOiJNaW5kbWFwIEV4YW1wbGVzIiwiYWN0aXZlRGlhZ3JhbUlkIjoiZGlhZ3JhbS0xIiwiZGlhZ3JhbXMiOlt7ImlkIjoiZGlhZ3JhbS0xIiwibmFtZSI6InJvb3Qgbm9kZSDCtyBSb290IiwiZGVzY3JpcHRpb24iOiJNaW5kbWFwIHN0YXJ0ZXIgZXhhbXBsZSIsImNvZGUiOiJtaW5kbWFwXG4gIHJvb3QoKFByb2plY3QpKVxuICAgIFBsYW5uaW5nXG4gICAgRXhlY3V0aW9uIiwieCI6MCwieSI6MCwid2lkdGgiOjY0MCwibWVybWFpZFRoZW1lIjoiYmx1ZXByaW50IiwiY29uZmlnT3ZlcnJpZGVzIjp7fX1dfV19">root node · Root</a><a class="button" href="https://pretty.fish/#/d/eyJ2ZXJzaW9uIjoxLCJhY3RpdmVQYWdlSWQiOiJwYWdlLTEiLCJtb2RlIjoibGlnaHQiLCJlZGl0b3JMaWdhdHVyZXMiOnRydWUsImF1dG9Gb3JtYXQiOnRydWUsInBhZ2VzIjpbeyJpZCI6InBhZ2UtMSIsIm5hbWUiOiJNaW5kbWFwIEV4YW1wbGVzIiwiYWN0aXZlRGlhZ3JhbUlkIjoiZGlhZ3JhbS0xIiwiZGlhZ3JhbXMiOlt7ImlkIjoiZGlhZ3JhbS0xIiwibmFtZSI6ImRlZmF1bHQgc2hhcGUgbm9kZSDCtyBEZWZhdWx0IiwiZGVzY3JpcHRpb24iOiJNaW5kbWFwIHN0YXJ0ZXIgZXhhbXBsZSIsImNvZGUiOiJtaW5kbWFwXG4gIHJvb3QoKE1haW4pKVxuICAgIENoaWxkIDFcbiAgICAgIEdyYW5kY2hpbGRcbiAgICBDaGlsZCAyIiwieCI6MCwieSI6MCwid2lkdGgiOjY0MCwibWVybWFpZFRoZW1lIjoiYmx1ZXByaW50IiwiY29uZmlnT3ZlcnJpZGVzIjp7fX1dfV19">default shape node · Default</a><a class="button" href="https://pretty.fish/#/d/eyJ2ZXJzaW9uIjoxLCJhY3RpdmVQYWdlSWQiOiJwYWdlLTEiLCJtb2RlIjoibGlnaHQiLCJlZGl0b3JMaWdhdHVyZXMiOnRydWUsImF1dG9Gb3JtYXQiOnRydWUsInBhZ2VzIjpbeyJpZCI6InBhZ2UtMSIsIm5hbWUiOiJNaW5kbWFwIEV4YW1wbGVzIiwiYWN0aXZlRGlhZ3JhbUlkIjoiZGlhZ3JhbS0xIiwiZGlhZ3JhbXMiOlt7ImlkIjoiZGlhZ3JhbS0xIiwibmFtZSI6InJvdW5kZWQgbm9kZSDCtyBSb3VuZGVkIiwiZGVzY3JpcHRpb24iOiJNaW5kbWFwIHN0YXJ0ZXIgZXhhbXBsZSIsImNvZGUiOiJtaW5kbWFwXG4gIHJvb3QoKENlbnRlcikpXG4gICAgKFJvdW5kZWQgMSlcbiAgICAoUm91bmRlZCAyKSIsIngiOjAsInkiOjAsIndpZHRoIjo2NDAsIm1lcm1haWRUaGVtZSI6ImJsdWVwcmludCIsImNvbmZpZ092ZXJyaWRlcyI6e319XX1dfQ==">rounded node · Rounded</a>
+          </div>
+        </section>
+
+        <section class="panel panel--full">
+          <h2>Mermaid Mindmap syntax examples</h2>
+          <div class="example-grid">
+            
+    <article class="example-card">
+      <h3>mindmap declaration · Basic</h3>
+      <p>A working Mermaid mindmap starter you can open directly in Pretty Fish.</p>
+      <pre><code>mindmap
+  root((Topic))
+    Branch 1
+    Branch 2</code></pre>
+      <div class="example-card__actions">
+        <a class="button button--primary" href="https://pretty.fish/#/d/eyJ2ZXJzaW9uIjoxLCJhY3RpdmVQYWdlSWQiOiJwYWdlLTEiLCJtb2RlIjoibGlnaHQiLCJlZGl0b3JMaWdhdHVyZXMiOnRydWUsImF1dG9Gb3JtYXQiOnRydWUsInBhZ2VzIjpbeyJpZCI6InBhZ2UtMSIsIm5hbWUiOiJNaW5kbWFwIEV4YW1wbGVzIiwiYWN0aXZlRGlhZ3JhbUlkIjoiZGlhZ3JhbS0xIiwiZGlhZ3JhbXMiOlt7ImlkIjoiZGlhZ3JhbS0xIiwibmFtZSI6Im1pbmRtYXAgZGVjbGFyYXRpb24gwrcgQmFzaWMiLCJkZXNjcmlwdGlvbiI6Ik1pbmRtYXAgc3RhcnRlciBleGFtcGxlIiwiY29kZSI6Im1pbmRtYXBcbiAgcm9vdCgoVG9waWMpKVxuICAgIEJyYW5jaCAxXG4gICAgQnJhbmNoIDIiLCJ4IjowLCJ5IjowLCJ3aWR0aCI6NjQwLCJtZXJtYWlkVGhlbWUiOiJibHVlcHJpbnQiLCJjb25maWdPdmVycmlkZXMiOnt9fV19XX0=">Open this example</a>
+      </div>
+    </article>
+  
+    <article class="example-card">
+      <h3>root node · Root</h3>
+      <p>A working Mermaid mindmap starter you can open directly in Pretty Fish.</p>
+      <pre><code>mindmap
+  root((Project))
+    Planning
+    Execution</code></pre>
+      <div class="example-card__actions">
+        <a class="button button--primary" href="https://pretty.fish/#/d/eyJ2ZXJzaW9uIjoxLCJhY3RpdmVQYWdlSWQiOiJwYWdlLTEiLCJtb2RlIjoibGlnaHQiLCJlZGl0b3JMaWdhdHVyZXMiOnRydWUsImF1dG9Gb3JtYXQiOnRydWUsInBhZ2VzIjpbeyJpZCI6InBhZ2UtMSIsIm5hbWUiOiJNaW5kbWFwIEV4YW1wbGVzIiwiYWN0aXZlRGlhZ3JhbUlkIjoiZGlhZ3JhbS0xIiwiZGlhZ3JhbXMiOlt7ImlkIjoiZGlhZ3JhbS0xIiwibmFtZSI6InJvb3Qgbm9kZSDCtyBSb290IiwiZGVzY3JpcHRpb24iOiJNaW5kbWFwIHN0YXJ0ZXIgZXhhbXBsZSIsImNvZGUiOiJtaW5kbWFwXG4gIHJvb3QoKFByb2plY3QpKVxuICAgIFBsYW5uaW5nXG4gICAgRXhlY3V0aW9uIiwieCI6MCwieSI6MCwid2lkdGgiOjY0MCwibWVybWFpZFRoZW1lIjoiYmx1ZXByaW50IiwiY29uZmlnT3ZlcnJpZGVzIjp7fX1dfV19">Open this example</a>
+      </div>
+    </article>
+  
+    <article class="example-card">
+      <h3>default shape node · Default</h3>
+      <p>A working Mermaid mindmap starter you can open directly in Pretty Fish.</p>
+      <pre><code>mindmap
+  root((Main))
+    Child 1
+      Grandchild
+    Child 2</code></pre>
+      <div class="example-card__actions">
+        <a class="button button--primary" href="https://pretty.fish/#/d/eyJ2ZXJzaW9uIjoxLCJhY3RpdmVQYWdlSWQiOiJwYWdlLTEiLCJtb2RlIjoibGlnaHQiLCJlZGl0b3JMaWdhdHVyZXMiOnRydWUsImF1dG9Gb3JtYXQiOnRydWUsInBhZ2VzIjpbeyJpZCI6InBhZ2UtMSIsIm5hbWUiOiJNaW5kbWFwIEV4YW1wbGVzIiwiYWN0aXZlRGlhZ3JhbUlkIjoiZGlhZ3JhbS0xIiwiZGlhZ3JhbXMiOlt7ImlkIjoiZGlhZ3JhbS0xIiwibmFtZSI6ImRlZmF1bHQgc2hhcGUgbm9kZSDCtyBEZWZhdWx0IiwiZGVzY3JpcHRpb24iOiJNaW5kbWFwIHN0YXJ0ZXIgZXhhbXBsZSIsImNvZGUiOiJtaW5kbWFwXG4gIHJvb3QoKE1haW4pKVxuICAgIENoaWxkIDFcbiAgICAgIEdyYW5kY2hpbGRcbiAgICBDaGlsZCAyIiwieCI6MCwieSI6MCwid2lkdGgiOjY0MCwibWVybWFpZFRoZW1lIjoiYmx1ZXByaW50IiwiY29uZmlnT3ZlcnJpZGVzIjp7fX1dfV19">Open this example</a>
+      </div>
+    </article>
+  
+    <article class="example-card">
+      <h3>rounded node · Rounded</h3>
+      <p>A working Mermaid mindmap starter you can open directly in Pretty Fish.</p>
+      <pre><code>mindmap
+  root((Center))
+    (Rounded 1)
+    (Rounded 2)</code></pre>
+      <div class="example-card__actions">
+        <a class="button button--primary" href="https://pretty.fish/#/d/eyJ2ZXJzaW9uIjoxLCJhY3RpdmVQYWdlSWQiOiJwYWdlLTEiLCJtb2RlIjoibGlnaHQiLCJlZGl0b3JMaWdhdHVyZXMiOnRydWUsImF1dG9Gb3JtYXQiOnRydWUsInBhZ2VzIjpbeyJpZCI6InBhZ2UtMSIsIm5hbWUiOiJNaW5kbWFwIEV4YW1wbGVzIiwiYWN0aXZlRGlhZ3JhbUlkIjoiZGlhZ3JhbS0xIiwiZGlhZ3JhbXMiOlt7ImlkIjoiZGlhZ3JhbS0xIiwibmFtZSI6InJvdW5kZWQgbm9kZSDCtyBSb3VuZGVkIiwiZGVzY3JpcHRpb24iOiJNaW5kbWFwIHN0YXJ0ZXIgZXhhbXBsZSIsImNvZGUiOiJtaW5kbWFwXG4gIHJvb3QoKENlbnRlcikpXG4gICAgKFJvdW5kZWQgMSlcbiAgICAoUm91bmRlZCAyKSIsIngiOjAsInkiOjAsIndpZHRoIjo2NDAsIm1lcm1haWRUaGVtZSI6ImJsdWVwcmludCIsImNvbmZpZ092ZXJyaWRlcyI6e319XX1dfQ==">Open this example</a>
+      </div>
+    </article>
+  
+          </div>
+        </section>
+
+        <section class="panel">
+          <h2>Most useful Mermaid Mindmap patterns</h2>
+          <ul><li><strong>mindmap declaration:</strong> Declare a mind map diagram</li><li><strong>root node:</strong> Central node of the mindmap with circle brackets</li><li><strong>default shape node:</strong> Regular node (default shape, inherits from parent)</li><li><strong>rounded node:</strong> Rounded rectangle node shape</li><li><strong>rectangle node:</strong> Square/rectangular node shape</li><li><strong>circle node:</strong> Circle node shape</li><li><strong>cloud node:</strong> Cloud/bubble node shape</li><li><strong>bang node:</strong> Exclamation/bang node shape</li></ul>
+        </section>
+
+        <section class="panel">
+          <h2>Use this page when you need</h2>
+          <p>A Mermaid mindmap page that helps with both discovery and execution: examples to borrow, syntax to reference, and a direct jump into a prettier Mermaid editing workflow.</p>
+        </section>
+
+        <section class="panel panel--full">
+          <h2>Useful Mermaid Mindmap syntax</h2>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Element</th>
+                  <th>Syntax</th>
+                  <th>What it does</th>
+                </tr>
+              </thead>
+              <tbody>
+                
+    <tr>
+      <td>mindmap declaration</td>
+      <td><code>mindmap</code></td>
+      <td>Declare a mind map diagram</td>
+    </tr>
+  
+    <tr>
+      <td>root node</td>
+      <td><code>root((Text))</code></td>
+      <td>Central node of the mindmap with circle brackets</td>
+    </tr>
+  
+    <tr>
+      <td>default shape node</td>
+      <td><code>Text</code></td>
+      <td>Regular node (default shape, inherits from parent)</td>
+    </tr>
+  
+    <tr>
+      <td>rounded node</td>
+      <td><code>(Text)</code></td>
+      <td>Rounded rectangle node shape</td>
+    </tr>
+  
+    <tr>
+      <td>rectangle node</td>
+      <td><code>[Text]</code></td>
+      <td>Square/rectangular node shape</td>
+    </tr>
+  
+    <tr>
+      <td>circle node</td>
+      <td><code>((Text))</code></td>
+      <td>Circle node shape</td>
+    </tr>
+  
+    <tr>
+      <td>cloud node</td>
+      <td><code>)Text(</code></td>
+      <td>Cloud/bubble node shape</td>
+    </tr>
+  
+    <tr>
+      <td>bang node</td>
+      <td><code>))Text((</code></td>
+      <td>Exclamation/bang node shape</td>
+    </tr>
+  
+    <tr>
+      <td>hexagon node</td>
+      <td><code>{{Text}}</code></td>
+      <td>Hexagon node shape</td>
+    </tr>
+  
+    <tr>
+      <td>icon attachment</td>
+      <td><code>::icon(fa fa-iconname)</code></td>
+      <td>Attach FontAwesome icon to preceding node</td>
+    </tr>
+  
+    <tr>
+      <td>class assignment</td>
+      <td><code>:::className</code></td>
+      <td>Apply CSS class to a node</td>
+    </tr>
+  
+    <tr>
+      <td>nested levels</td>
+      <td><code>indent for nesting</code></td>
+      <td>Indentation determines hierarchy depth</td>
+    </tr>
+  
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        <section class="panel">
+          <h2>What to optimize for</h2>
+          <p>If someone is searching for a Mermaid mindmap editor, they usually want three things: correct syntax, a fast feedback loop, and visuals that are good enough to ship into docs, specs, or slides.</p>
+        </section>
+
+        <section class="panel">
+          <h2>Common questions</h2>
+          <div class="faq-list">
+            
+    <details class="faq-item">
+      <summary>How do I start a Mermaid mindmap in Pretty Fish?</summary>
+      <p>Open one of the starter examples on this page, edit the Mermaid source, and keep iterating until the diagram is ready to export or share.</p>
+    </details>
+  
+    <details class="faq-item">
+      <summary>Why use Pretty Fish instead of a plain Mermaid mindmap editor?</summary>
+      <p>Pretty Fish keeps Mermaid as the source of truth, but improves the working experience with stronger themes, prettier defaults, a multi-diagram canvas, and quick exports.</p>
+    </details>
+  
+    <details class="faq-item">
+      <summary>Can I export this Mermaid mindmap once it looks right?</summary>
+      <p>Yes. The editor is built around shipping diagrams into docs, specs, and slides, so SVG and PNG export are first-class flows.</p>
+    </details>
+  
+          </div>
+        </section>
+
+        <section class="panel">
+          <h2>Related Mermaid guides</h2>
+          <ul><li><a href="/guides/flowchart-maker/">Flowchart</a></li><li><a href="/guides/sequence-diagram-editor/">Sequence</a></li><li><a href="/guides/class-diagram-tool/">Class</a></li><li><a href="/guides/state-diagram-editor/">State</a></li><li><a href="/guides/er-diagram-tool/">ER Diagram</a></li><li><a href="/guides/gantt-chart-maker/">Gantt</a></li></ul>
+        </section>
+      </main>
+    </div>
+  </body>
+</html>

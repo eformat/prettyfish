@@ -1,0 +1,254 @@
+:root {
+  color-scheme: light;
+  --bg: #f6f2e9;
+  --panel: rgba(255, 255, 255, 0.78);
+  --border: rgba(40, 35, 30, 0.12);
+  --text: #231d18;
+  --muted: #655b52;
+  --accent: #156f63;
+  --accent-strong: #0f5b52;
+  --shadow: 0 20px 50px rgba(33, 28, 23, 0.08);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html, body {
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: "DM Sans", "Inter", system-ui, sans-serif;
+  color: var(--text);
+  background:
+    radial-gradient(circle at top left, rgba(21, 111, 99, 0.12), transparent 30%),
+    radial-gradient(circle at top right, rgba(240, 138, 93, 0.12), transparent 24%),
+    linear-gradient(180deg, #fbf8f2 0%, var(--bg) 100%);
+  line-height: 1.6;
+}
+
+a {
+  color: var(--accent-strong);
+}
+
+.page-shell {
+  width: min(1120px, calc(100% - 32px));
+  margin: 0 auto;
+  padding: 48px 0 72px;
+}
+
+.hero,
+.panel,
+.guide-card {
+  backdrop-filter: blur(14px);
+  background: var(--panel);
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow);
+}
+
+.hero {
+  border-radius: 28px;
+  padding: 40px;
+  margin-bottom: 28px;
+}
+
+.hero__eyebrow {
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  font-size: 0.8rem;
+  color: var(--muted);
+  margin-bottom: 12px;
+}
+
+.hero h1 {
+  font-family: "Fraunces", Georgia, serif;
+  font-size: clamp(2.1rem, 5vw, 4rem);
+  line-height: 1.05;
+  margin: 0 0 12px;
+}
+
+.hero p {
+  max-width: 760px;
+  font-size: 1.08rem;
+  margin: 0;
+  color: var(--muted);
+}
+
+.hero__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 22px;
+}
+
+.button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 44px;
+  padding: 0 16px;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  background: rgba(255, 255, 255, 0.72);
+  color: var(--text);
+  text-decoration: none;
+  font-weight: 600;
+}
+
+.button--primary {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: white;
+}
+
+.content-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 20px;
+}
+
+.panel,
+.guide-card {
+  border-radius: 24px;
+  padding: 24px;
+}
+
+.panel--full {
+  grid-column: 1 / -1;
+}
+
+.panel h2,
+.guide-card h2 {
+  font-family: "Fraunces", Georgia, serif;
+  margin-top: 0;
+  margin-bottom: 10px;
+  font-size: 1.5rem;
+}
+
+.panel p,
+.panel li,
+.guide-card p {
+  color: var(--muted);
+}
+
+.example-grid,
+.guide-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 16px;
+}
+
+.example-card {
+  border-radius: 18px;
+  border: 1px solid var(--border);
+  background: rgba(255, 255, 255, 0.68);
+  padding: 18px;
+}
+
+.example-card h3 {
+  margin-top: 0;
+  margin-bottom: 10px;
+  font-size: 1rem;
+}
+
+.example-card p {
+  margin-top: 0;
+  color: var(--muted);
+}
+
+.example-card__actions {
+  margin-top: 14px;
+}
+
+pre {
+  margin: 0;
+  overflow-x: auto;
+  border-radius: 14px;
+  padding: 14px;
+  background: #1f1a17;
+  color: #f7f0e7;
+}
+
+code {
+  font-family: "JetBrains Mono", "SFMono-Regular", monospace;
+  font-size: 0.92em;
+}
+
+.table-wrap {
+  overflow-x: auto;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+th, td {
+  text-align: left;
+  vertical-align: top;
+  padding: 12px 10px;
+  border-top: 1px solid var(--border);
+}
+
+th {
+  border-top: none;
+}
+
+.guide-card__meta {
+  margin-top: 14px;
+  font-size: 0.88rem;
+  color: var(--accent-strong);
+  font-weight: 600;
+}
+
+.starter-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.faq-list {
+  display: grid;
+  gap: 12px;
+}
+
+.faq-item {
+  border-radius: 16px;
+  border: 1px solid var(--border);
+  background: rgba(255, 255, 255, 0.56);
+  padding: 14px 16px;
+}
+
+.faq-item summary {
+  cursor: pointer;
+  font-weight: 700;
+}
+
+.faq-item p {
+  margin-bottom: 0;
+}
+
+@media (max-width: 900px) {
+  .content-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .hero {
+    padding: 28px;
+  }
+}
+
+@media (max-width: 640px) {
+  .page-shell {
+    width: min(100% - 20px, 1120px);
+    padding-top: 20px;
+  }
+
+  .panel,
+  .guide-card,
+  .hero {
+    border-radius: 20px;
+  }
+}
