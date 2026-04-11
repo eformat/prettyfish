@@ -26,9 +26,7 @@ Phase two moves command transport out of localhost and into a Cloudflare Worker 
    - `browserAttachUrl`
 4. The browser connects by WebSocket to:
    - `/api/relay/sessions/:sessionId/browser?token=...`
-5. MCP clients can either:
-   - talk directly to the hosted endpoint at `/api/mcp/sessions/:sessionId?token=...`
-   - or use the stdio fallback wrapper with `npx`
+5. MCP clients talk directly to the hosted endpoint at `/api/mcp/sessions/:sessionId?token=...`
 6. The Durable Object forwards:
    - `command` messages from agent to browser
    - `command_result` messages from browser to agent
@@ -39,7 +37,6 @@ Current scope:
 
 - browser-generated hosted sessions
 - hosted MCP HTTP endpoint
-- `npx` stdio fallback wrapper
 - tokenized browser/agent websocket connection routes
 - per-session Durable Object coordination
 - browser-side command execution through the live Pretty Fish tab
@@ -50,21 +47,12 @@ Still needed for a more hardened production rollout:
 - expiry, revocation, and audit logging
 - optional custom domain routing so the MCP endpoint sits directly under `pretty.fish`
 
-## Remote MCP Process
+## Browser Flow
 
-Use the remote MCP wrapper when your MCP client only supports local stdio:
-
-```bash
-npx -y github:pastelsky/prettyfish \
-  --relay-url="https://your-relay.example.workers.dev" \
-  --session-id="your-session-id" \
-  --agent-token="your-agent-token"
-```
-
-The app UI now generates the session and gives you both:
+The app UI now generates the session and gives you:
 
 - a hosted MCP URL for direct remote MCP clients
-- an `npx` fallback snippet for stdio-only clients
+- a browser attach URL for the live Pretty Fish tab
 
 ## Local Development
 

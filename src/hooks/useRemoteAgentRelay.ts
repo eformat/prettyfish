@@ -6,7 +6,6 @@ import type { AppStoreState } from '@/state/appStore'
 import type { AppState } from '@/types'
 
 const DEFAULT_RELAY_URL = ((import.meta as ImportMeta & { env?: Record<string, string> }).env?.VITE_PRETTYFISH_RELAY_URL || 'https://prettyfish-relay.binalgo.workers.dev').replace(/\/$/, '')
-const GITHUB_NPX_PACKAGE = 'github:pastelsky/prettyfish'
 
 const RELAY_URL_KEY = 'prettyfish:relay-url'
 const RELAY_SESSION_ID_KEY = 'prettyfish:relay-session-id'
@@ -46,8 +45,6 @@ export interface RemoteAgentRelayControls {
   createHostedSession: () => Promise<void>
   resetSession: () => void
   getHostedConfigSnippet: () => string
-  getNpxConfigSnippet: () => string
-  getNpxCommand: () => string
 }
 
 function readStoredValue(key: string, fallback = ''): string {
@@ -83,27 +80,6 @@ function buildHostedConfigSnippet(mcpUrl: string): string {
     }
   }
 }`
-}
-
-function buildNpxConfigSnippet(relayUrl: string, sessionId: string, agentToken: string): string {
-  return `{
-  "mcpServers": {
-    "prettyfish": {
-      "command": "npx",
-      "args": [
-        "-y",
-        "${GITHUB_NPX_PACKAGE}",
-        "--relay-url=${relayUrl}",
-        "--session-id=${sessionId}",
-        "--agent-token=${agentToken}"
-      ]
-    }
-  }
-}`
-}
-
-function buildNpxCommand(relayUrl: string, sessionId: string, agentToken: string): string {
-  return `npx -y ${GITHUB_NPX_PACKAGE} --relay-url=${relayUrl} --session-id=${sessionId} --agent-token=${agentToken}`
 }
 
 export function useRemoteAgentRelay(options: RemoteAgentRelayOptions): RemoteAgentRelayControls {
@@ -351,8 +327,6 @@ export function useRemoteAgentRelay(options: RemoteAgentRelayOptions): RemoteAge
     createHostedSession,
     resetSession,
     getHostedConfigSnippet: () => buildHostedConfigSnippet(mcpUrl),
-    getNpxConfigSnippet: () => buildNpxConfigSnippet(relayUrl, sessionId, agentToken),
-    getNpxCommand: () => buildNpxCommand(relayUrl, sessionId, agentToken),
   }), [
     agentToken,
     browserAttachUrl,

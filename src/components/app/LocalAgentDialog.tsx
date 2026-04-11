@@ -139,7 +139,7 @@ export function LocalAgentDialog({ open, onOpenChange, bridge, remoteRelay }: Lo
                 <div className="rounded-xl border border-black/8 bg-background/80 px-3 py-3 dark:border-white/10">
                   <div className="text-xs font-semibold uppercase tracking-[0.08em] text-muted-foreground">2. MCP Client</div>
                   <div className="mt-1 text-sm">
-                    Add one of the config snippets below. Hosted URL is preferred when your client supports remote HTTP MCP.
+                    Add the hosted MCP config below to your client. This is the supported connection path.
                   </div>
                 </div>
               </div>
@@ -148,16 +148,6 @@ export function LocalAgentDialog({ open, onOpenChange, bridge, remoteRelay }: Lo
             <CodePanel
               title="Hosted MCP config"
               code={remoteRelay.getHostedConfigSnippet()}
-            />
-
-            <CodePanel
-              title="NPX fallback for stdio-only clients"
-              code={remoteRelay.getNpxConfigSnippet()}
-            />
-
-            <CodePanel
-              title="One-shot NPX command"
-              code={remoteRelay.getNpxCommand()}
             />
           </div>
 
@@ -209,8 +199,7 @@ export function LocalAgentDialog({ open, onOpenChange, bridge, remoteRelay }: Lo
             )}>
               <div className="font-semibold">Usage notes</div>
               <div>Generate a fresh session when you want a new browser-scoped relay.</div>
-              <div>The hosted MCP URL is the cleanest option because it does not depend on a local checkout.</div>
-              <div>The `npx` fallback exists for clients that still require a local stdio command.</div>
+              <div>The hosted MCP URL is the only supported connection path.</div>
             </div>
           </div>
         </div>

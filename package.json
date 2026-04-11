@@ -12,16 +12,12 @@
   "bugs": {
     "url": "https://github.com/pastelsky/prettyfish/issues"
   },
-  "bin": {
-    "prettyfish-remote-mcp": "./scripts/prettyfish-remote-mcp.mjs"
-  },
   "engines": {
     "node": ">=24"
   },
   "scripts": {
     "seo:generate": "node --experimental-strip-types scripts/generate-seo-pages.mjs",
     "agent:bridge": "node scripts/prettyfish-bridge.mjs",
-    "agent:remote-relay": "node scripts/prettyfish-remote-mcp.mjs",
     "dev": "npm run seo:generate && vite",
     "build": "npm run seo:generate && vite build",
     "typecheck": "tsc -b --noEmit",

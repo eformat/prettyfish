@@ -85,7 +85,6 @@ There is also a hosted Cloudflare relay for remote MCP-style control:
 - Durable Object session relay
 - Dedicated config: `wrangler.relay.jsonc`
 - Hosted MCP endpoint per generated session
-- `npx` stdio fallback via `github:pastelsky/prettyfish`
 
 Details are in [docs/remote-agent-relay.md](docs/remote-agent-relay.md).
 
