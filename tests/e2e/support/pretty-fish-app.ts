@@ -665,9 +665,12 @@ class LocalAgentBridgePanel {
 
   async connect(bridgeUrl = 'http://127.0.0.1:46321') {
     await expect(this.dialog).toBeVisible()
+    // Expand the advanced local bridge section
+    await this.dialog.getByText('Advanced: local bridge').click()
+    await expect(this.bridgeUrlInput).toBeVisible()
     await this.bridgeUrlInput.fill(bridgeUrl)
     await this.connectButton.click()
-    await expect(this.dialog).toContainText('Status: connected', { timeout: 15000 })
+    await expect(this.disconnectButton).toBeVisible({ timeout: 15000 })
     await this.page.keyboard.press('Escape')
     await expect(this.dialog).toBeHidden()
   }

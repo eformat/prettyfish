@@ -340,7 +340,7 @@ export default function App() {
 
       <LocalAgentDialog
         open={localAgentOpen}
-        onOpenChange={setLocalAgentOpen}
+        onClose={() => setLocalAgentOpen(false)}
         bridge={localAgentBridge}
         remoteRelay={remoteAgentRelay}
       />
