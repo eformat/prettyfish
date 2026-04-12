@@ -121,6 +121,10 @@ export interface GitVars {
   git5: string
   git6: string
   git7: string
+  /** Text color for commit ID labels (shown below each commit circle). Defaults to secondaryTextColor. */
+  commitLabelColor: string
+  /** Background rect color for commit ID labels (rendered at 0.5 opacity). Defaults to secondaryColor. */
+  commitLabelBackground: string
   gitBranchLabel0: string
   gitBranchLabel1: string
   gitBranchLabel2: string
