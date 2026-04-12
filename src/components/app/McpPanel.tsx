@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import { Check, Copy, PlugsConnected, ArrowsClockwise, X, Terminal } from '@phosphor-icons/react'
 import CodeMirror from '@uiw/react-codemirror'
 import { json } from '@codemirror/lang-json'
+import { markdown } from '@codemirror/lang-markdown'
 import { githubLight, githubDark } from '@uiw/codemirror-theme-github'
 
 import { Button } from '@/components/ui/button'
@@ -264,28 +265,20 @@ export function McpPanel({ open, onClose, remoteRelay, webMcpSupported = false, 
               {/* Tab content */}
               {activeTab === 'webmcp' && (
                 <div className="space-y-1.5">
-                  <div className="space-y-1 rounded-lg bg-green-50 px-2.5 py-2 dark:bg-green-950/30">
-                    <div className="flex items-center gap-1.5">
-                      <StatusDot status="connected" />
-                      <span className="text-[11px] font-medium text-green-800 dark:text-green-300">
-                        WebMCP active
-                      </span>
-                    </div>
-                    <p className="text-[10px] text-green-700 dark:text-green-400">
-                      {webMcpToolCount} tools registered on this page. Any browser agent can discover and call them directly.
-                    </p>
+                  <div className="flex items-center gap-1.5 rounded-lg bg-green-50 px-2.5 py-1.5 dark:bg-green-950/30">
+                    <StatusDot status="connected" />
+                    <span className="text-[11px] font-medium text-green-800 dark:text-green-300">
+                      {webMcpToolCount} tools registered
+                    </span>
                   </div>
                   <p className="text-[10px] text-muted-foreground">
-                    Install the{' '}
-                    <a
-                      href="https://chromewebstore.google.com/detail/model-context-tool-inspec/gbpdfapgefenggkahomfgkhfehlcenpd"
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="underline hover:text-foreground"
-                    >
-                      Model Context Tool Inspector
-                    </a>{' '}
-                    extension to test tools manually or with Gemini.
+                    Your browser supports WebMCP. Any AI agent connected to this browser can discover and call Pretty Fish tools directly, with zero setup.
+                  </p>
+                  <p className="text-[10px] text-muted-foreground">
+                    Agents that support WebMCP will automatically see tools like <code className="rounded bg-muted px-1 py-0.5 font-mono text-[9px]">create_diagram</code> and <code className="rounded bg-muted px-1 py-0.5 font-mono text-[9px]">export_png</code> when they connect to Chrome.
+                  </p>
+                  <p className="text-[10px] text-muted-foreground">
+                    For agents that don't support WebMCP yet, use the other tabs to connect via MCP over HTTP.
                   </p>
                 </div>
               )}
@@ -343,10 +336,21 @@ export function McpPanel({ open, onClose, remoteRelay, webMcpSupported = false, 
                     </p>
                     <CopyBtn value={promptText} label="Copy" />
                   </div>
-                  <div className="max-h-48 overflow-y-auto rounded-lg px-3 py-2 bg-[#0d1117] dark:bg-[#0d1117]">
-                    <pre className="whitespace-pre-wrap font-mono text-[10px] leading-relaxed text-[#c9d1d9]">
-                      {promptText}
-                    </pre>
+                  <div className="max-h-48 overflow-hidden rounded-lg border border-black/8 text-[11px] dark:border-white/10">
+                    <CodeMirror
+                      value={promptText}
+                      extensions={[markdown()]}
+                      theme={isDark ? githubDark : githubLight}
+                      editable={false}
+                      basicSetup={{
+                        lineNumbers: false,
+                        foldGutter: false,
+                        highlightActiveLine: false,
+                        highlightActiveLineGutter: false,
+                        highlightSelectionMatches: false,
+                      }}
+                      style={{ fontSize: '10px', maxHeight: '192px', overflow: 'auto' }}
+                    />
                   </div>
                 </div>
               )}
