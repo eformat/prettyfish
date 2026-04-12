@@ -28,6 +28,14 @@ test.describe('MCP panel — production smoke', () => {
   test.use({ baseURL: PRODUCTION_URL })
 
   test.beforeEach(async ({ page }) => {
+    // Bypass PWA service worker cache to always get the latest deployed version
+    await page.addInitScript(() => {
+      if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.getRegistrations().then(regs => {
+          regs.forEach(r => r.unregister())
+        })
+      }
+    })
     await page.goto('/', { waitUntil: 'domcontentloaded', timeout: 30_000 })
     await expect(page.getByTestId('app-root')).toBeVisible({ timeout: 20_000 })
   })
@@ -75,10 +83,10 @@ test.describe('MCP panel — production smoke', () => {
     // Config CodeMirror block should appear
     await expect(panel.locator('.cm-editor')).toBeVisible({ timeout: 15_000 })
 
-    // Config should contain the MCP server URL pointing to the relay
+    // Config should contain the MCP server URL
     const configText = await panel.locator('.cm-editor').textContent()
-    expect(configText).toContain('prettyfish')
-    expect(configText).toContain('prettyfish-relay.binalgo.workers.dev')
+    expect(configText).toContain('mcpServers')
+    expect(configText).toContain('pretty.fish')
   })
 
   test('copy button copies the MCP config to clipboard', async ({ page, context }) => {
