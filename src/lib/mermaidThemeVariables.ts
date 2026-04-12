@@ -109,6 +109,10 @@ export interface GanttVars {
   critBkgColor: string
   critBorderColor: string
   todayLineColor: string
+  /** Background for weekend/excluded days in Gantt. Defaults to altSectionBkgColor. */
+  excludeBkgColor?: string
+  /** Grid line color. Defaults to sectionBkgColor. */
+  gridColor?: string
 }
 
 /** Git graph — branch colors and labels. */
@@ -133,6 +137,10 @@ export interface GitVars {
   gitBranchLabel5: string
   gitBranchLabel6: string
   gitBranchLabel7: string
+  /** Text color for git tag labels. Defaults to primaryTextColor. */
+  tagLabelColor?: string
+  /** Background color for git tag labels. Defaults to primaryColor. */
+  tagLabelBackground?: string
 }
 
 /** Pie chart — slice colors and label styling. */
@@ -145,19 +153,30 @@ export interface PieVars {
   pie6: string
   pie7: string
   pie8: string
+  /** Extra pie slice colors — Mermaid supports up to 12 slices. */
+  pie9?: string
+  pie10?: string
+  pie11?: string
+  pie12?: string
   pieTitleTextColor: string
   pieSectionTextColor: string
   pieStrokeColor: string
-  /** Stroke color for the outer ring of the pie chart. Defaults to pieStrokeColor. */
+  /** Width of stroke between slices. */
+  pieStrokeWidth?: string
+  /** Stroke color for the outer ring of the pie chart. */
   pieOuterStrokeColor?: string
   /** Width of the outer ring stroke. */
   pieOuterStrokeWidth?: string
+  /** Opacity of pie slices (0-1). */
+  pieOpacity?: string
 }
 
 /** Requirement diagram — boxes and relation lines. */
 export interface RequirementVars {
   requirementBackground: string
   requirementBorderColor: string
+  /** Border stroke width. Mermaid accepts CSS length strings. */
+  requirementBorderSize?: string
   requirementTextColor: string
   relationColor: string
   relationLabelBackground: string
@@ -179,6 +198,10 @@ export interface QuadrantVars {
   quadrantXAxisTextFill: string
   quadrantYAxisTextFill: string
   quadrantTitleFill: string
+  /** Inner grid line color. */
+  quadrantInternalBorderStrokeFill?: string
+  /** Outer border color. */
+  quadrantExternalBorderStrokeFill?: string
 }
 
 /** Architecture diagram — edges and group borders. */
