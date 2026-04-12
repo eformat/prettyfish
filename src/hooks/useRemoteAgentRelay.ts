@@ -72,6 +72,8 @@ interface RemoteAgentRelayOptions {
 }
 
 export interface RemoteAgentRelayControls {
+  /** True when an AI agent peer has connected to this session via MCP. */
+  agentConnected: boolean
   status: 'disconnected' | 'connecting' | 'connected' | 'error'
   sessionId: string
   mcpUrl: string
@@ -89,6 +91,7 @@ export function useRemoteAgentRelay(options: RemoteAgentRelayOptions): RemoteAge
   const { activePageId } = options
 
   const [status, setStatus] = useState<RemoteAgentRelayControls['status']>('disconnected')
+  const [agentConnected, setAgentConnected] = useState(false)
   const [sessionId, setSessionId] = useState(() => readStored(sessionIdKey(activePageId)))
   const [browserToken, setBrowserToken] = useState(() => readStored(browserTokenKey(activePageId)))
   const [mcpUrl, setMcpUrl] = useState('')
@@ -160,6 +163,7 @@ export function useRemoteAgentRelay(options: RemoteAgentRelayOptions): RemoteAge
         if (socketRef.current === socket) {
           socketRef.current = null
           setStatus('disconnected')
+          setAgentConnected(false)
         }
       })
 
@@ -204,6 +208,8 @@ export function useRemoteAgentRelay(options: RemoteAgentRelayOptions): RemoteAge
               } satisfies RelayEnvelope))
             }
           })()
+        } else if (message.type === 'peer_status') {
+          setAgentConnected((message as { connected: boolean }).connected)
         } else if (message.type === 'error') {
           setStatus('error')
           setError(message.message)
@@ -289,6 +295,7 @@ export function useRemoteAgentRelay(options: RemoteAgentRelayOptions): RemoteAge
     : null
 
   return useMemo(() => ({
+    agentConnected,
     status,
     sessionId,
     mcpUrl,

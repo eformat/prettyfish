@@ -104,11 +104,12 @@ interface HeaderProps {
   onOpenHelp: () => void
   onOpenMcp: () => void
   mcpConnected: boolean
+  mcpSessionReady?: boolean
 }
 
 // ── MCP Button ────────────────────────────────────────────────────────────────
 
-function McpButton({ onOpenMcp, mcpConnected, onTripleClick }: { onOpenMcp: () => void; mcpConnected: boolean; onTripleClick?: () => void }) {
+function McpButton({ onOpenMcp, mcpConnected, mcpSessionReady, onTripleClick }: { onOpenMcp: () => void; mcpConnected: boolean; mcpSessionReady?: boolean; onTripleClick?: () => void }) {
   const clickCountRef = useRef(0)
   const clickTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
@@ -131,13 +132,13 @@ function McpButton({ onOpenMcp, mcpConnected, onTripleClick }: { onOpenMcp: () =
     <div className={chromePillClass()}>
       <ChromeTextButton
         data-testid="open-mcp-button"
-        aria-label={mcpConnected ? 'AI Agent Connected — click to manage' : 'Connect AI Agent'}
-        title={mcpConnected ? 'AI Agent Connected — click to manage' : 'Connect a local AI agent to create diagrams via MCP'}
+        aria-label={mcpConnected ? 'AI Agent Connected — click to manage' : mcpSessionReady ? 'Session ready — waiting for agent' : 'Connect AI Agent'}
+        title={mcpConnected ? 'AI Agent is connected and active' : mcpSessionReady ? 'Session is ready — paste the MCP URL into your AI agent' : 'Connect a local AI agent to create diagrams via MCP'}
         onClick={handleClick}
-        className={cn(mcpConnected && chromeStatusClass('success'))}
+        className={cn(mcpConnected ? chromeStatusClass('success') : mcpSessionReady ? chromeStatusClass('warning') : '')}
       >
         <PlugsConnected className="w-3.5 h-3.5" />
-        {mcpConnected ? 'Agent Connected' : 'Connect AI Agent'}
+        {mcpConnected ? 'Agent Connected' : mcpSessionReady ? 'Session Ready' : 'Connect AI Agent'}
       </ChromeTextButton>
     </div>
   )
@@ -149,6 +150,7 @@ export function Header({
   showSponsorNudge = false,
   onSponsorNudgeDismiss,
   sponsorNudgeShowCount = 0,
+  mcpSessionReady = false,
   mode,
   mermaidTheme,
   sidebarOpen,
@@ -449,6 +451,7 @@ export function Header({
             <McpButton
               onOpenMcp={onOpenMcp}
               mcpConnected={mcpConnected}
+              mcpSessionReady={mcpSessionReady}
               onTripleClick={onSponsorNudgeDismiss ? () => {
                 // Triple-click: reset nudge state for testing then show it
                 try { localStorage.removeItem('prettyfish:sponsor-nudge') } catch { /* ignore */ }

@@ -377,7 +377,8 @@ export default function App() {
         }}
         onOpenHelp={() => dispatch({ type: 'ui/set-help-open', open: true })}
         onOpenMcp={() => setMcpOpen(true)}
-        mcpConnected={remoteAgentRelay.status === 'connected' || webMcpSupported}
+        mcpConnected={remoteAgentRelay.agentConnected || webMcpSupported}
+        mcpSessionReady={remoteAgentRelay.status === 'connected' && !remoteAgentRelay.agentConnected && !webMcpSupported}
         sidebarWidth={sidebarOpen ? sidebarWidth : null}
       />
 
