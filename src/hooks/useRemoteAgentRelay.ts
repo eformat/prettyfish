@@ -6,10 +6,13 @@ import type { PublicRelaySessionResponse, RelayEnvelope } from '@/relay/protocol
 import type { AppStoreState } from '@/state/appStore'
 import type { AppState } from '@/types'
 
-// Use the same origin as the app so relay API calls are same-origin (no CORS).
-// The main worker proxies /api/relay/* and /api/mcp/* to the relay worker.
+// Relay API is served same-origin (/api/relay/* and /api/mcp/* on pretty.fish).
+// Can be overridden via env var for local dev.
 const DEFAULT_RELAY_URL = ((import.meta as ImportMeta & { env?: Record<string, string> }).env?.VITE_PRETTYFISH_RELAY_URL
   || (typeof window !== 'undefined' ? window.location.origin : 'https://pretty.fish')).replace(/\/$/, '')
+
+// Clear any stale relay URL from localStorage (previously pointed to workers.dev)
+try { localStorage.removeItem('prettyfish:relay-url') } catch { /* ignore */ }
 
 const RELAY_URL_KEY = 'prettyfish:relay-url'
 
