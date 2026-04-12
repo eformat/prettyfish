@@ -22,10 +22,8 @@ interface DurableObjectStateLike {
     get: <T>(key: string) => Promise<T | undefined>
     put: (key: string, value: unknown) => Promise<void>
   }
-}
-
-interface RelayServerWebSocket extends WebSocket {
-  accept: () => void
+  acceptWebSocket: (ws: WebSocket, tags?: string[]) => void
+  getWebSockets: (tag?: string) => WebSocket[]
 }
 
 interface JsonRpcRequest {
@@ -47,8 +45,8 @@ interface JsonRpcResponse {
 
 declare const WebSocketPair: {
   new (): {
-    0: RelayServerWebSocket
-    1: RelayServerWebSocket
+    0: WebSocket
+    1: WebSocket
   }
 }
 
@@ -218,12 +216,9 @@ async function createPublicRelaySession(request: Request, env: RelayWorkerEnv) {
 async function connectPeer(request: Request, env: RelayWorkerEnv, sessionId: string, role: RelayPeerRole) {
   const token = new URL(request.url).searchParams.get('token') || ''
   const stub = getSessionStub(env, sessionId)
-  return stub.fetch(`https://relay.internal/connect/${role}?token=${encodeURIComponent(token)}`, {
-    headers: {
-      Upgrade: request.headers.get('Upgrade') || '',
-    },
-    webSocket: (request as Request & { webSocket?: WebSocket }).webSocket,
-  } as RequestInit)
+  // Forward the raw WebSocket upgrade request to the Durable Object.
+  // The DO handles WebSocketPair creation and accept() itself.
+  return stub.fetch(`https://relay.internal/connect/${role}?token=${encodeURIComponent(token)}`, request)
 }
 
 export default {
@@ -280,10 +275,9 @@ export default {
 export class RelaySessionDurableObject {
   private readonly state: DurableObjectStateLike
   private session: RelaySessionRecord | null = null
-  private browserSocket: RelayServerWebSocket | null = null
-  private agentSocket: RelayServerWebSocket | null = null
-  private pendingForBrowser: RelayEnvelope[] = []
-  private pendingForAgent: RelayEnvelope[] = []
+  // pendingHttpCommands only lives while the DO is in memory.
+  // If the DO hibernates between a tool call and the browser response,
+  // the call will time out (acceptable — the agent can retry).
   private readonly pendingHttpCommands = new Map<string, {
     resolve: (response: JsonRpcResponse) => void
     reject: (error: Error) => void
@@ -294,41 +288,40 @@ export class RelaySessionDurableObject {
     this.state = state
   }
 
+  // ── Helpers ────────────────────────────────────────────────────────────────
+
   private async ensureSessionLoaded() {
     if (this.session) return this.session
     this.session = await this.state.storage.get<RelaySessionRecord>(SESSION_KEY) ?? null
     return this.session
   }
 
-  private send(socket: RelayServerWebSocket | null, message: RelayEnvelope) {
+  private getBrowserSocket(): WebSocket | null {
+    return this.state.getWebSockets('browser')[0] ?? null
+  }
+
+  private getAgentSocket(): WebSocket | null {
+    return this.state.getWebSockets('agent')[0] ?? null
+  }
+
+  private sendTo(socket: WebSocket | null, message: RelayEnvelope): boolean {
     if (!socket || socket.readyState !== WebSocket.OPEN) return false
     socket.send(JSON.stringify(message))
     return true
   }
 
-  private flushQueue(role: RelayPeerRole) {
-    const queue = role === 'browser' ? this.pendingForBrowser : this.pendingForAgent
-    const socket = role === 'browser' ? this.browserSocket : this.agentSocket
-    while (queue.length > 0 && socket && socket.readyState === WebSocket.OPEN) {
-      const next = queue.shift()
-      if (!next) return
-      socket.send(JSON.stringify(next))
-    }
-  }
-
   private notifyPeerStatus(role: RelayPeerRole, connected: boolean) {
-    const message: RelayEnvelope = { type: 'peer_status', role, connected }
-    if (role === 'browser') {
-      this.send(this.agentSocket, message)
-      if (!this.send(this.agentSocket, message)) this.pendingForAgent.push(message)
-      return
-    }
-    this.send(this.browserSocket, message)
-    if (!this.send(this.browserSocket, message)) this.pendingForBrowser.push(message)
+    const counterpart = role === 'browser' ? this.getAgentSocket() : this.getBrowserSocket()
+    this.sendTo(counterpart, { type: 'peer_status', role, connected })
   }
 
-  private async sendCommandToBrowser(command: string, args: Record<string, unknown> = {}, timeoutMs = 20_000) {
-    if (!this.browserSocket || this.browserSocket.readyState !== WebSocket.OPEN) {
+  private async sendCommandToBrowser(
+    command: string,
+    args: Record<string, unknown> = {},
+    timeoutMs = 20_000,
+  ) {
+    const browserSocket = this.getBrowserSocket()
+    if (!browserSocket || browserSocket.readyState !== WebSocket.OPEN) {
       throw new Error('Pretty Fish browser is not attached to this relay session')
     }
 
@@ -340,7 +333,7 @@ export class RelaySessionDurableObject {
       }, timeoutMs)
 
       this.pendingHttpCommands.set(id, { resolve, reject, timer })
-      this.browserSocket?.send(JSON.stringify({
+      browserSocket.send(JSON.stringify({
         type: 'command',
         id,
         command,
@@ -348,12 +341,63 @@ export class RelaySessionDurableObject {
       } satisfies RelayEnvelope))
     })
 
-    if (response.error) {
-      throw new Error(response.error.message)
-    }
-
+    if (response.error) throw new Error(response.error.message)
     return response.result
   }
+
+  // ── Hibernation WebSocket handlers ─────────────────────────────────────────
+
+  async webSocketMessage(ws: WebSocket, message: string | ArrayBuffer) {
+    const raw = typeof message === 'string' ? message : ''
+    if (!raw) return
+
+    let parsed: unknown
+    try {
+      parsed = JSON.parse(raw)
+    } catch {
+      ws.send(JSON.stringify({ type: 'error', message: 'Invalid relay message JSON' } satisfies RelayEnvelope))
+      return
+    }
+
+    if (!isRelayEnvelope(parsed)) {
+      ws.send(JSON.stringify({ type: 'error', message: 'Unsupported relay payload' } satisfies RelayEnvelope))
+      return
+    }
+
+    // command_result from browser → resolve pending HTTP MCP call
+    if (parsed.type === 'command_result') {
+      const pending = this.pendingHttpCommands.get(parsed.id)
+      if (pending) {
+        clearTimeout(pending.timer)
+        this.pendingHttpCommands.delete(parsed.id)
+        if (parsed.ok) {
+          pending.resolve({ jsonrpc: '2.0', id: parsed.id, result: parsed.result })
+        } else {
+          pending.reject(new Error(parsed.error || 'Remote relay command failed'))
+        }
+      }
+      return
+    }
+
+    // Forward everything else to the counterpart
+    const isBrowser = this.state.getWebSockets('browser').includes(ws)
+    const counterpart = isBrowser ? this.getAgentSocket() : this.getBrowserSocket()
+    this.sendTo(counterpart, parsed)
+  }
+
+  async webSocketClose(ws: WebSocket) {
+    const isBrowser = this.state.getWebSockets('browser').includes(ws)
+    const role: RelayPeerRole = isBrowser ? 'browser' : 'agent'
+    this.notifyPeerStatus(role, false)
+  }
+
+  async webSocketError(ws: WebSocket) {
+    const isBrowser = this.state.getWebSockets('browser').includes(ws)
+    const role: RelayPeerRole = isBrowser ? 'browser' : 'agent'
+    this.notifyPeerStatus(role, false)
+  }
+
+  // ── MCP request handler ────────────────────────────────────────────────────
 
   private async handleMcpRequest(request: JsonRpcRequest): Promise<JsonRpcResponse> {
     const session = await this.ensureSessionLoaded()
@@ -373,19 +417,11 @@ export class RelaySessionDurableObject {
     }
 
     if (request.method === 'notifications/initialized' || request.method === 'ping') {
-      return {
-        jsonrpc: '2.0',
-        id,
-        result: {},
-      }
+      return { jsonrpc: '2.0', id, result: {} }
     }
 
     if (request.method === 'tools/list') {
-      return {
-        jsonrpc: '2.0',
-        id,
-        result: { tools: MCP_TOOL_DEFINITIONS },
-      }
+      return { jsonrpc: '2.0', id, result: { tools: MCP_TOOL_DEFINITIONS } }
     }
 
     if (request.method === 'tools/call') {
@@ -402,7 +438,7 @@ export class RelaySessionDurableObject {
               id,
               result: textResult({
                 sessionId: session?.sessionId ?? null,
-                browserAttached: Boolean(this.browserSocket && this.browserSocket.readyState === WebSocket.OPEN),
+                browserAttached: Boolean(this.getBrowserSocket()?.readyState === WebSocket.OPEN),
               }),
             }
           case 'create_page':
@@ -448,10 +484,7 @@ export class RelaySessionDurableObject {
             return {
               jsonrpc: '2.0',
               id,
-              error: {
-                code: -32601,
-                message: `Unknown tool: ${toolName}`,
-              },
+              error: { code: -32601, message: `Unknown tool: ${toolName}` },
             }
         }
       } catch (error) {
@@ -466,74 +499,11 @@ export class RelaySessionDurableObject {
     return {
       jsonrpc: '2.0',
       id,
-      error: {
-        code: -32601,
-        message: `Method not found: ${request.method}`,
-      },
+      error: { code: -32601, message: `Method not found: ${request.method}` },
     }
   }
 
-  private wireSocket(role: RelayPeerRole, socket: RelayServerWebSocket) {
-    const counterpartRole: RelayPeerRole = role === 'browser' ? 'agent' : 'browser'
-    const counterpartSocket = () => role === 'browser' ? this.agentSocket : this.browserSocket
-    const pendingQueue = role === 'browser' ? this.pendingForAgent : this.pendingForBrowser
-
-    socket.accept()
-    this.send(socket, {
-      type: 'hello',
-      role,
-      sessionId: this.session?.sessionId ?? '',
-    })
-
-    socket.addEventListener('message', (event) => {
-      const raw = typeof event.data === 'string' ? event.data : ''
-      if (!raw) return
-
-      let parsed: unknown
-      try {
-        parsed = JSON.parse(raw)
-      } catch {
-        this.send(socket, { type: 'error', message: 'Invalid relay message JSON' })
-        return
-      }
-
-      if (!isRelayEnvelope(parsed)) {
-        this.send(socket, { type: 'error', message: 'Unsupported relay payload' })
-        return
-      }
-
-      if (parsed.type === 'command_result') {
-        const pending = this.pendingHttpCommands.get(parsed.id)
-        if (pending) {
-          clearTimeout(pending.timer)
-          this.pendingHttpCommands.delete(parsed.id)
-          if (parsed.ok) pending.resolve({ jsonrpc: '2.0', id: parsed.id, result: parsed.result })
-          else pending.reject(new Error(parsed.error || 'Remote relay command failed'))
-          return
-        }
-      }
-
-      if (!this.send(counterpartSocket(), parsed)) {
-        pendingQueue.push(parsed)
-      }
-    })
-
-    socket.addEventListener('close', () => {
-      if (role === 'browser' && this.browserSocket === socket) this.browserSocket = null
-      if (role === 'agent' && this.agentSocket === socket) this.agentSocket = null
-      this.notifyPeerStatus(role, false)
-    })
-
-    socket.addEventListener('error', () => {
-      if (role === 'browser' && this.browserSocket === socket) this.browserSocket = null
-      if (role === 'agent' && this.agentSocket === socket) this.agentSocket = null
-      this.notifyPeerStatus(role, false)
-    })
-
-    this.notifyPeerStatus(role, true)
-    this.flushQueue(role)
-    this.flushQueue(counterpartRole)
-  }
+  // ── fetch ──────────────────────────────────────────────────────────────────
 
   async fetch(request: Request): Promise<Response> {
     const url = new URL(request.url)
@@ -562,13 +532,20 @@ export class RelaySessionDurableObject {
       }
 
       const pair = new WebSocketPair()
-      const client = pair[0]
-      const server = pair[1]
+      const [client, server] = Object.values(pair) as [WebSocket, WebSocket]
 
-      if (role === 'browser') this.browserSocket = server
-      else this.agentSocket = server
+      // Use hibernation API so the DO can sleep between messages
+      this.state.acceptWebSocket(server, [role])
 
-      this.wireSocket(role, server)
+      // Greet the new peer
+      server.send(JSON.stringify({
+        type: 'hello',
+        role,
+        sessionId: session.sessionId,
+      } satisfies RelayEnvelope))
+
+      // Notify counterpart that this peer just connected
+      this.notifyPeerStatus(role, true)
 
       return new Response(null, {
         status: 101,
