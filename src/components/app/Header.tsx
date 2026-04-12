@@ -100,6 +100,51 @@ interface HeaderProps {
   mcpConnected: boolean
 }
 
+// ── MCP Button — coming soon with hidden admin double-click ───────────────────
+
+function McpButton({ onOpenMcp, mcpConnected }: { onOpenMcp: () => void; mcpConnected: boolean }) {
+  const [showComingSoon, setShowComingSoon] = useState(false)
+  const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+
+  const handleClick = () => {
+    if (mcpConnected) { onOpenMcp(); return }
+    setShowComingSoon(true)
+    if (timerRef.current) clearTimeout(timerRef.current)
+    timerRef.current = setTimeout(() => setShowComingSoon(false), 3000)
+  }
+
+  const handleDoubleClick = () => {
+    if (timerRef.current) clearTimeout(timerRef.current)
+    setShowComingSoon(false)
+    onOpenMcp()
+  }
+
+  return (
+    <div className={cn(chromePillClass(), 'relative')}>
+      <ChromeTextButton
+        data-testid="open-mcp-button"
+        aria-label="Connect MCP"
+        title="Connect MCP — double-click to open"
+        onClick={handleClick}
+        onDoubleClick={handleDoubleClick}
+        className={cn(mcpConnected && chromeStatusClass('success'))}
+      >
+        <PlugsConnected className="w-3.5 h-3.5" />
+        {mcpConnected ? 'MCP Connected' : 'Connect MCP'}
+      </ChromeTextButton>
+
+      {showComingSoon && (
+        <div className="absolute top-10 right-0 z-50 w-56 rounded-xl border bg-popover p-3 shadow-lg text-sm [box-shadow:0_4px_20px_rgba(0,0,0,0.1)] dark:[box-shadow:0_4px_20px_rgba(0,0,0,0.4)]">
+          <p className="font-semibold text-foreground">Coming soon</p>
+          <p className="mt-1 text-xs text-muted-foreground leading-relaxed">
+            Connect any AI agent to this tab to create and export diagrams via MCP.
+          </p>
+        </div>
+      )}
+    </div>
+  )
+}
+
 // ── Main Header — floating pill layout ────────────────────────────────────────
 
 export function Header({
@@ -385,18 +430,7 @@ export function Header({
       )}
 
       {!isMobile && (
-        <div className={pillClass}>
-          <ChromeTextButton
-            data-testid="open-mcp-button"
-            aria-label="Connect MCP"
-            title="Connect MCP"
-            onClick={onOpenMcp}
-            className={cn(mcpConnected && chromeStatusClass('success'))}
-          >
-            <PlugsConnected className="w-3.5 h-3.5" />
-            {mcpConnected ? 'MCP Connected' : 'Connect MCP'}
-          </ChromeTextButton>
-        </div>
+        <McpButton onOpenMcp={onOpenMcp} mcpConnected={mcpConnected} />
       )}
     </header>
   )
