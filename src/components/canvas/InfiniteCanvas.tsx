@@ -117,9 +117,10 @@ function InnerCanvas({
     const escapedId = typeof CSS !== 'undefined' && 'escape' in CSS ? CSS.escape(diagram.id) : diagram.id
     const nodeEl = document.querySelector(`[data-diagram-id="${escapedId}"]`) as HTMLElement | null
 
-    // If the node hasn't rendered yet, retry up to 3 times with 80ms gaps.
-    if (!nodeEl && retryCount < 3) {
-      setTimeout(() => focusDiagramViewportRef.current(diagram, options, retryCount + 1), 80)
+    // If the node hasn't rendered yet, retry up to 8 times with 120ms gaps.
+    // Mobile / slow devices take longer for Mermaid to render SVG into the DOM.
+    if (!nodeEl && retryCount < 8) {
+      setTimeout(() => focusDiagramViewportRef.current(diagram, options, retryCount + 1), 120)
       return
     }
 

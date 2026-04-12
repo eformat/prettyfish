@@ -308,6 +308,22 @@ export function Header({
             >
               <CodeSimple className="w-3.5 h-3.5" />
             </ChromeIconButton>
+            <div className={chromeDividerClass()} />
+            <ThemeDropdown value={mermaidTheme} onChange={onMermaidThemeChange} isDark={isDark} />
+            <div className={chromeDividerClass()} />
+            <ChromeTextButton
+              data-testid="share-button-mobile"
+              title="Copy shareable link"
+              onClick={handleShare}
+              className={cn(
+                copyState === 'copied' && chromeStatusClass('success'),
+                copyState === 'error' && chromeStatusClass('danger'),
+              )}
+            >
+              {copyState === 'copied' ? <Check className="w-3 h-3" /> :
+               copyState === 'error' ? <X className="w-3 h-3" /> :
+               <ShareNetwork className="w-3 h-3" />}
+            </ChromeTextButton>
             <ChromeIconButton
               data-testid="toggle-mode-button"
               aria-label={isDark ? 'Switch to light mode' : 'Switch to dark mode'}
