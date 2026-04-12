@@ -5,8 +5,10 @@ const newsprint: ThemePresetDef = {
   description: 'Editorial serif palette inspired by quality broadsheets',
   configOverrides: {
     look: 'classic' as const,
-    fontFamily: '"Lora", "Georgia", serif',
-    fontSize: 15,
+    // Newsprint: high-contrast editorial serif — Playfair Display reads like a newspaper headline.
+    // Roboto Condensed for body text gives the dense, ink-efficient newspaper column feel.
+    fontFamily: '"Playfair Display", "Georgia", serif',
+    fontSize: 14,
     flowchart: { curve: 'monotoneX' as const, nodeSpacing: 55, rankSpacing: 58, padding: 18, diagramPadding: 12 },
     sequence: { showSequenceNumbers: false, mirrorActors: false, actorMargin: 55, messageMargin: 36, width: 155 },
     gantt: { barHeight: 22, barGap: 5, topPadding: 50, axisFormat: '%b %d' },
@@ -25,7 +27,7 @@ const newsprint: ThemePresetDef = {
       tertiaryBorderColor: '#b0a898',
       lineColor: '#4a4540',
       titleColor: '#1a1a1a',
-      fontFamily: '"Lora", "Georgia", serif',
+      fontFamily: '"Playfair Display", "Georgia", serif',
     },
     flowchart: {
       mainBkg: '#f0ece4',
