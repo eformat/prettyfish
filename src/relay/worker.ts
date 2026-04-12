@@ -208,7 +208,15 @@ export async function handleRelayRequest(req: Request, env: RelayWorkerEnv): Pro
     })
 
     const res = await stub.fetch(doReq)
-    // Add CORS headers to response
+
+    // WebSocket upgrades (101) must be returned DIRECTLY from the DO stub.
+    // Wrapping in new Response() drops the Cloudflare `webSocket` property,
+    // which breaks the upgrade handshake entirely.
+    if (res.status === 101) {
+      return res
+    }
+
+    // For regular responses, add CORS headers
     const headers = new Headers(res.headers)
     Object.entries(cors).forEach(([k, v]) => headers.set(k, v as string))
     return new Response(res.body, { status: res.status, headers })
