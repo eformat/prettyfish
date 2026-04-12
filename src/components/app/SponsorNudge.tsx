@@ -52,9 +52,9 @@ export function recordNudgeShown() {
 // Rotating messages — [before logo, after logo]
 // The Pretty Fish pink logo is rendered inline where the split occurs.
 const MESSAGES: [string, string][] = [
-  ["Pretty Fish lives rent-free in your browser. If it's been useful, throwing a few bucks our way keeps the lights on (and the ", " swimming)."],
-  ["Built with too much coffee and genuine love for good diagrams. If Pretty Fish saved you some time, consider tossing a coin to your developer.", ""],
-  ["Pretty Fish is free, open-source, and powered by stubbornness. If you've enjoyed it, GitHub Sponsors is a lovely way to say so.", ""],
+  ["Pretty Fish is open-source and lives rent-free in your browser. If it's been useful, throwing a few bucks our way keeps the lights on (and the ", " swimming)."],
+  ["Pretty Fish is open-source, free forever, and built on too much coffee. If it saved you some time, consider tossing a coin to your developer.", ""],
+  ["Open-source, no subscriptions, no paywalls — Pretty Fish is powered by stubbornness and GitHub Sponsors. If you've enjoyed it, a sponsorship goes a long way.", ""],
 ]
 
 function getMessage(showCount: number): [string, string] {
