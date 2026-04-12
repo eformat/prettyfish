@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect, useCallback, useMemo } from 'react'
+import { createPortal } from 'react-dom'
 import { Button } from '@/components/ui/button'
 import {
   chromePillClass,
@@ -595,12 +596,27 @@ function PagesDropdown({
 
 function ThemeDropdown({ value, onChange, isDark }: { value: MermaidTheme; onChange: (theme: MermaidTheme) => void; isDark: boolean }) {
   const [open, setOpen] = useState(false)
-  const ref = useRef<HTMLDivElement>(null)
+  const triggerRef = useRef<HTMLButtonElement>(null)
+  const dropdownRef = useRef<HTMLDivElement>(null)
+  const [dropdownPos, setDropdownPos] = useState<{ top: number; left: number } | null>(null)
+
+  // Position the portal dropdown below the trigger button
+  useEffect(() => {
+    if (!open || !triggerRef.current) return
+    const rect = triggerRef.current.getBoundingClientRect()
+    setDropdownPos({ top: rect.bottom + 8, left: rect.left })
+  }, [open])
 
   useEffect(() => {
     if (!open) return
     const handler = (e: MouseEvent) => {
-      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false)
+      const target = e.target as Node
+      if (
+        triggerRef.current && !triggerRef.current.contains(target) &&
+        dropdownRef.current && !dropdownRef.current.contains(target)
+      ) {
+        setOpen(false)
+      }
     }
     document.addEventListener('mousedown', handler, { passive: true })
     return () => document.removeEventListener('mousedown', handler)
@@ -609,9 +625,58 @@ function ThemeDropdown({ value, onChange, isDark }: { value: MermaidTheme; onCha
   const current = MERMAID_THEMES.find(t => t.value === value) ?? MERMAID_THEMES[0]!
   const currentSw = THEME_SWATCHES[value]
 
+  // Portal dropdown rendered at document.body level — escapes the header pill's
+  // backdrop-filter stacking context so our own backdrop-filter blurs the real canvas.
+  const dropdown = open && dropdownPos ? createPortal(
+    <div
+      ref={dropdownRef}
+      data-testid="theme-dropdown-list"
+      style={{ position: 'fixed', top: dropdownPos.top, left: dropdownPos.left, zIndex: 9999 }}
+      className={cn('min-w-[190px]', chromeGlassPanelClass(isDark ? 'dark' : 'light'))}
+    >
+      <div className="py-1 max-h-[70vh] overflow-y-auto">
+        {MERMAID_THEMES.map((t, idx) => {
+          const sw = THEME_SWATCHES[t.value]
+          const active = t.value === value
+          const isCustomStart = idx === 5
+          return (
+            <div key={t.value}>
+              {isCustomStart && (
+                <div className={cn('mx-2 my-1 h-px', isDark ? 'bg-white/8' : 'bg-black/8')} />
+              )}
+              <button
+                type="button"
+                data-testid={active ? 'theme-option-active' : 'theme-option'}
+                data-theme-value={String(t.value)}
+                onClick={() => { captureEvent('theme_changed', { theme: t.value }); onChange(t.value as MermaidTheme); setOpen(false) }}
+                className={cn(
+                  'w-full flex items-center gap-2 px-3 py-1.5 text-xs cursor-pointer transition-colors',
+                  active
+                    ? chromeMenuItemClass(isDark ? 'dark' : 'light', { active: true })
+                    : chromeMenuItemClass(isDark ? 'dark' : 'light'),
+                )}
+              >
+                {sw && (
+                  <span className="flex items-center gap-0.5 shrink-0">
+                    {sw.map((c, i) => (
+                      <span key={i} className={cn('w-2.5 h-2.5 rounded-full border', isDark ? 'border-white/10' : 'border-black/10')} style={{ background: c }} />
+                    ))}
+                  </span>
+                )}
+                <span className="flex-1 text-left truncate">{t.label}</span>
+              </button>
+            </div>
+          )
+        })}
+      </div>
+    </div>,
+    document.body
+  ) : null
+
   return (
-    <div ref={ref} className="relative">
+    <div className="relative">
       <button
+        ref={triggerRef}
         type="button"
         data-testid="theme-dropdown-trigger"
         onClick={() => setOpen(o => !o)}
@@ -631,51 +696,7 @@ function ThemeDropdown({ value, onChange, isDark }: { value: MermaidTheme; onCha
         <span className="max-w-[90px] truncate">{current.label}</span>
         <CaretDown className={cn('w-3 h-3 text-muted-foreground transition-transform', open && 'rotate-180')} />
       </button>
-
-      {open && (
-        <div
-          data-testid="theme-dropdown-list"
-          className={cn(
-          'absolute top-full left-0 mt-2 z-50 min-w-[190px] right-auto',
-          chromeGlassPanelClass(isDark ? 'dark' : 'light'),
-        )}>
-          <div className="py-1 max-h-[70vh] overflow-y-auto">
-            {MERMAID_THEMES.map((t, idx) => {
-              const sw = THEME_SWATCHES[t.value]
-              const active = t.value === value
-              const isCustomStart = idx === 5
-              return (
-                <div key={t.value}>
-                  {isCustomStart && (
-                    <div className={cn('mx-2 my-1 h-px', isDark ? 'bg-white/8' : 'bg-black/8')} />
-                  )}
-                  <button
-                    type="button"
-                    data-testid={active ? 'theme-option-active' : 'theme-option'}
-                    data-theme-value={String(t.value)}
-                    onClick={() => { captureEvent('theme_changed', { theme: t.value }); onChange(t.value as MermaidTheme); setOpen(false) }}
-                    className={cn(
-                      'w-full flex items-center gap-2 px-3 py-1.5 text-xs cursor-pointer transition-colors',
-                      active
-                        ? chromeMenuItemClass(isDark ? 'dark' : 'light', { active: true })
-                        : chromeMenuItemClass(isDark ? 'dark' : 'light'),
-                    )}
-                  >
-                    {sw && (
-                      <span className="flex items-center gap-0.5 shrink-0">
-                        {sw.map((c, i) => (
-                          <span key={i} className={cn('w-2.5 h-2.5 rounded-full border', isDark ? 'border-white/10' : 'border-black/10')} style={{ background: c }} />
-                        ))}
-                      </span>
-                    )}
-                    <span className="flex-1 text-left truncate">{t.label}</span>
-                  </button>
-                </div>
-              )
-            })}
-          </div>
-        </div>
-      )}
+      {dropdown}
     </div>
   )
 }

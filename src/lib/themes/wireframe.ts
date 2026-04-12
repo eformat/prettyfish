@@ -5,7 +5,9 @@ const wireframe: ThemePresetDef = {
   description: 'Sketch-style wireframe',
   configOverrides: {
     look: 'handDrawn',
-    fontFamily: '"DM Sans", system-ui, sans-serif',
+    // Caveat: casual hand-printed Google Font — looks like annotations on a wireframe sketch.
+    // Gives diagrams that authentic "drawn with a marker" wireframe/mockup feel.
+    fontFamily: '"Caveat", "Patrick Hand", cursive',
     fontSize: 16,
     flowchart: { curve: 'linear', nodeSpacing: 60, rankSpacing: 60, padding: 20 },
     sequence: { actorMargin: 60, messageMargin: 40 },
@@ -24,7 +26,7 @@ const wireframe: ThemePresetDef = {
       tertiaryBorderColor: '#cccccc',
       lineColor: '#777777',
       titleColor: '#333333',
-      fontFamily: '"DM Sans", system-ui, sans-serif',
+      fontFamily: '"Caveat", "Patrick Hand", cursive',
     },
     flowchart: {
       mainBkg: '#f5f5f5',
