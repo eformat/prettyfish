@@ -69,6 +69,8 @@ const MCP_TOOL_DEFINITIONS = [
   { name: 'session_info', description: 'Return the current relay session details.', inputSchema: { type: 'object', properties: {} } },
   { name: 'list_diagrams', description: 'List all diagrams on the current page. Returns each diagram\'s ID and name. Use include_code to also return the Mermaid source.', inputSchema: { type: 'object', properties: { include_code: { type: 'boolean', description: 'Include Mermaid source code for each diagram. Defaults to false.' } } } },
   { name: 'get_diagram', description: 'Get a single diagram by ID or name. Returns the diagram\'s details and Mermaid source code. If not found, suggests using list_diagrams.', inputSchema: { type: 'object', properties: { diagramId: { type: 'string', description: 'Diagram ID (exact match).' }, name: { type: 'string', description: 'Diagram name (case-insensitive fuzzy match).' } } } },
+  { name: 'list_diagram_types', description: 'List all supported Mermaid diagram types (flowchart, sequence, class, ER, etc.).', inputSchema: { type: 'object', properties: {} } },
+  { name: 'get_diagram_reference', description: 'Get the full syntax reference for a Mermaid diagram type, including all elements and examples. Call this before writing diagram code to ensure correct syntax.', inputSchema: { type: 'object', properties: { type: { type: 'string', description: 'Diagram type ID (e.g. "flowchart", "sequence", "classDiagram"). Use list_diagram_types to see all.' } }, required: ['type'] } },
   { name: 'create_diagram', description: 'Create a new Mermaid diagram on the current page. Always provide a short, descriptive name based on the diagram content.', inputSchema: { type: 'object', properties: { name: { type: 'string', description: 'A short descriptive name for the diagram (e.g. "User Auth Flow", "DB Schema").' }, code: { type: 'string', description: 'Mermaid diagram source code.' }, width: { type: 'number' } } } },
   { name: 'set_diagram_code', description: 'Replace a diagram\'s Mermaid source code and wait for render.', inputSchema: { type: 'object', properties: { diagramId: { type: 'string' }, code: { type: 'string' }, timeoutMs: { type: 'number' }, select: { type: 'boolean' } }, required: ['diagramId', 'code'] } },
   { name: 'export_svg', description: 'Export a diagram as SVG.', inputSchema: { type: 'object', properties: { diagramId: { type: 'string' }, timeoutMs: { type: 'number' } } } },
@@ -499,6 +501,8 @@ export class RelaySessionDurableObject {
             }
           case 'list_diagrams':
           case 'get_diagram':
+          case 'list_diagram_types':
+          case 'get_diagram_reference':
           case 'create_diagram': {
             const payload = await this.sendCommandToBrowser(toolName, args)
             return { jsonrpc: '2.0', id, result: textResult(payload) }

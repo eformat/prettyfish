@@ -1,12 +1,15 @@
 import { useCallback, useEffect, useRef } from 'react'
 
 import { buildPngBlob, buildSvgBlob } from '@/lib/export'
+import { DIAGRAM_REFS, getRef } from '@/lib/reference'
 import type { AppStoreState } from '@/state/appStore'
 import type { AppState, Diagram, DiagramPage } from '@/types'
 
 export type BridgeCommandName =
   | 'list_diagrams'
   | 'get_diagram'
+  | 'list_diagram_types'
+  | 'get_diagram_reference'
   | 'create_diagram'
   | 'set_diagram_code'
   | 'export_svg'
@@ -205,6 +208,42 @@ export function useAgentCommandExecutor({
             ...summarizeDiagram(match.page, match.diagram),
             code: match.diagram.code,
           },
+        }
+      }
+
+      case 'list_diagram_types': {
+        return {
+          types: Object.entries(DIAGRAM_REFS).map(([id, ref]) => ({
+            id,
+            label: ref.label,
+          })),
+        }
+      }
+
+      case 'get_diagram_reference': {
+        const typeName = typeof args.type === 'string' ? args.type.toLowerCase() : ''
+        if (!typeName) {
+          return {
+            error: 'Please provide a diagram type. Use list_diagram_types to see available types.',
+            available: Object.keys(DIAGRAM_REFS),
+          }
+        }
+        const ref = getRef(typeName)
+        if (ref.id === 'generic' && typeName !== 'generic') {
+          return {
+            error: `Unknown diagram type: "${typeName}". Use list_diagram_types to see available types.`,
+            available: Object.keys(DIAGRAM_REFS),
+          }
+        }
+        return {
+          type: ref.id,
+          label: ref.label,
+          elements: ref.elements.map((el) => ({
+            name: el.name,
+            syntax: el.syntax,
+            description: el.description,
+            examples: el.examples,
+          })),
         }
       }
 

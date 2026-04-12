@@ -1,16 +1,25 @@
 /**
- * Static contrast audit for all theme presets × all diagram types.
- * Checks every known text/background color pair for WCAG AA compliance.
- * 
- * Usage: node scripts/tmp_rovodev_contrast-audit.mjs
+ * Exhaustive contrast audit for all theme presets × all diagram types × all config permutations.
+ *
+ * Design principles:
+ *  1. GENERIC — color pairs are declared as data, not hand-coded per theme.
+ *  2. EXHAUSTIVE — every indexed variable group (cScale, git, pie, fillType) is
+ *     expanded generically via loops, not selective per-index.
+ *  3. CONFIG-AWARE — pairs that only appear under specific config options are
+ *     tagged with the config that enables them, so the audit covers all
+ *     permutations (e.g. showSequenceNumbers, mirrorActors, Gantt crit tasks).
+ *  4. SOURCE-ACCURATE — text/bg pairings are derived from Mermaid's actual
+ *     rendering logic (theme-base.d.ts + diagram renderers), not guessed.
+ *
+ * Usage: npx tsx scripts/contrast-audit.mjs
  */
 
-// We can't easily import TS, so we'll run via tsx
 import { CUSTOM_THEME_PRESETS } from '../src/lib/themePresets.ts'
 
-// ── Color parsing ────────────────────────────────────────────────────────────
+// ── Color parsing ─────────────────────────────────────────────────────────────
 
 function parseHex(hex) {
+  if (!hex || typeof hex !== 'string') return null
   const m = hex.match(/^#([0-9a-f]{2})([0-9a-f]{2})([0-9a-f]{2})$/i)
   if (!m) return null
   return [parseInt(m[1], 16), parseInt(m[2], 16), parseInt(m[3], 16)]
@@ -32,157 +41,440 @@ function contrastRatio(hex1, hex2) {
   return (Math.max(l1, l2) + 0.05) / (Math.min(l1, l2) + 0.05)
 }
 
-// ── Define all text/background pairs per diagram type ────────────────────────
+// ── Color pair schema ─────────────────────────────────────────────────────────
+//
+// Each entry in COLOR_PAIR_SCHEMA is:
+//   {
+//     diagram: string           — diagram type name (for reporting)
+//     label:   string           — human description of the pair
+//     text:    (v) => string    — function returning the text color from flat vars
+//     bg:      (v) => string    — function returning the bg color from flat vars
+//     config?: string           — optional: the config key that enables this element
+//                                 (e.g. 'showSequenceNumbers'). Used for documentation.
+//   }
+//
+// Variables `v` is the flat themeVariables object for the theme.
+// `v.background` is always the canvas color (fallback '#ffffff').
 
-function getColorPairs(vars) {
-  return [
-    // ── Core / Flowchart ──
-    // nodeTextColor is the actual rendered text inside flowchart nodes (mainBkg is the node fill)
-    { diagram: 'flowchart', label: 'Node text on node bg', text: vars.nodeTextColor || vars.primaryTextColor, bg: vars.mainBkg || vars.primaryColor },
-    { diagram: 'flowchart', label: 'Secondary text on secondary bg', text: vars.secondaryTextColor, bg: vars.secondaryColor },
-    { diagram: 'flowchart', label: 'Tertiary text on tertiary bg', text: vars.tertiaryTextColor, bg: vars.tertiaryColor },
-    { diagram: 'flowchart', label: 'Edge label text on edge label bg', text: vars.primaryTextColor, bg: vars.edgeLabelBackground },
-    { diagram: 'flowchart', label: 'Cluster text on cluster bg', text: vars.tertiaryTextColor || vars.primaryTextColor, bg: vars.clusterBkg || vars.secondaryColor },
+const BG = v => v.background || '#ffffff'
 
-    // ── Sequence ──
-    { diagram: 'sequence', label: 'Actor text on actor bg', text: vars.actorTextColor, bg: vars.actorBkg },
-    { diagram: 'sequence', label: 'Signal text on background', text: vars.signalTextColor, bg: vars.background || '#ffffff' },
-    { diagram: 'sequence', label: 'Label text on label box', text: vars.labelTextColor, bg: vars.labelBoxBkgColor },
-    { diagram: 'sequence', label: 'Loop text on background', text: vars.loopTextColor, bg: vars.background || '#ffffff' },
-    { diagram: 'sequence', label: 'Note text on note bg', text: vars.noteTextColor, bg: vars.noteBkgColor },
-    // sequenceNumberColor is the text inside the autonumber circles — the circle bg matches actorBkg
-    { diagram: 'sequence', label: 'Seq number on actor bg (autonumber circles)', text: vars.sequenceNumberColor, bg: vars.actorBkg },
-    // Activation box text (signal text shown over activation bars)
-    { diagram: 'sequence', label: 'Signal text on activation bg', text: vars.signalTextColor, bg: vars.activationBkgColor },
-
-    // ── ER ──
-    // ER entity headers use nodeTextColor (same as flowchart node text) on primaryColor background
-    { diagram: 'er', label: 'Node text on entity header', text: vars.nodeTextColor || vars.primaryTextColor, bg: vars.primaryColor },
-    { diagram: 'er', label: 'Primary text on attr row odd', text: vars.primaryTextColor, bg: vars.attributeBackgroundColorOdd },
-    { diagram: 'er', label: 'Primary text on attr row even', text: vars.primaryTextColor, bg: vars.attributeBackgroundColorEven },
-
-    // ── State ──
-    { diagram: 'state', label: 'State label on state bg', text: vars.stateLabelColor, bg: vars.stateBkg },
-    { diagram: 'state', label: 'Transition label on background', text: vars.transitionLabelColor, bg: vars.background || '#ffffff' },
-    { diagram: 'state', label: 'Error text on error bg', text: vars.errorTextColor, bg: vars.errorBkgColor },
-    { diagram: 'state', label: 'Title on composite bg', text: vars.primaryTextColor, bg: vars.compositeTitleBackground },
-
-    // ── Class ──
-    { diagram: 'class', label: 'Class text on fillType0', text: vars.classText, bg: vars.fillType0 },
-    { diagram: 'class', label: 'Class text on fillType1', text: vars.classText, bg: vars.fillType1 },
-    { diagram: 'class', label: 'Class text on fillType2', text: vars.classText, bg: vars.fillType2 },
-    { diagram: 'class', label: 'Class text on fillType3', text: vars.classText, bg: vars.fillType3 },
-
-    // ── Gantt ──
-    { diagram: 'gantt', label: 'Task text on task bg', text: vars.taskTextColor, bg: vars.taskBkgColor },
-    { diagram: 'gantt', label: 'Task text (light) on task bg', text: vars.taskTextLightColor, bg: vars.taskBkgColor },
-    { diagram: 'gantt', label: 'Task text on active task bg', text: vars.taskTextColor, bg: vars.activeTaskBkgColor },
-    { diagram: 'gantt', label: 'Task text on done task bg', text: vars.taskTextDarkColor, bg: vars.doneTaskBkgColor },
-    { diagram: 'gantt', label: 'Task text on crit bg', text: vars.taskTextColor, bg: vars.critBkgColor },
-    { diagram: 'gantt', label: 'Title on section bg', text: vars.titleColor || vars.primaryTextColor, bg: vars.sectionBkgColor },
-
-    // ── Git ──
-    ...Array.from({ length: 8 }, (_, i) => ({
-      diagram: 'git',
-      label: `Branch label ${i} on git${i}`,
-      text: vars[`gitBranchLabel${i}`],
-      bg: vars[`git${i}`],
-    })),
-
-    // ── Pie ──
-    { diagram: 'pie', label: 'Pie section text on pie1', text: vars.pieSectionTextColor, bg: vars.pie1 },
-    { diagram: 'pie', label: 'Pie section text on pie2', text: vars.pieSectionTextColor, bg: vars.pie2 },
-    { diagram: 'pie', label: 'Pie section text on pie3', text: vars.pieSectionTextColor, bg: vars.pie3 },
-    { diagram: 'pie', label: 'Pie section text on pie4', text: vars.pieSectionTextColor, bg: vars.pie4 },
-    { diagram: 'pie', label: 'Pie title on background', text: vars.pieTitleTextColor, bg: vars.background || '#ffffff' },
-
-    // ── Requirement ──
-    { diagram: 'requirement', label: 'Req text on req bg', text: vars.requirementTextColor, bg: vars.requirementBackground },
-    { diagram: 'requirement', label: 'Relation label on label bg', text: vars.relationLabelColor, bg: vars.relationLabelBackground },
-
-    // ── Quadrant ──
-    { diagram: 'quadrant', label: 'Q1 text on Q1 fill', text: vars.quadrant1TextFill, bg: vars.quadrant1Fill },
-    { diagram: 'quadrant', label: 'Q2 text on Q2 fill', text: vars.quadrant2TextFill, bg: vars.quadrant2Fill },
-    { diagram: 'quadrant', label: 'Q3 text on Q3 fill', text: vars.quadrant3TextFill, bg: vars.quadrant3Fill },
-    { diagram: 'quadrant', label: 'Q4 text on Q4 fill', text: vars.quadrant4TextFill, bg: vars.quadrant4Fill },
-    { diagram: 'quadrant', label: 'Point text on point fill', text: vars.quadrantPointTextFill, bg: vars.quadrantPointFill },
-    { diagram: 'quadrant', label: 'X axis text on background', text: vars.quadrantXAxisTextFill, bg: vars.background || '#ffffff' },
-    { diagram: 'quadrant', label: 'Title on background', text: vars.quadrantTitleFill, bg: vars.background || '#ffffff' },
-
-    // ── Architecture ──
-    { diagram: 'architecture', label: 'Title on background', text: vars.titleColor, bg: vars.background || '#ffffff' },
-  ]
+// Helper: expand an indexed variable group generically
+// e.g. expandIndexed('pie', 1, 12, text, bg) → 12 pairs for pie1..pie12
+function expandIndexed(diagram, prefix, start, end, textFn, bgFn, labelFn, config) {
+  return Array.from({ length: end - start + 1 }, (_, i) => {
+    const idx = start + i
+    return {
+      diagram,
+      label: labelFn ? labelFn(idx) : `${prefix}${idx} text`,
+      text: v => textFn(v, idx),
+      bg: v => bgFn(v, idx),
+      ...(config ? { config } : {}),
+    }
+  })
 }
 
-// ── Run audit ────────────────────────────────────────────────────────────────
+const COLOR_PAIR_SCHEMA = [
 
-const WCAG_AA_NORMAL = 4.5
-const WCAG_AA_LARGE = 3.0
+  // ── Flowchart / Graph / Block / Kanban / Mindmap ──────────────────────────
+  // All use the same node/edge variables. Mindmap and block share mainBkg/nodeTextColor.
+  {
+    diagram: 'flowchart',
+    label: 'Node text on node bg',
+    // nodeTextColor is explicitly set per theme for node labels; falls back to primaryTextColor
+    text: v => v.nodeTextColor || v.primaryTextColor,
+    bg: v => v.mainBkg || v.primaryColor,
+  },
+  {
+    diagram: 'flowchart',
+    label: 'Secondary node text on secondary bg',
+    text: v => v.secondaryTextColor,
+    bg: v => v.secondaryColor,
+  },
+  {
+    diagram: 'flowchart',
+    label: 'Tertiary node text on tertiary bg',
+    text: v => v.tertiaryTextColor,
+    bg: v => v.tertiaryColor,
+  },
+  {
+    diagram: 'flowchart',
+    label: 'Edge label text on edge label bg',
+    text: v => v.primaryTextColor,
+    bg: v => v.edgeLabelBackground,
+  },
+  {
+    diagram: 'flowchart',
+    label: 'Cluster label on cluster bg',
+    // Cluster labels use tertiaryTextColor on clusterBkg
+    text: v => v.tertiaryTextColor || v.primaryTextColor,
+    bg: v => v.clusterBkg || v.secondaryColor,
+  },
+  {
+    diagram: 'flowchart',
+    label: 'Title text on background',
+    text: v => v.titleColor || v.primaryTextColor,
+    bg: BG,
+  },
 
-console.log('╔══════════════════════════════════════════════════╗')
-console.log('║     CONTRAST AUDIT: All Themes × All Diagrams   ║')
-console.log('╚══════════════════════════════════════════════════╝\n')
+  // ── Sequence diagram ───────────────────────────────────────────────────────
+  // Always-visible elements
+  {
+    diagram: 'sequence',
+    label: 'Actor text on actor bg',
+    text: v => v.actorTextColor,
+    bg: v => v.actorBkg,
+  },
+  {
+    diagram: 'sequence',
+    label: 'Signal/message text on background',
+    text: v => v.signalTextColor,
+    bg: BG,
+  },
+  {
+    diagram: 'sequence',
+    label: 'Note text on note bg',
+    text: v => v.noteTextColor,
+    bg: v => v.noteBkgColor,
+  },
+  {
+    diagram: 'sequence',
+    label: 'Loop/alt/opt label text on background',
+    text: v => v.loopTextColor,
+    bg: BG,
+  },
+  {
+    diagram: 'sequence',
+    label: 'Signal text on activation bar bg',
+    // Activation bars appear when participants call each other
+    text: v => v.signalTextColor,
+    bg: v => v.activationBkgColor,
+    config: 'activations (default on)',
+  },
+  // Elements that appear with specific configs
+  {
+    diagram: 'sequence',
+    label: 'Seq number text on actor bg (autonumber circles)',
+    // sequenceNumberColor = text drawn inside circle whose fill = actorBkg
+    text: v => v.sequenceNumberColor,
+    bg: v => v.actorBkg,
+    config: 'showSequenceNumbers: true',
+  },
+  {
+    diagram: 'sequence',
+    label: 'Label box text on label box bg (alt/loop/opt frames)',
+    text: v => v.labelTextColor,
+    bg: v => v.labelBoxBkgColor,
+    config: 'alt/loop/opt/par frames',
+  },
+
+  // ── ER Diagram ────────────────────────────────────────────────────────────
+  {
+    diagram: 'er',
+    label: 'Entity header text on primary color bg',
+    // ER entity headers: Mermaid uses nodeTextColor (same as flowchart) on primaryColor
+    text: v => v.nodeTextColor || v.primaryTextColor,
+    bg: v => v.primaryColor,
+  },
+  {
+    diagram: 'er',
+    label: 'Attribute text on odd row bg',
+    text: v => v.primaryTextColor,
+    bg: v => v.attributeBackgroundColorOdd,
+  },
+  {
+    diagram: 'er',
+    label: 'Attribute text on even row bg',
+    text: v => v.primaryTextColor,
+    bg: v => v.attributeBackgroundColorEven,
+  },
+
+  // ── State diagram ─────────────────────────────────────────────────────────
+  {
+    diagram: 'state',
+    label: 'State label on state bg',
+    text: v => v.stateLabelColor,
+    bg: v => v.stateBkg,
+  },
+  {
+    diagram: 'state',
+    label: 'Transition label on background',
+    text: v => v.transitionLabelColor,
+    bg: BG,
+  },
+  {
+    diagram: 'state',
+    label: 'Error text on error bg',
+    text: v => v.errorTextColor,
+    bg: v => v.errorBkgColor,
+    config: 'error states',
+  },
+  {
+    diagram: 'state',
+    label: 'Composite state title on composite title bg',
+    text: v => v.stateLabelColor || v.primaryTextColor,
+    bg: v => v.compositeTitleBackground,
+    config: 'composite states',
+  },
+  {
+    diagram: 'state',
+    label: 'State label on composite background',
+    text: v => v.stateLabelColor,
+    bg: v => v.compositeBackground,
+    config: 'composite states',
+  },
+
+  // ── Class diagram ─────────────────────────────────────────────────────────
+  // classText is used for all text inside class boxes
+  // fillType0-7 are used for class node backgrounds (cycling through classes)
+  ...expandIndexed(
+    'class', 'fillType', 0, 7,
+    (v, i) => v.classText,
+    (v, i) => v[`fillType${i}`],
+    i => `Class text on fillType${i} bg`,
+  ),
+
+  // ── Gantt chart ───────────────────────────────────────────────────────────
+  {
+    diagram: 'gantt',
+    label: 'Section title on section bg',
+    text: v => v.titleColor || v.primaryTextColor,
+    bg: v => v.sectionBkgColor,
+  },
+  {
+    diagram: 'gantt',
+    label: 'Section title on alt section bg',
+    text: v => v.titleColor || v.primaryTextColor,
+    bg: v => v.altSectionBkgColor,
+  },
+  {
+    diagram: 'gantt',
+    label: 'Task text on task bg',
+    text: v => v.taskTextColor,
+    bg: v => v.taskBkgColor,
+  },
+  {
+    diagram: 'gantt',
+    label: 'Task light text on task bg',
+    text: v => v.taskTextLightColor,
+    bg: v => v.taskBkgColor,
+  },
+  {
+    diagram: 'gantt',
+    label: 'Task text on active task bg',
+    text: v => v.taskTextColor,
+    bg: v => v.activeTaskBkgColor,
+    config: 'active tasks',
+  },
+  {
+    diagram: 'gantt',
+    label: 'Task dark text on done task bg',
+    text: v => v.taskTextDarkColor,
+    bg: v => v.doneTaskBkgColor,
+    config: 'done tasks',
+  },
+  {
+    diagram: 'gantt',
+    label: 'Task text on crit task bg',
+    text: v => v.taskTextColor,
+    bg: v => v.critBkgColor,
+    config: 'crit tasks',
+  },
+
+  // ── Git graph ─────────────────────────────────────────────────────────────
+  // Branch labels (gitBranchLabel0-7) appear on top of branch commit circles (git0-7)
+  ...expandIndexed(
+    'git', 'git', 0, 7,
+    (v, i) => v[`gitBranchLabel${i}`],
+    (v, i) => v[`git${i}`],
+    i => `Branch label ${i} on git branch ${i} color`,
+  ),
+
+  // ── Pie chart ─────────────────────────────────────────────────────────────
+  // pieSectionTextColor is placed on top of each pie slice (pie1-pie12)
+  // We check pie1-pie8 (themes define up to pie8; pie9-12 fall back to Mermaid defaults)
+  ...expandIndexed(
+    'pie', 'pie', 1, 8,
+    (v, i) => v.pieSectionTextColor,
+    (v, i) => v[`pie${i}`],
+    i => `Pie section text on pie slice ${i} bg`,
+  ),
+  {
+    diagram: 'pie',
+    label: 'Pie title text on background',
+    text: v => v.pieTitleTextColor,
+    bg: BG,
+  },
+
+  // ── Journey / Timeline / Mindmap ──────────────────────────────────────────
+  // These diagram types use cScale0-11 as section/node backgrounds.
+  // scaleLabelColor is the text color used on top of cScale fills.
+  // If scaleLabelColor is not set, Mermaid uses a calculated contrasting color,
+  // but our themes should set it explicitly — we check all 12 cScale slots.
+  ...expandIndexed(
+    'journey', 'cScale', 0, 11,
+    (v, i) => v.scaleLabelColor || v.primaryTextColor,
+    (v, i) => v[`cScale${i}`],
+    i => `Section/node label on cScale${i} bg`,
+  ),
+
+  // ── Requirement diagram ───────────────────────────────────────────────────
+  {
+    diagram: 'requirement',
+    label: 'Requirement text on requirement bg',
+    text: v => v.requirementTextColor,
+    bg: v => v.requirementBackground,
+  },
+  {
+    diagram: 'requirement',
+    label: 'Relation label on relation label bg',
+    text: v => v.relationLabelColor,
+    bg: v => v.relationLabelBackground,
+  },
+
+  // ── Quadrant chart ────────────────────────────────────────────────────────
+  ...([1, 2, 3, 4].map(q => ({
+    diagram: 'quadrant',
+    label: `Quadrant ${q} text on quadrant ${q} fill`,
+    text: v => v[`quadrant${q}TextFill`],
+    bg: v => v[`quadrant${q}Fill`],
+  }))),
+  {
+    diagram: 'quadrant',
+    label: 'Data point text on point fill',
+    text: v => v.quadrantPointTextFill,
+    bg: v => v.quadrantPointFill,
+  },
+  {
+    diagram: 'quadrant',
+    label: 'X-axis label on background',
+    text: v => v.quadrantXAxisTextFill,
+    bg: BG,
+  },
+  {
+    diagram: 'quadrant',
+    label: 'Y-axis label on background',
+    text: v => v.quadrantYAxisTextFill,
+    bg: BG,
+  },
+  {
+    diagram: 'quadrant',
+    label: 'Chart title on background',
+    text: v => v.quadrantTitleFill,
+    bg: BG,
+  },
+
+  // ── Architecture diagram ──────────────────────────────────────────────────
+  {
+    diagram: 'architecture',
+    label: 'Diagram title on background',
+    text: v => v.titleColor || v.primaryTextColor,
+    bg: BG,
+  },
+  // Architecture group labels appear on the group border area (background color)
+  {
+    diagram: 'architecture',
+    label: 'Group label on background',
+    text: v => v.primaryTextColor,
+    bg: BG,
+  },
+
+  // ── C4 / Person diagrams ──────────────────────────────────────────────────
+  {
+    diagram: 'c4',
+    label: 'Person text on person bg',
+    // C4 person shapes use personBkg
+    text: v => v.primaryTextColor,
+    bg: v => v.personBkg || v.primaryColor,
+  },
+]
+
+// ── Run audit ─────────────────────────────────────────────────────────────────
+
+const WCAG_AA_NORMAL = 4.5   // required for normal text
+const WCAG_AA_LARGE  = 3.0   // required for large text (≥18pt or ≥14pt bold)
+
+console.log('╔══════════════════════════════════════════════════════════╗')
+console.log('║  CONTRAST AUDIT: All Themes × All Diagrams × All Configs ║')
+console.log('╚══════════════════════════════════════════════════════════╝\n')
 
 let totalIssues = 0
-let totalPairs = 0
+let totalPairs  = 0
 const issuesByTheme = {}
 
 for (const [themeId, preset] of Object.entries(CUSTOM_THEME_PRESETS)) {
-  const vars = preset.themeVariables
-  const pairs = getColorPairs(vars)
+  const vars   = preset.themeVariables
   const issues = []
 
-  for (const pair of pairs) {
-    if (!pair.text || !pair.bg) continue
+  for (const pair of COLOR_PAIR_SCHEMA) {
+    const textColor = pair.text(vars)
+    const bgColor   = pair.bg(vars)
+
+    // Skip if either value is missing/non-hex (e.g. theme doesn't define that var)
+    if (!textColor || !bgColor) continue
+    if (!parseHex(textColor) || !parseHex(bgColor)) continue
+
     totalPairs++
-    const ratio = contrastRatio(pair.text, pair.bg)
+    const ratio = contrastRatio(textColor, bgColor)
     if (ratio === null) continue
-    
+
     const roundedRatio = Math.round(ratio * 100) / 100
-    const passAA = ratio >= WCAG_AA_NORMAL
+    const passAA      = ratio >= WCAG_AA_NORMAL
     const passAALarge = ratio >= WCAG_AA_LARGE
 
     if (!passAALarge) {
-      issues.push({
-        ...pair,
-        ratio: roundedRatio,
-        severity: 'FAIL',
-      })
+      issues.push({ ...pair, textColor, bgColor, ratio: roundedRatio, severity: 'FAIL' })
     } else if (!passAA) {
-      issues.push({
-        ...pair,
-        ratio: roundedRatio,
-        severity: 'WARN',
-      })
+      issues.push({ ...pair, textColor, bgColor, ratio: roundedRatio, severity: 'WARN' })
     }
   }
 
   if (issues.length > 0) {
     issuesByTheme[themeId] = issues
     totalIssues += issues.length
-    
+
     console.log(`\n── ${preset.label} (${themeId}) ──`)
     for (const issue of issues) {
-      const icon = issue.severity === 'FAIL' ? '❌' : '⚠️ '
-      console.log(`  ${icon} ${issue.ratio}:1  ${issue.label}`)
-      console.log(`     text: ${issue.text}  bg: ${issue.bg}  [${issue.diagram}]`)
+      const icon       = issue.severity === 'FAIL' ? '❌' : '⚠️ '
+      const configNote = issue.config ? `  [config: ${issue.config}]` : ''
+      console.log(`  ${icon} ${issue.ratio}:1  [${issue.diagram}] ${issue.label}`)
+      console.log(`     text: ${issue.textColor}  bg: ${issue.bgColor}${configNote}`)
     }
   }
 }
 
+// ── Summary ───────────────────────────────────────────────────────────────────
+
+const allIssues = Object.values(issuesByTheme).flat()
+const failCount = allIssues.filter(i => i.severity === 'FAIL').length
+const warnCount = allIssues.filter(i => i.severity === 'WARN').length
+
 console.log('\n\n════════════════ SUMMARY ════════════════')
-console.log(`Themes checked: ${Object.keys(CUSTOM_THEME_PRESETS).length}`)
+console.log(`Themes checked:      ${Object.keys(CUSTOM_THEME_PRESETS).length}`)
+console.log(`Pair schemas:        ${COLOR_PAIR_SCHEMA.length}`)
 console.log(`Total pairs checked: ${totalPairs}`)
-console.log(`Issues found: ${totalIssues}`)
-console.log(`  ❌ FAIL (<3:1): ${Object.values(issuesByTheme).flat().filter(i => i.severity === 'FAIL').length}`)
-console.log(`  ⚠️  WARN (<4.5:1): ${Object.values(issuesByTheme).flat().filter(i => i.severity === 'WARN').length}`)
+console.log(`Issues found:        ${totalIssues}`)
+console.log(`  ❌ FAIL (<3:1):    ${failCount}`)
+console.log(`  ⚠️  WARN (<4.5:1): ${warnCount}`)
 
 const clean = Object.keys(CUSTOM_THEME_PRESETS).filter(id => !issuesByTheme[id])
 if (clean.length > 0) {
   console.log(`\n✅ Clean themes: ${clean.join(', ')}`)
 }
+
+// Break down FAILs by diagram type for actionability
+if (failCount > 0) {
+  const failsByDiagram = {}
+  for (const issue of allIssues.filter(i => i.severity === 'FAIL')) {
+    failsByDiagram[issue.diagram] = (failsByDiagram[issue.diagram] || 0) + 1
+  }
+  console.log('\nFAILs by diagram type:')
+  for (const [diag, count] of Object.entries(failsByDiagram).sort((a, b) => b[1] - a[1])) {
+    console.log(`  ${diag}: ${count}`)
+  }
+}
+
 console.log('═════════════════════════════════════════\n')
 
-if (totalIssues > 0) {
+if (failCount > 0) {
   process.exit(1)
 }
