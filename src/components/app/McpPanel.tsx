@@ -12,7 +12,6 @@ interface McpPanelProps {
   open: boolean
   onClose: () => void
   remoteRelay: RemoteAgentRelayControls
-  isDark?: boolean
   webMcpSupported?: boolean
 }
 
@@ -116,9 +115,10 @@ Export a diagram as SVG or PNG image.
 4. Call \`list_diagrams\` to see existing diagrams, \`set_diagram_code\` to update them`
 }
 
-export function McpPanel({ open, onClose, remoteRelay, isDark = false, webMcpSupported = false }: McpPanelProps) {
+export function McpPanel({ open, onClose, remoteRelay, webMcpSupported = false }: McpPanelProps) {
   const panelRef = useRef<HTMLDivElement>(null)
   const [activeTab, setActiveTab] = useState<TabId>('install')
+  const isDark = document.documentElement.classList.contains('dark')
 
   const hasSession = Boolean(remoteRelay.sessionId && remoteRelay.mcpUrl)
   const isConnected = remoteRelay.status === 'connected'
