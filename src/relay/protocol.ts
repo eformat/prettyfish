@@ -1,31 +1,29 @@
+/**
+ * Pretty Fish Relay Protocol Types
+ *
+ * All messages exchanged between browser, agent, and relay server.
+ */
+
 export type RelayPeerRole = 'browser' | 'agent'
+
+// ── Session ───────────────────────────────────────────────────────────────────
 
 export interface RelaySessionRecord {
   sessionId: string
-  browserToken: string
-  browserProof: string   // HMAC-SHA256(clientSecret, pageId) — stored server-side, never sent to agent
-  createdAt: string
+  browserToken: string   // Random token — only the browser tab knows this
+  browserProof: string   // Used to HMAC-sign commands — proves origin
+  createdAt: number      // Unix timestamp ms
 }
 
-export interface PublicRelaySessionResponse extends RelaySessionRecord {
-  mcpUrl: string
+export interface PublicRelaySessionResponse {
+  sessionId: string
+  wsUrl: string          // wss://…/relay/{id}/ws?token=…  (for browser)
+  mcpUrl: string         // https://…/relay/{id}/mcp       (for agent)
+  browserProof: string   // Returned to browser only — never shown to agent
+  browserToken: string   // Token embedded in wsUrl — returned for convenience
 }
 
-export interface RelayCommandMessage {
-  type: 'command'
-  id: string
-  command: string
-  args?: Record<string, unknown>
-  sig?: string  // HMAC-SHA256(browserProof, id) — browser verifies before executing
-}
-
-export interface RelayCommandResultMessage {
-  type: 'command_result'
-  id: string
-  ok: boolean
-  result?: unknown
-  error?: string
-}
+// ── WebSocket envelope types ──────────────────────────────────────────────────
 
 export interface RelayHelloMessage {
   type: 'hello'
@@ -39,19 +37,31 @@ export interface RelayPeerStatusMessage {
   connected: boolean
 }
 
+export interface RelayCommandMessage {
+  type: 'command'
+  id: string
+  command: string
+  args?: Record<string, unknown>
+  sig?: string  // HMAC-SHA256(browserProof, id) — browser verifies before executing
+}
+
+export interface RelayCommandResultMessage {
+  type: 'command_result'
+  id: string
+  result?: unknown
+  error?: { message: string; code?: string }
+}
+
 export interface RelayErrorMessage {
   type: 'error'
   message: string
 }
 
-export type PingEnvelope = { type: 'ping' }
-
 export type RelayEnvelope =
-  | PingEnvelope
-  | RelayCommandMessage
-  | RelayCommandResultMessage
   | RelayHelloMessage
   | RelayPeerStatusMessage
+  | RelayCommandMessage
+  | RelayCommandResultMessage
   | RelayErrorMessage
 
 export function isRelayEnvelope(value: unknown): value is RelayEnvelope {

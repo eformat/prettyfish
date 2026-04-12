@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 
 import { useAgentCommandExecutor, type BrowserCommandEnvelope } from '@/hooks/useAgentCommandExecutor'
-import { hmacSign, hmacVerify } from '@/lib/hmac'
+import { hmacVerify } from '@/lib/hmac'
 import type { PublicRelaySessionResponse, RelayEnvelope } from '@/relay/protocol'
 import type { AppStoreState } from '@/state/appStore'
 import type { AppState } from '@/types'
@@ -32,24 +32,12 @@ function persist(key: string, value: string) {
   } catch { /* ignore */ }
 }
 
-function getOrCreateClientSecret(pageId: string): string {
-  const key = clientSecretKey(pageId)
-  try {
-    const existing = localStorage.getItem(key)
-    if (existing) return existing
-    const fresh = crypto.randomUUID()
-    localStorage.setItem(key, fresh)
-    return fresh
-  } catch {
-    return crypto.randomUUID()
-  }
-}
 
 function toWebSocketUrl(sessionId: string, browserToken: string): string {
   const base = DEFAULT_RELAY_URL.startsWith('https://')
     ? DEFAULT_RELAY_URL.replace(/^https:\/\//, 'wss://')
     : DEFAULT_RELAY_URL.replace(/^http:\/\//, 'ws://')
-  return `${base}/relay/sessions/${sessionId}/browser?token=${encodeURIComponent(browserToken)}`
+  return `${base}/relay/${sessionId}/ws?token=${encodeURIComponent(browserToken)}`
 }
 
 function buildConfigSnippet(mcpUrl: string): string {
@@ -129,7 +117,7 @@ export function useRemoteAgentRelay(options: RemoteAgentRelayOptions): RemoteAge
   // ── Rebuild mcpUrl whenever session changes ────────────────────────────────
   useEffect(() => {
     if (!sessionId) { setMcpUrl(''); return }
-    setMcpUrl(`${DEFAULT_RELAY_URL}/mcp/${sessionId}`)
+    setMcpUrl(`${DEFAULT_RELAY_URL}/relay/${sessionId}/mcp`)
   }, [sessionId])
 
   // ── Cleanup on unmount ─────────────────────────────────────────────────────
@@ -142,7 +130,7 @@ export function useRemoteAgentRelay(options: RemoteAgentRelayOptions): RemoteAge
     heartbeatIntervalRef.current = setInterval(() => {
       const socket = socketRef.current
       if (socket?.readyState === WebSocket.OPEN) {
-        socket.send(JSON.stringify({ type: 'ping' } satisfies RelayEnvelope))
+        socket.send(JSON.stringify({ type: 'ping' }))
       }
     }, 55_000) // 55s — safely under Cloudflare's 100s idle timeout, minimizes DO request costs
   }, [])
@@ -234,18 +222,19 @@ export function useRemoteAgentRelay(options: RemoteAgentRelayOptions): RemoteAge
 
         if (message.type === 'command') {
           void (async () => {
-            // Verify HMAC signature before executing — prevents rogue commands
-            const clientSecret = getOrCreateClientSecret(activePageIdRef.current)
-            const browserProof = await hmacSign(clientSecret, activePageIdRef.current)
+            // Verify HMAC signature before executing — prevents rogue commands.
+            // browserProof was returned from the server at session creation and stored locally.
+            const storedProof = readStored(clientSecretKey(activePageIdRef.current))
             const cmdSig = (message as { sig?: string }).sig
-            const sigValid = cmdSig ? await hmacVerify(browserProof, message.id, cmdSig) : false
+            const sigValid = storedProof && cmdSig
+              ? await hmacVerify(storedProof, message.id, cmdSig)
+              : false
 
             if (!sigValid) {
               socket.send(JSON.stringify({
                 type: 'command_result',
                 id: message.id,
-                ok: false,
-                error: 'Command signature verification failed — rejecting',
+                error: { message: 'Command signature verification failed — rejecting' },
               } satisfies RelayEnvelope))
               return
             }
@@ -256,13 +245,12 @@ export function useRemoteAgentRelay(options: RemoteAgentRelayOptions): RemoteAge
                 type: message.command as BrowserCommandEnvelope['type'],
                 args: message.args,
               })
-              socket.send(JSON.stringify({ type: 'command_result', id: message.id, ok: true, result } satisfies RelayEnvelope))
+              socket.send(JSON.stringify({ type: 'command_result', id: message.id, result } satisfies RelayEnvelope))
             } catch (err) {
               socket.send(JSON.stringify({
                 type: 'command_result',
                 id: message.id,
-                ok: false,
-                error: err instanceof Error ? err.message : 'Unknown relay command error',
+                error: { message: err instanceof Error ? err.message : 'Unknown relay command error' },
               } satisfies RelayEnvelope))
             }
           })()
@@ -322,20 +310,21 @@ export function useRemoteAgentRelay(options: RemoteAgentRelayOptions): RemoteAge
     let session: PublicRelaySessionResponse
     try {
       const pageId = activePageIdRef.current
-      const clientSecret = getOrCreateClientSecret(pageId)
-      // Send only the HMAC proof — the raw secret never leaves the browser
-      const browserProof = await hmacSign(clientSecret, pageId)
 
-      const response = await fetch(`${DEFAULT_RELAY_URL}/relay/sessions/public`, {
+      const response = await fetch(`${DEFAULT_RELAY_URL}/relay/sessions`, {
         method: 'POST',
-        // text/plain avoids a CORS preflight (simple request)
-        headers: { 'content-type': 'text/plain;charset=UTF-8' },
-        body: JSON.stringify({ createdBy: 'prettyfish-web', browserProof }),
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ createdBy: 'prettyfish-web' }),
       })
 
       if (!response.ok) throw new Error(`Failed to create MCP session (${response.status})`)
 
       session = await response.json() as PublicRelaySessionResponse
+
+      // Store the browserProof locally — it's used to HMAC-verify incoming commands.
+      // browserProof is returned from the server and stored client-side only.
+      const clientSecretKey_ = clientSecretKey(pageId)
+      try { localStorage.setItem(clientSecretKey_, session.browserProof) } catch { /* ignore */ }
 
       // Persist per-page session
       setSessionId(session.sessionId)

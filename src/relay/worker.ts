@@ -1,55 +1,43 @@
+/**
+ * Pretty Fish Relay Worker
+ *
+ * Architecture:
+ * ─────────────
+ * One Cloudflare Durable Object (DO) per relay session.
+ * Each session is created by one browser tab and consumed by one AI agent.
+ *
+ * The DO uses the WebSocket Hibernation API so it sleeps between messages
+ * and only wakes when traffic arrives — zero idle cost.
+ *
+ * The MCP server is created FRESH per HTTP request (stateless mode).
+ * This is correct for Cloudflare Workers: in-memory state (like McpServer)
+ * is lost when the DO hibernates, so it must never be cached on the instance.
+ *
+ * The only persistent state is the session record in DurableObjectStorage.
+ * WebSockets survive hibernation via acceptWebSocket (hibernation API).
+ *
+ * Flow:
+ *   Browser → POST /relay/sessions     → creates session, returns {sessionId, wsUrl, mcpUrl}
+ *   Browser → WS  /relay/{id}/ws?token → browser WebSocket connection
+ *   Agent   → WS  /relay/{id}/agent    → agent WebSocket connection (for future use)
+ *   Agent   → POST /relay/{id}/mcp     → MCP Streamable HTTP (per request)
+ *
+ * Every MCP tool call is forwarded to the browser via WebSocket command/result.
+ */
+
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js'
 import { WebStandardStreamableHTTPServerTransport } from '@modelcontextprotocol/sdk/server/webStandardStreamableHttp.js'
 import { z } from 'zod'
-import {
-  type PublicRelaySessionResponse,
-  type RelayEnvelope,
-  type RelayPeerRole,
-  type RelaySessionRecord,
-  isRelayEnvelope,
-} from './protocol'
+import type {
+  PublicRelaySessionResponse,
+  RelayEnvelope,
+  RelayPeerRole,
+  RelaySessionRecord,
+} from './protocol.js'
 
-type DurableObjectIdLike = unknown
+// ── Cloudflare-specific type declarations ─────────────────────────────────────
 
-interface DurableObjectStubLike {
-  fetch: (input: RequestInfo | URL, init?: RequestInit) => Promise<Response>
-}
-
-interface DurableObjectNamespaceLike {
-  idFromName: (name: string) => DurableObjectIdLike
-  get: (id: DurableObjectIdLike) => DurableObjectStubLike
-}
-
-interface DurableObjectStateLike {
-  storage: {
-    get: <T>(key: string) => Promise<T | undefined>
-    put: (key: string, value: unknown) => Promise<void>
-  }
-  blockConcurrencyWhile: <T>(callback: () => Promise<T>) => Promise<T>
-  acceptWebSocket: (ws: WebSocket, tags?: string[]) => void
-  getWebSockets: (tag?: string) => WebSocket[]
-  getTags: (ws: WebSocket) => string[]
-  /** Replies to matching messages WITHOUT waking the DO — zero cost keepalive. */
-  setWebSocketAutoResponse: (pair?: WebSocketRequestResponsePair) => void
-  getWebSocketAutoResponse: () => WebSocketRequestResponsePair | null
-  getWebSocketAutoResponseTimestamp: (ws: WebSocket) => Date | null
-  setHibernatableWebSocketEventTimeout: (timeout?: number) => void
-}
-
-
-interface JsonRpcResponse {
-  jsonrpc: '2.0'
-  id: string | number | null
-  result?: unknown
-  error?: { code: number; message: string }
-}
-
-declare const WebSocketPair: {
-  new (): {
-    0: WebSocket
-    1: WebSocket
-  }
-}
+declare const WebSocketPair: new () => { 0: WebSocket; 1: WebSocket }
 
 declare class WebSocketRequestResponsePair {
   constructor(request: string, response: string)
@@ -57,13 +45,38 @@ declare class WebSocketRequestResponsePair {
   getResponse(): string
 }
 
+interface DurableObjectStorage {
+  get<T>(key: string): Promise<T | undefined>
+  put(key: string, value: unknown): Promise<void>
+}
+
+interface DurableObjectState {
+  storage: DurableObjectStorage
+  blockConcurrencyWhile<T>(callback: () => Promise<T>): Promise<T>
+  acceptWebSocket(ws: WebSocket, tags?: string[]): void
+  getWebSockets(tag?: string): WebSocket[]
+  getTags(ws: WebSocket): string[]
+  setWebSocketAutoResponse(pair?: WebSocketRequestResponsePair): void
+  getWebSocketAutoResponse(): WebSocketRequestResponsePair | null
+  getWebSocketAutoResponseTimestamp(ws: WebSocket): Date | null
+}
+
+// ── Environment ───────────────────────────────────────────────────────────────
+
 export interface RelayWorkerEnv {
-  RELAY_SESSIONS: DurableObjectNamespaceLike
+  RELAY_SESSIONS: {
+    idFromName(name: string): { toString(): string }
+    get(id: { toString(): string }): { fetch(req: Request): Promise<Response> }
+  }
   RELAY_BOOTSTRAP_TOKEN: string
 }
 
-const SESSION_KEY = 'relay-session-record'
-const PUBLIC_ORIGIN_PATTERNS = [
+// ── Constants ─────────────────────────────────────────────────────────────────
+
+const SESSION_KEY = 'session'
+const COMMAND_TIMEOUT_MS = 20_000
+
+const ALLOWED_ORIGINS = [
   /^https:\/\/pretty\.fish$/,
   /^https:\/\/www\.pretty\.fish$/,
   /^https:\/\/prettyfish\.binalgo\.workers\.dev$/,
@@ -71,445 +84,381 @@ const PUBLIC_ORIGIN_PATTERNS = [
   /^http:\/\/127\.0\.0\.1:\d+$/,
 ]
 
-function normalizeOrigin(origin: string | null): string | null {
-  if (!origin) return null
-  return origin.replace(/\/$/, '')
+// ── Word list for human-readable session IDs ──────────────────────────────────
+
+const WORDS = [
+  'amber','azure','birch','bloom','brass','brook','cedar','chalk','clay','cloud',
+  'cobalt','coral','crane','crisp','denim','dewdrop','dove','dusk','elder','fawn',
+  'fern','field','finch','flame','flint','foam','frost','gale','glint','grove',
+  'hazel','heron','holly','honey','husk','indigo','iris','ivory','jade','juniper',
+  'kelp','lark','lemon','lichen','lime','linen','loch','lotus','lunar','maple',
+  'marsh','mist','moss','mote','muslin','myrtle','navy','nimbus','oak','oat',
+  'obsidian','ochre','olive','onyx','opal','orchid','otter','pebble','pine','plum',
+  'poppy','prairie','quartz','rain','reed','robin','rose','rune','rush','sable',
+  'sage','sand','seafoam','sienna','slate','snow','solstice','sorrel','sparrow',
+  'spruce','stone','straw','stream','sycamore','tallow','taupe','teal','thistle',
+  'thyme','tide','timber','topaz','tulip','tundra','umber','vale','vapor','vine',
+  'violet','vole','walnut','wave','wheat','willow','wren','yarrow','zephyr',
+]
+
+function makeSessionId(): string {
+  const pick = () => WORDS[Math.floor(Math.random() * WORDS.length)]
+  const hex = () => Math.floor(Math.random() * 0x10000).toString(16).padStart(4, '0')
+  return `${pick()}-${pick()}-${pick()}-${hex()}`
 }
 
-function isPublicOriginAllowed(origin: string | null): origin is string {
-  const normalized = normalizeOrigin(origin)
-  if (!normalized) return false
-  return PUBLIC_ORIGIN_PATTERNS.some((pattern) => pattern.test(normalized))
+function makeToken(): string {
+  return crypto.randomUUID().replace(/-/g, '')
 }
+
+// ── HMAC helpers ──────────────────────────────────────────────────────────────
+
+async function hmacSign(secret: string, message: string): Promise<string> {
+  const enc = new TextEncoder()
+  const key = await crypto.subtle.importKey(
+    'raw', enc.encode(secret), { name: 'HMAC', hash: 'SHA-256' }, false, ['sign'],
+  )
+  const sig = await crypto.subtle.sign('HMAC', key, enc.encode(message))
+  return Array.from(new Uint8Array(sig)).map(b => b.toString(16).padStart(2, '0')).join('')
+}
+
+// ── CORS / Response helpers ───────────────────────────────────────────────────
 
 function corsHeaders(origin: string | null): HeadersInit {
-  const normalized = normalizeOrigin(origin)
-  if (!normalized || !isPublicOriginAllowed(normalized)) return {}
-  return {
-    'access-control-allow-origin': normalized,
-    'access-control-allow-methods': 'POST, OPTIONS',
-    'access-control-allow-headers': 'content-type, authorization, x-relay-bootstrap-token',
-    vary: 'Origin',
-  }
+  const allowed = ALLOWED_ORIGINS.some(p => p.test(origin ?? ''))
+  return allowed ? {
+    'Access-Control-Allow-Origin': origin!,
+    'Access-Control-Allow-Methods': 'GET, POST, DELETE, OPTIONS',
+    'Access-Control-Allow-Headers': 'Content-Type, Authorization, Mcp-Session-Id, MCP-Protocol-Version',
+    'Access-Control-Max-Age': '86400',
+  } : {}
 }
 
-function jsonResponse(body: unknown, status = 200, headers: HeadersInit = {}): Response {
+function json(body: unknown, status = 200, extraHeaders: HeadersInit = {}): Response {
   return new Response(JSON.stringify(body), {
     status,
-    headers: {
-      'content-type': 'application/json; charset=utf-8',
-      'cache-control': 'no-store',
-      ...headers,
-    },
+    headers: { 'Content-Type': 'application/json', ...extraHeaders },
   })
 }
 
-function makeToken() {
-  return crypto.randomUUID().replaceAll('-', '') + crypto.randomUUID().replaceAll('-', '')
+function getBaseUrl(req: Request): string {
+  const u = new URL(req.url)
+  return `${u.protocol}//${u.host}`
 }
 
-// ~200 short, friendly, visually distinct words for readable session IDs
-const WORDS = [
-  'amber','arch','azure','bay','birch','blaze','bloom','bolt','brook','canyon',
-  'cedar','cinder','cliff','cloud','cobalt','coral','crest','crisp','dawn','delta',
-  'dew','drift','dune','dusk','echo','elm','ember','fern','field','fjord',
-  'flame','flint','flux','foam','fog','fold','forge','frost','gale','glow',
-  'glyph','grove','gulf','haze','helm','herb','hill','hive','holt','horn',
-  'hue','hull','iris','isle','ivy','jade','jetty','kelp','knoll','lake',
-  'lark','latch','lava','leaf','ledge','linen','link','loch','lodge','loom',
-  'loop','lure','lynx','maple','marsh','mesa','mist','moat','moon','moss',
-  'moth','muse','mystic','nook','nord','nova','oak','opal','orbit','petal',
-  'pine','pixel','plum','pond','prism','pulse','quartz','quest','rain','reef',
-  'ridge','rift','rind','rook','rose','ruby','rune','rush','rust','sage',
-  'salt','sand','scribe','seam','shaft','shale','shoal','silk','slate','sleet',
-  'slope','smoke','snap','snow','solar','spark','spire','splay','spray','spur',
-  'staff','stag','star','stem','step','still','stone','storm','stray','stream',
-  'sun','surf','swirl','swift','thorn','tide','till','timber','trace','trail',
-  'tuft','tusk','twine','vale','vault','veil','velvet','vine','violet','volt',
-  'wake','wave','weld','wisp','wren','yard','yew','zinc','zone','zeal',
-]
+// ── Worker entrypoint (main fetch) ────────────────────────────────────────────
 
-/** Generate a human-readable session ID: word-word-word-xxxx */
-function makeSessionId(): string {
-  const arr = new Uint32Array(3)
-  crypto.getRandomValues(arr)
-  const words = Array.from(arr).map(n => WORDS[n % WORDS.length]).join('-')
-  // 4-char hex suffix for extra collision resistance
-  const hash = crypto.randomUUID().replaceAll('-', '').slice(0, 4)
-  return `${words}-${hash}`
+export async function handleRelayRequest(req: Request, env: RelayWorkerEnv): Promise<Response> {
+  const url = new URL(req.url)
+  const origin = req.headers.get('origin')
+  const cors = corsHeaders(origin)
+
+  // Preflight
+  if (req.method === 'OPTIONS') {
+    return new Response(null, { status: 204, headers: cors })
+  }
+
+  // POST /relay/sessions — create a new relay session
+  if (req.method === 'POST' && url.pathname === '/relay/sessions') {
+    const sessionId = makeSessionId()
+    const browserToken = makeToken()
+    const browserProof = makeToken()
+    const base = getBaseUrl(req)
+
+    const session: RelaySessionRecord = {
+      sessionId,
+      browserToken,
+      browserProof,
+      createdAt: Date.now(),
+    }
+
+    // Store the session in the DO
+    const stub = getStub(env, sessionId)
+    await stub.fetch(new Request(`${base}/do-internal/setup`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(session),
+    }))
+
+    const response: PublicRelaySessionResponse = {
+      sessionId,
+      browserToken,
+      wsUrl: `${base.replace(/^http/, 'ws')}/relay/${sessionId}/ws?token=${browserToken}`,
+      mcpUrl: `${base}/relay/${sessionId}/mcp`,
+      browserProof,
+    }
+    return json(response, 200, cors)
+  }
+
+  // /relay/{sessionId}/... — route to the appropriate DO
+  const sessionMatch = url.pathname.match(/^\/relay\/([^/]+)(\/.*)$/)
+  if (sessionMatch) {
+    const [, sessionId, subpath] = sessionMatch
+    const stub = getStub(env, sessionId)
+
+    // Forward to the DO, rewriting the URL to the subpath
+    const doUrl = new URL(req.url)
+    doUrl.pathname = subpath
+    const doReq = new Request(doUrl.toString(), {
+      method: req.method,
+      headers: req.headers,
+      body: req.method !== 'GET' && req.method !== 'HEAD' ? req.body : undefined,
+      // @ts-expect-error — Cloudflare-specific
+      duplex: 'half',
+    })
+
+    const res = await stub.fetch(doReq)
+    // Add CORS headers to response
+    const headers = new Headers(res.headers)
+    Object.entries(cors).forEach(([k, v]) => headers.set(k, v as string))
+    return new Response(res.body, { status: res.status, headers })
+  }
+
+  return json({ error: 'Not found' }, 404, cors)
 }
 
-function getSessionStub(env: RelayWorkerEnv, sessionId: string): DurableObjectStubLike {
+function getStub(env: RelayWorkerEnv, sessionId: string) {
   const id = env.RELAY_SESSIONS.idFromName(sessionId)
   return env.RELAY_SESSIONS.get(id)
 }
 
-function getWorkerBaseUrl(request: Request): string {
-  return new URL(request.url).origin
-}
+// ── Durable Object ────────────────────────────────────────────────────────────
 
-function buildPublicRelaySessionResponse(request: Request, session: RelaySessionRecord): PublicRelaySessionResponse {
-  const baseUrl = getWorkerBaseUrl(request)
-  return {
-    ...session,
-    mcpUrl: `${baseUrl}/mcp/${session.sessionId}`,
-  }
-}
-
-function requireBootstrapAuth(request: Request, env: RelayWorkerEnv): Response | null {
-  const provided = request.headers.get('x-relay-bootstrap-token') || request.headers.get('authorization')?.replace(/^Bearer\s+/i, '')
-  if (!provided || provided !== env.RELAY_BOOTSTRAP_TOKEN) {
-    return jsonResponse({ error: 'Unauthorized' }, 401)
-  }
-  return null
-}
-
-
-/** HMAC-SHA256(key, message) → hex — Cloudflare Workers Web Crypto */
-async function hmacSign(key: string, message: string): Promise<string> {
-  const enc = new TextEncoder()
-  const cryptoKey = await crypto.subtle.importKey(
-    'raw', enc.encode(key), { name: 'HMAC', hash: 'SHA-256' }, false, ['sign'],
-  )
-  const sig = await crypto.subtle.sign('HMAC', cryptoKey, enc.encode(message))
-  return Array.from(new Uint8Array(sig)).map(b => b.toString(16).padStart(2, '0')).join('')
-}
-
-async function initializeRelaySession(request: Request, env: RelayWorkerEnv) {
-  const sessionId = makeSessionId()
-
-  // Read browserProof from request body if provided.
-  // The browser sends HMAC-SHA256(clientSecret, pageId) — stored so the relay
-  // can sign forwarded commands. The raw clientSecret never transits the network.
-  let browserProof = ''
-  try {
-    const body = await request.clone().text()
-    if (body) {
-      const parsed = JSON.parse(body) as Record<string, unknown>
-      if (typeof parsed.browserProof === 'string') browserProof = parsed.browserProof
-    }
-  } catch { /* ignore — browserProof is optional */ }
-
-  const session: RelaySessionRecord = {
-    sessionId,
-    browserToken: makeToken(),
-    browserProof,
-    createdAt: new Date().toISOString(),
-  }
-
-  const stub = getSessionStub(env, sessionId)
-  const setupResponse = await stub.fetch('https://relay.internal/setup', {
-    method: 'POST',
-    headers: { 'content-type': 'application/json' },
-    body: JSON.stringify(session),
-  })
-
-  if (!setupResponse.ok) {
-    return jsonResponse({ error: 'Failed to initialize relay session' }, 500, corsHeaders(request.headers.get('origin')))
-  }
-
-  return session
-}
-
-async function createRelaySession(request: Request, env: RelayWorkerEnv) {
-  const authError = requireBootstrapAuth(request, env)
-  if (authError) return authError
-
-  const session = await initializeRelaySession(request, env)
-  if (session instanceof Response) return session
-  return jsonResponse(buildPublicRelaySessionResponse(request, session), 201)
-}
-
-async function createPublicRelaySession(request: Request, env: RelayWorkerEnv) {
-  const origin = request.headers.get('origin')
-  // Allow requests with no Origin (server-to-server from Pages Functions proxy)
-  if (origin && !isPublicOriginAllowed(origin)) {
-    return jsonResponse({ error: 'Origin not allowed' }, 403, corsHeaders(origin))
-  }
-
-  const session = await initializeRelaySession(request, env)
-  if (session instanceof Response) return session
-  return jsonResponse(buildPublicRelaySessionResponse(request, session), 201, corsHeaders(origin))
-}
-
-async function connectPeer(request: Request, env: RelayWorkerEnv, sessionId: string, role: RelayPeerRole) {
-  const token = new URL(request.url).searchParams.get('token') || ''
-  const stub = getSessionStub(env, sessionId)
-  // Construct a new Request to the DO's internal URL, forwarding all original headers
-  // (including Upgrade: websocket). We cannot use the original request directly because
-  // its URL points to the public hostname — we need to rewrite it to the DO-internal URL.
-  const doUrl = `https://relay.internal/connect/${role}?token=${encodeURIComponent(token)}`
-  const doRequest = new Request(doUrl, {
-    method: request.method,
-    headers: request.headers,
-  })
-  return stub.fetch(doRequest)
-}
-
-/** Route handler for /relay/* and /mcp/* — called by the main worker */
-export async function handleRelayRequest(request: Request, env: RelayWorkerEnv): Promise<Response> {
-  const url = new URL(request.url)
-  const requestOrigin = request.headers.get('origin')
-
-  // CORS preflight
-  if (request.method === 'OPTIONS') {
-    return new Response(null, { status: 204, headers: corsHeaders(requestOrigin) })
-  }
-
-  if (request.method === 'POST' && url.pathname === '/relay/sessions') {
-    return createRelaySession(request, env)
-  }
-
-  if (request.method === 'POST' && url.pathname === '/relay/sessions/public') {
-    return createPublicRelaySession(request, env)
-  }
-
-  const mcpMatch = url.pathname.match(/^\/mcp\/([^/]+)$/)
-  if (mcpMatch) {
-    const [, sessionId] = mcpMatch
-    const stub = getSessionStub(env, sessionId)
-
-    // MCP Streamable HTTP: POST for JSON-RPC calls, GET for SSE stream
-    if (request.method === 'POST') {
-      const body = await request.text()
-      const accept = request.headers.get('accept') || ''
-      return stub.fetch('https://relay.internal/mcp', {
-        method: 'POST',
-        headers: {
-          'content-type': 'application/json',
-          'accept': accept,
-        },
-        body,
-      })
-    }
-
-    if (request.method === 'GET') {
-      // SSE endpoint for server-initiated messages (required by MCP Streamable HTTP)
-      return stub.fetch('https://relay.internal/mcp/sse', {
-        method: 'GET',
-        headers: { 'accept': 'text/event-stream' },
-      })
-    }
-
-    if (request.method === 'DELETE') {
-      return jsonResponse({ ok: true })
-    }
-
-    return jsonResponse({ error: 'Method not allowed' }, 405)
-  }
-
-  const match = url.pathname.match(/^\/relay\/sessions\/([^/]+)\/(browser|agent)$/)
-  if (match) {
-    const [, sessionId, role] = match
-    if (request.headers.get('upgrade')?.toLowerCase() !== 'websocket') {
-      return jsonResponse({ error: 'Expected websocket upgrade' }, 426)
-    }
-    return connectPeer(request, env, sessionId, role as RelayPeerRole)
-  }
-
-  return jsonResponse({ error: 'Not found' }, 404)
-}
-
+/**
+ * One DO instance per relay session.
+ *
+ * Hibernation strategy:
+ * - WebSockets use the hibernation API (acceptWebSocket) → DO sleeps between messages
+ * - McpServer is created fresh per HTTP request (never stored on instance)
+ * - Only DurableObjectStorage data survives hibernation
+ * - ping/pong handled via setWebSocketAutoResponse → zero wake-up cost
+ *
+ * Pending commands (pendingHttpCommands Map) are in-memory only.
+ * If the DO hibernates while a command is pending, the promise will reject
+ * on the next wake via the timeout. This is acceptable: MCP tool calls
+ * hold the HTTP connection open (via SSE) so the DO stays awake during a call.
+ */
 export class RelaySessionDurableObject {
-  private readonly state: DurableObjectStateLike
+  private readonly state: DurableObjectState
   private session: RelaySessionRecord | null = null
-  // pendingHttpCommands only lives while the DO is in memory.
-  // If the DO hibernates between a tool call and the browser response,
-  // the call will time out (acceptable — the agent can retry).
-  private readonly pendingHttpCommands = new Map<string, {
-    resolve: (response: JsonRpcResponse) => void
-    reject: (error: Error) => void
+
+  // In-memory pending commands — survives as long as DO is awake.
+  // Lost on hibernation (which only happens between requests — never mid-request).
+  private readonly pending = new Map<string, {
+    resolve: (result: unknown) => void
+    reject: (err: Error) => void
     timer: ReturnType<typeof setTimeout>
   }>()
 
-  constructor(state: DurableObjectStateLike) {
+  constructor(state: DurableObjectState) {
     this.state = state
-    // Set up zero-cost ping/pong once for the entire DO instance.
-    // Any WebSocket accepted via acceptWebSocket will auto-reply to {"type":"ping"}
-    // with {"type":"pong"} WITHOUT waking the DO — zero CPU, zero duration, zero request cost.
+
+    // Zero-cost keepalive: browser sends {"type":"ping"} every ~55s.
+    // The DO auto-replies {"type":"pong"} WITHOUT waking up.
     this.state.setWebSocketAutoResponse(
       new WebSocketRequestResponsePair('{"type":"ping"}', '{"type":"pong"}'),
     )
   }
 
-  // ── Helpers ────────────────────────────────────────────────────────────────
+  // ── Session management ──────────────────────────────────────────────────────
 
-  private async ensureSessionLoaded() {
+  private async loadSession(): Promise<RelaySessionRecord | null> {
     if (this.session) return this.session
     this.session = await this.state.storage.get<RelaySessionRecord>(SESSION_KEY) ?? null
     return this.session
   }
 
-  private getBrowserSocket(): WebSocket | null {
+  // ── WebSocket helpers ───────────────────────────────────────────────────────
+
+  private browserSocket(): WebSocket | null {
     return this.state.getWebSockets('browser')[0] ?? null
   }
 
-  private getAgentSocket(): WebSocket | null {
+  private agentSocket(): WebSocket | null {
     return this.state.getWebSockets('agent')[0] ?? null
   }
 
-  private sendTo(socket: WebSocket | null, message: RelayEnvelope): boolean {
-    if (!socket || socket.readyState !== WebSocket.OPEN) return false
-    socket.send(JSON.stringify(message))
-    return true
+  private send(ws: WebSocket | null, msg: RelayEnvelope): void {
+    if (ws?.readyState === WebSocket.OPEN) {
+      ws.send(JSON.stringify(msg))
+    }
   }
 
-  private notifyPeerStatus(role: RelayPeerRole, connected: boolean) {
-    const counterpart = role === 'browser' ? this.getAgentSocket() : this.getBrowserSocket()
-    this.sendTo(counterpart, { type: 'peer_status', role, connected })
+  private notifyPeerStatus(role: RelayPeerRole, connected: boolean): void {
+    const counterpart = role === 'browser' ? this.agentSocket() : this.browserSocket()
+    this.send(counterpart, { type: 'peer_status', role, connected })
   }
 
-  private async sendCommandToBrowser(
-    command: string,
+  // ── Browser command forwarding ──────────────────────────────────────────────
+
+  /**
+   * Send a command to the browser and wait for the result.
+   * The browser executes the command and sends back a command_result envelope.
+   */
+  private async command(
+    name: string,
     args: Record<string, unknown> = {},
-    timeoutMs = 20_000,
-  ) {
-    const browserSocket = this.getBrowserSocket()
-    if (!browserSocket || browserSocket.readyState !== WebSocket.OPEN) {
-      throw new Error('Pretty Fish browser is not attached to this relay session')
+    timeoutMs = COMMAND_TIMEOUT_MS,
+  ): Promise<unknown> {
+    const session = await this.loadSession()
+    const browser = this.browserSocket()
+
+    if (!browser || browser.readyState !== WebSocket.OPEN) {
+      throw new Error('Pretty Fish is not connected to this session. Open the app and connect first.')
     }
 
     const id = crypto.randomUUID()
 
-    // Sign the command with HMAC-SHA256(browserProof, commandId) so the browser
-    // can verify it originated from this trusted relay session.
-    const session = await this.ensureSessionLoaded()
-    const sig = session?.browserProof
-      ? await hmacSign(session.browserProof, id)
-      : ''
+    // Sign the command so the browser can verify it came from this trusted relay
+    const sig = session?.browserProof ? await hmacSign(session.browserProof, id) : ''
 
-    const response = await new Promise<JsonRpcResponse>((resolve, reject) => {
+    return new Promise<unknown>((resolve, reject) => {
       const timer = setTimeout(() => {
-        this.pendingHttpCommands.delete(id)
-        reject(new Error(`Timed out waiting for relay result: ${command}`))
+        this.pending.delete(id)
+        reject(new Error(`Command timed out after ${timeoutMs}ms: ${name}`))
       }, timeoutMs)
 
-      this.pendingHttpCommands.set(id, { resolve, reject, timer })
-      browserSocket.send(JSON.stringify({
+      this.pending.set(id, { resolve, reject, timer })
+
+      this.send(browser, {
         type: 'command',
         id,
-        command,
+        command: name,
         args,
         sig,
-      } satisfies RelayEnvelope))
+      })
     })
-
-    if (response.error) throw new Error(response.error.message)
-    return response.result
   }
 
-  // ── Hibernation WebSocket handlers ─────────────────────────────────────────
+  // ── MCP Server (created fresh per HTTP request) ───────────────────────────
 
-  async webSocketMessage(ws: WebSocket, message: string | ArrayBuffer) {
-    const raw = typeof message === 'string' ? message : ''
-    if (!raw) return
-
-    let parsed: unknown
-    try {
-      parsed = JSON.parse(raw)
-    } catch {
-      ws.send(JSON.stringify({ type: 'error', message: 'Invalid relay message JSON' } satisfies RelayEnvelope))
-      return
-    }
-
-    if (!isRelayEnvelope(parsed)) {
-      ws.send(JSON.stringify({ type: 'error', message: 'Unsupported relay payload' } satisfies RelayEnvelope))
-      return
-    }
-
-    // command_result from browser → resolve pending HTTP MCP call
-    if (parsed.type === 'command_result') {
-      const pending = this.pendingHttpCommands.get(parsed.id)
-      if (pending) {
-        clearTimeout(pending.timer)
-        this.pendingHttpCommands.delete(parsed.id)
-        if (parsed.ok) {
-          pending.resolve({ jsonrpc: '2.0', id: parsed.id, result: parsed.result })
-        } else {
-          pending.reject(new Error(parsed.error || 'Remote relay command failed'))
-        }
-      }
-      return
-    }
-
-    // Forward everything else to the counterpart
-    const isBrowser = this.state.getWebSockets('browser').includes(ws)
-    const counterpart = isBrowser ? this.getAgentSocket() : this.getBrowserSocket()
-    this.sendTo(counterpart, parsed)
-  }
-
-  async webSocketClose(ws: WebSocket) {
-    const isBrowser = this.state.getWebSockets('browser').includes(ws)
-    const role: RelayPeerRole = isBrowser ? 'browser' : 'agent'
-    this.notifyPeerStatus(role, false)
-  }
-
-  async webSocketError(ws: WebSocket) {
-    const isBrowser = this.state.getWebSockets('browser').includes(ws)
-    const role: RelayPeerRole = isBrowser ? 'browser' : 'agent'
-    this.notifyPeerStatus(role, false)
-  }
-
-  // ── MCP request handler ────────────────────────────────────────────────────
-
-  // ── MCP SDK setup ──────────────────────────────────────────────────────────
-  private mcpServer: McpServer | null = null
-
-  private getMcpServer(): McpServer {
-    if (this.mcpServer) return this.mcpServer
-
+  /**
+   * Creates a fresh McpServer with all tools registered.
+   * Called once per MCP HTTP request — never stored on the instance.
+   *
+   * Why not cached? McpServer is non-serializable in-memory state.
+   * DO hibernation discards in-memory state, so caching it would cause
+   * tools to vanish silently after hibernation. Creating per-request is fast
+   * (just registering handler closures) and correct.
+   */
+  private createMcpServer(): McpServer {
     const server = new McpServer({
       name: 'prettyfish',
       version: '1.0.0',
+    }, {
+      instructions: [
+        'You are connected to Pretty Fish — a Mermaid diagram editor running in the user\'s browser.',
+        'All diagram operations happen in the currently active page.',
+        'Always call list_diagrams first to understand what exists.',
+        'Use get_diagram to fetch a diagram\'s source before editing it.',
+        'After create_diagram or set_diagram_code, check render.status — if "error", fix the syntax.',
+      ].join('\n'),
     })
 
-    // Helper: send command to browser and wrap result as MCP text content
-    const cmd = async (toolName: string, args: Record<string, unknown> = {}, timeoutMs?: number) => {
-      const result = await this.sendCommandToBrowser(toolName, args, timeoutMs)
+    // Helper: run a browser command and return MCP text result
+    const cmd = async (name: string, args: Record<string, unknown> = {}, timeoutMs?: number) => {
+      const result = await this.command(name, args, timeoutMs)
       return { content: [{ type: 'text' as const, text: JSON.stringify(result) }] }
     }
 
-    server.tool('list_diagrams', 'List all diagrams across all pages in the current workspace.', {},
+    // ── Workspace tools ─────────────────────────────────────────────────────
+
+    server.tool(
+      'session_info',
+      'Get the current relay session status and whether the Pretty Fish browser tab is connected.',
+      {},
+      async () => {
+        const session = await this.loadSession()
+        return { content: [{ type: 'text' as const, text: JSON.stringify({
+          sessionId: session?.sessionId ?? null,
+          browserConnected: this.browserSocket()?.readyState === WebSocket.OPEN,
+        }) }] }
+      },
+    )
+
+    server.tool(
+      'list_diagrams',
+      'List all diagrams in the current workspace (all pages). Returns each diagram\'s ID, name, page, and type.',
+      {},
       async () => cmd('list_diagrams'),
     )
 
-    server.tool('get_diagram', 'Get the current Mermaid source code and metadata for a specific diagram.',
-      { diagramId: z.string().describe('The diagram ID to retrieve.') },
+    server.tool(
+      'get_diagram',
+      'Get the full Mermaid source code and metadata for a specific diagram. Call this before editing.',
+      { diagramId: z.string().describe('Diagram ID from list_diagrams.') },
       async (args) => cmd('get_diagram', args),
     )
 
     server.tool(
       'create_diagram',
-      'Create a new Mermaid diagram on the current page and wait for it to render. Returns render status and any syntax errors — if render.status is "error", fix the Mermaid syntax and call set_diagram_code with the corrected code. Always provide a short, descriptive name based on the diagram content.',
+      [
+        'Create a new Mermaid diagram on the CURRENT active page and wait for it to render.',
+        'Returns render.status — if "error", the syntax is wrong; call set_diagram_code with corrected code.',
+        'Always give a short descriptive name (e.g. "User Auth Flow", "DB Schema").',
+      ].join(' '),
       {
-        name: z.string().optional().describe('A short descriptive name for the diagram (e.g. "User Auth Flow", "DB Schema").'),
-        description: z.string().optional().describe('Optional short caption (8–10 words max) describing what the diagram shows. Displayed below the diagram.'),
-        code: z.string().optional().describe('Mermaid diagram source code.'),
-        width: z.number().optional(),
-        theme: z.string().optional().describe('Optional theme ID (e.g. "blueprint", "neon"). Defaults to page theme if not set.'),
+        name: z.string().optional().describe('Short descriptive name for the diagram.'),
+        description: z.string().optional().describe('Optional caption (8–10 words) shown below the diagram.'),
+        code: z.string().optional().describe('Mermaid source code.'),
+        width: z.number().optional().describe('Canvas width in pixels.'),
+        theme: z.string().optional().describe('Theme ID (e.g. "blueprint", "neon", "brutalist"). Omit for default.'),
       },
       async (args) => cmd('create_diagram', args),
     )
 
     server.tool(
       'set_diagram_code',
-      "Replace a diagram's Mermaid source code and wait for render. Returns render status and any syntax errors in render.error — if render.status is \"error\", the code has a syntax problem that must be fixed.",
-      { diagramId: z.string(), code: z.string(), timeoutMs: z.number().optional(), select: z.boolean().optional() },
+      'Replace a diagram\'s Mermaid source and wait for render. Returns render.status and render.error if invalid.',
+      {
+        diagramId: z.string(),
+        code: z.string().describe('New Mermaid source code.'),
+        timeoutMs: z.number().optional().describe('Max wait time in ms (default 20000).'),
+        select: z.boolean().optional().describe('Bring diagram into focus after update.'),
+      },
       async ({ diagramId, code, timeoutMs, select }) => {
-        const resolvedTimeout = typeof timeoutMs === 'number' ? timeoutMs + 2_000 : 22_000
-        return cmd('set_diagram_code', { diagramId, code, timeoutMs, select }, resolvedTimeout)
+        const timeout = typeof timeoutMs === 'number' ? timeoutMs + 2_000 : 22_000
+        return cmd('set_diagram_code', { diagramId, code, timeoutMs, select }, timeout)
       },
     )
 
-    server.tool('set_diagram_theme', 'Change the visual theme of a specific diagram.',
-      { diagramId: z.string(), theme: z.string().describe('Theme ID (e.g. "blueprint", "neon", "wireframe", "rosepine", "brutalist").') },
+    server.tool(
+      'set_diagram_theme',
+      'Change the visual theme of a specific diagram.',
+      {
+        diagramId: z.string(),
+        theme: z.string().describe('Theme ID — use list_themes to see available options.'),
+      },
       async (args) => cmd('set_theme', args),
     )
 
-    server.tool('export_png', 'Export a diagram as a PNG image and return it as base64.',
+    server.tool(
+      'list_themes',
+      'List all available visual themes with their names and IDs.',
+      {},
+      async () => cmd('list_themes'),
+    )
+
+    server.tool(
+      'select_diagram',
+      'Bring a specific diagram into view/focus on the canvas.',
+      { diagramId: z.string() },
+      async (args) => cmd('select_diagram', args),
+    )
+
+    server.tool(
+      'delete_diagram',
+      'Permanently delete a diagram by ID.',
+      { diagramId: z.string() },
+      async (args) => cmd('delete_diagram', args),
+    )
+
+    server.tool(
+      'export_png',
+      'Export a diagram as a PNG image. Returns base64-encoded image data.',
       { diagramId: z.string() },
       async ({ diagramId }) => {
-        const result = await this.sendCommandToBrowser('export_png', { diagramId }, 22_000) as {
+        const result = await this.command('export_png', { diagramId }, 22_000) as {
           fileName?: string; diagram?: string; mimeType?: string
         }
         if (!result?.diagram) {
@@ -517,117 +466,127 @@ export class RelaySessionDurableObject {
         }
         return {
           content: [
-            { type: 'text' as const, text: JSON.stringify({ fileName: result.fileName, mimeType: result.mimeType }) },
-            { type: 'image' as const, data: result.diagram, mimeType: (result.mimeType || 'image/png') as 'image/png' },
+            { type: 'text' as const, text: JSON.stringify({ fileName: result.fileName }) },
+            { type: 'image' as const, data: result.diagram, mimeType: (result.mimeType ?? 'image/png') as 'image/png' },
           ],
         }
       },
     )
 
-    server.tool('delete_diagram', 'Delete a diagram by ID.',
-      { diagramId: z.string() },
-      async (args) => cmd('delete_diagram', args),
-    )
-
-    server.tool('select_diagram', 'Bring a specific diagram into focus/view.',
-      { diagramId: z.string() },
-      async (args) => cmd('select_diagram', args),
-    )
-
-    server.tool('list_themes', 'List all available visual themes.',
-      {},
-      async () => cmd('list_themes'),
-    )
-
-    server.tool('session_info', 'Get current relay session info and browser attachment status.',
-      {},
-      async () => {
-        const session = await this.ensureSessionLoaded()
-        return {
-          content: [{ type: 'text' as const, text: JSON.stringify({
-            sessionId: session?.sessionId ?? null,
-            browserAttached: this.getBrowserSocket()?.readyState === WebSocket.OPEN,
-          }) }],
-        }
-      },
-    )
-
-    this.mcpServer = server
     return server
   }
 
+  // ── Fetch handler (HTTP requests to the DO) ───────────────────────────────
 
-  // ── fetch ──────────────────────────────────────────────────────────────────
+  async fetch(req: Request): Promise<Response> {
+    const url = new URL(req.url)
 
-  async fetch(request: Request): Promise<Response> {
-    const url = new URL(request.url)
-
-    if (request.method === 'POST' && url.pathname === '/setup') {
-      const session = await request.json() as RelaySessionRecord
+    // Internal setup route — called by the worker after session creation
+    if (req.method === 'POST' && url.pathname === '/do-internal/setup') {
+      const session = await req.json() as RelaySessionRecord
       this.session = session
       await this.state.storage.put(SESSION_KEY, session)
-      return jsonResponse({ ok: true })
+      return json({ ok: true })
     }
 
-    const session = await this.ensureSessionLoaded()
-    if (!session) return jsonResponse({ error: 'Relay session not initialized' }, 404)
+    const session = await this.loadSession()
+    if (!session) return json({ error: 'Session not found' }, 404)
 
-    const connectMatch = url.pathname.match(/^\/connect\/(browser|agent)$/)
-    if (connectMatch) {
-      if (request.headers.get('upgrade')?.toLowerCase() !== 'websocket') {
-        return jsonResponse({ error: 'Expected websocket upgrade' }, 426)
+    // WebSocket connect — browser or agent
+    if (url.pathname === '/ws' || url.pathname === '/agent') {
+      if (req.headers.get('upgrade')?.toLowerCase() !== 'websocket') {
+        return json({ error: 'WebSocket upgrade required' }, 426)
       }
 
-      const role = connectMatch[1] as RelayPeerRole
+      const role: RelayPeerRole = url.pathname === '/ws' ? 'browser' : 'agent'
+
+      // Browser connections require a token
       if (role === 'browser') {
-        const token = url.searchParams.get('token') || ''
+        const token = url.searchParams.get('token') ?? ''
         if (!token || token !== session.browserToken) {
-          return jsonResponse({ error: 'Invalid relay token' }, 403)
+          return json({ error: 'Invalid token' }, 403)
         }
       }
 
       const pair = new WebSocketPair()
       const [client, server] = Object.values(pair) as [WebSocket, WebSocket]
 
-      // Use hibernation API so the DO can sleep between messages.
-      // ping/pong auto-response is configured once in the constructor — zero wake-up cost.
+      // Hibernation API — DO sleeps between messages, WebSocket stays alive
       this.state.acceptWebSocket(server, [role])
 
       // Greet the new peer
-      server.send(JSON.stringify({
-        type: 'hello',
-        role,
-        sessionId: session.sessionId,
-      } satisfies RelayEnvelope))
+      this.send(server, { type: 'hello', role, sessionId: session.sessionId })
 
-      // Notify counterpart that this peer just connected
+      // Notify the counterpart
       this.notifyPeerStatus(role, true)
 
       return new Response(null, {
         status: 101,
+        // @ts-expect-error — Cloudflare-specific webSocket property
         webSocket: client,
-      } as ResponseInit & { webSocket: WebSocket })
+      })
     }
 
-    // ── MCP Streamable HTTP (all methods handled by SDK) ─────────────────────
-    if (url.pathname === '/mcp' || url.pathname === '/mcp/sse') {
-      const mcpServer = this.getMcpServer()
+    // MCP Streamable HTTP — create fresh McpServer + transport per request
+    if (url.pathname === '/mcp') {
+      const mcpServer = this.createMcpServer()
+      // Stateless transport: no sessionIdGenerator → created fresh each request.
+      // The SDK handles initialize, notifications/initialized, tools/list, tools/call, etc.
       const transport = new WebStandardStreamableHTTPServerTransport({
-        // stateless mode per request — DO handles state persistence
         sessionIdGenerator: undefined,
-        enableJsonResponse: false,
+        enableJsonResponse: true, // simpler for agents that don't stream
       })
       await mcpServer.connect(transport)
-      // Re-write the URL to /mcp for the SDK (it expects a single endpoint)
-      const mcpRequest = url.pathname === '/mcp/sse'
-        ? new Request(request.url.replace('/mcp/sse', '/mcp'), { method: 'GET', headers: request.headers })
-        : request
-      const response = await transport.handleRequest(mcpRequest)
-      // Disconnect transport after each request (stateless mode)
+      const response = await transport.handleRequest(req)
       await transport.close()
       return response
     }
 
-    return jsonResponse({ error: 'Not found' }, 404)
+    return json({ error: 'Not found' }, 404)
+  }
+
+  // ── WebSocket message handler (called on wake from hibernation) ───────────
+
+  async webSocketMessage(ws: WebSocket, message: string | ArrayBuffer): Promise<void> {
+    let envelope: RelayEnvelope
+    try {
+      envelope = JSON.parse(typeof message === 'string' ? message : new TextDecoder().decode(message))
+    } catch {
+      return
+    }
+
+    const tags = this.state.getTags(ws)
+    const role = tags[0] as RelayPeerRole | undefined
+
+    // Handle command results from the browser
+    if (envelope.type === 'command_result') {
+      const pending = this.pending.get(envelope.id)
+      if (!pending) return
+      clearTimeout(pending.timer)
+      this.pending.delete(envelope.id)
+      if (envelope.error) {
+        pending.reject(new Error(envelope.error.message ?? 'Command failed'))
+      } else {
+        pending.resolve(envelope.result)
+      }
+      return
+    }
+
+    // Forward other messages to counterpart
+    if (role === 'browser') {
+      this.send(this.agentSocket(), envelope)
+    } else if (role === 'agent') {
+      this.send(this.browserSocket(), envelope)
+    }
+  }
+
+  async webSocketClose(ws: WebSocket): Promise<void> {
+    const tags = this.state.getTags(ws)
+    const role = tags[0] as RelayPeerRole | undefined
+    if (role) this.notifyPeerStatus(role, false)
+  }
+
+  async webSocketError(ws: WebSocket): Promise<void> {
+    await this.webSocketClose(ws)
   }
 }
