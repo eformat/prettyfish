@@ -85,6 +85,7 @@ function getModelContext(): ModelContext | undefined {
 
 interface UseWebMcpOptions {
   executeCommand: (command: BrowserCommandEnvelope) => Promise<unknown>
+  enabled?: boolean
 }
 
 /**
@@ -93,11 +94,12 @@ interface UseWebMcpOptions {
  */
 export const WEB_MCP_TOOL_COUNT = TOOLS.length
 
-export function useWebMcp({ executeCommand }: UseWebMcpOptions) {
+export function useWebMcp({ executeCommand, enabled = true }: UseWebMcpOptions) {
   const executeRef = useRef(executeCommand)
   useEffect(() => { executeRef.current = executeCommand }, [executeCommand])
 
   useEffect(() => {
+    if (!enabled) return
     const ctx = getModelContext()
     if (!ctx) return
 
@@ -129,7 +131,7 @@ export function useWebMcp({ executeCommand }: UseWebMcpOptions) {
     }
 
     return () => controller.abort()
-  }, [])
+  }, [enabled])
 
   return { supported: isWebMcpSupported() }
 }

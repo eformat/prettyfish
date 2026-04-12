@@ -153,10 +153,11 @@ const COLOR_PAIR_SCHEMA = [
   // Elements that appear with specific configs
   {
     diagram: 'sequence',
-    label: 'Seq number text on actor bg (autonumber circles)',
-    // sequenceNumberColor = text drawn inside circle whose fill = actorBkg
+    label: 'Autonumber number text on circle bg (sequenceNumberColor on signalColor)',
+    // .sequenceNumber { fill: sequenceNumberColor } = the number text color
+    // [id$="-sequencenumber"] { fill: signalColor } = the circle SVG marker fill
     text: v => v.sequenceNumberColor,
-    bg: v => v.actorBkg,
+    bg: v => v.signalColor,
     config: 'showSequenceNumbers: true',
   },
   {

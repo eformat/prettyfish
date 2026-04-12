@@ -106,8 +106,9 @@ export default function App() {
     updateDiagramCode,
   })
 
-  const webMcpSupported = isWebMcpSupported()
-  useWebMcp({ executeCommand: remoteAgentRelay.executeCommand })
+  const ENABLE_WEBMCP = false
+  const webMcpSupported = ENABLE_WEBMCP && isWebMcpSupported()
+  useWebMcp({ executeCommand: remoteAgentRelay.executeCommand, enabled: ENABLE_WEBMCP })
 
   const handleInsertReady = useCallback((fn: (text: string) => void) => {
     registerInsertHandler(fn)
