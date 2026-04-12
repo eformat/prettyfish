@@ -49,6 +49,7 @@ export function SponsorNudge({ visible, onDismiss, showCount }: SponsorNudgeProp
 
   return (
     <div
+      data-testid="sponsor-nudge"
       className={cn(
         'w-72 rounded-2xl border pointer-events-auto overflow-hidden',
         'bg-white/80 dark:bg-[oklch(0.16_0.015_280/0.85)]',

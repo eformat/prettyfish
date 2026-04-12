@@ -32,6 +32,7 @@
     "e2e": "playwright test",
     "e2e:headed": "playwright test --headed",
     "e2e:report": "playwright show-report",
+    "test:relay": "playwright test --config playwright.relay.config.ts",
     "perf:workspace": "node scripts/measure-large-workspace.mjs"
   },
   "dependencies": {
