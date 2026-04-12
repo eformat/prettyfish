@@ -112,15 +112,28 @@ export const ARTBOARD_DEFAULT_WIDTH = 640
 export const ARTBOARD_DEFAULT_HEIGHT = 480 // approximate, actual height is dynamic
 
 export function nextDiagramPosition(diagrams: Diagram[]): { x: number; y: number } {
-  const last = diagrams[diagrams.length - 1]
-  if (!last) {
-    return { x: 0, y: 0 }
+  if (diagrams.length === 0) return { x: 0, y: 0 }
+
+  const col = diagrams.length % ARTBOARD_COLS
+  const row = Math.floor(diagrams.length / ARTBOARD_COLS)
+
+  // X: sum widths of diagrams in the same row up to this column
+  const rowStart = row * ARTBOARD_COLS
+  let x = 0
+  for (let i = rowStart; i < rowStart + col; i++) {
+    x += (diagrams[i]?.width ?? ARTBOARD_DEFAULT_WIDTH) + ARTBOARD_GAP_X
   }
 
-  return {
-    x: last.x + last.width + ARTBOARD_GAP_X,
-    y: last.y,
+  // Y: sum approximate heights of all rows above this one
+  // Use the tallest diagram in each row as the row height
+  let y = 0
+  for (let r = 0; r < row; r++) {
+    const rowDiagrams = diagrams.slice(r * ARTBOARD_COLS, (r + 1) * ARTBOARD_COLS)
+    const rowHeight = Math.max(...rowDiagrams.map(d => d.render?.svgHeight ?? ARTBOARD_DEFAULT_HEIGHT))
+    y += rowHeight + ARTBOARD_GAP_Y
   }
+
+  return { x, y }
 }
 
 export function createDiagram(
