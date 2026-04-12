@@ -164,12 +164,20 @@ export function McpPanel({ open, onClose, remoteRelay, isDark = false }: McpPane
 
               {/* Quick install */}
               <div className="space-y-1">
-                <p className="text-[10px] font-medium uppercase tracking-wider text-muted-foreground">Quick install</p>
-                <div className="flex items-center gap-1.5 rounded-lg bg-muted px-2.5 py-1.5">
-                  <code className="flex-1 truncate font-mono text-[11px]">{addMcpCmd}</code>
+                <div className="flex items-center justify-between">
+                  <p className="text-[10px] font-medium uppercase tracking-wider text-muted-foreground">Quick install</p>
                   <CopyBtn value={addMcpCmd} />
                 </div>
+                <div className="overflow-x-auto rounded-lg bg-black px-3 py-2 dark:bg-black">
+                  <code className="whitespace-nowrap font-mono text-[11px] leading-relaxed">
+                    <span className="text-amber-300 dark:text-amber-300">npx</span>{' '}
+                    <span className="text-zinc-100 dark:text-zinc-100">add-mcp</span>{' '}
+                    <span className="text-sky-300 dark:text-sky-300">{remoteRelay.mcpUrl}</span>
+                  </code>
+                </div>
               </div>
+
+              <div className="h-px bg-border" />
 
               {/* JSON config */}
               <div className="space-y-1">
@@ -193,10 +201,6 @@ export function McpPanel({ open, onClose, remoteRelay, isDark = false }: McpPane
                   />
                 </div>
               </div>
-
-              <p className="text-[11px] text-muted-foreground">
-                Works with Claude Desktop, Cursor, VS Code, and more.
-              </p>
             </>
           ) : !isBusy ? (
             <>
