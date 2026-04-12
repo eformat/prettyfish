@@ -176,10 +176,10 @@ export function McpPanel({ open, onClose, remoteRelay, webMcpSupported = false, 
           <div className="space-y-0.5">
             <div className="flex items-center gap-1.5">
               <Terminal className="h-3.5 w-3.5 text-primary" weight="duotone" />
-              <span className="text-[13px] font-semibold">Connect MCP</span>
+              <span className="text-[13px] font-semibold">Connect AI Agent</span>
             </div>
             <p className="text-[11px] text-muted-foreground">
-              Let an AI agent create and export diagrams on this page.
+              Let Claude, Cursor, or any MCP-compatible agent draw diagrams here.
             </p>
           </div>
           <button
@@ -195,42 +195,6 @@ export function McpPanel({ open, onClose, remoteRelay, webMcpSupported = false, 
         {/* Body */}
         <div className="space-y-2.5 p-3.5">
 
-          {/* Session row */}
-          <div className="flex items-center justify-between gap-2">
-            <div className="flex items-center gap-1.5 min-w-0">
-              <StatusDot status={remoteRelay.status} />
-              <span className="text-xs font-medium">{statusLabel}</span>
-              {hasSession && remoteRelay.displayId && (
-                <span className="truncate rounded bg-muted px-1 py-0.5 font-mono text-[9px] text-muted-foreground">
-                  {remoteRelay.displayId}
-                </span>
-              )}
-            </div>
-            <div className="flex items-center gap-1 shrink-0">
-              {hasSession && !isConnected && !isBusy && (
-                <Button
-                  size="sm"
-                  variant="ghost"
-                  className="h-6 w-6 p-0"
-                  onClick={() => void remoteRelay.connect()}
-                  title="Reconnect"
-                >
-                  <ArrowsClockwise className="h-3 w-3" />
-                </Button>
-              )}
-              <Button
-                size="sm"
-                variant={hasSession ? 'outline' : 'default'}
-                className="h-6 px-2 text-[11px]"
-                onClick={() => void remoteRelay.createHostedSession()}
-                disabled={isBusy}
-              >
-                <PlugsConnected className="h-3 w-3" />
-                {hasSession ? 'New' : 'Generate'}
-              </Button>
-            </div>
-          </div>
-
           {/* Error */}
           {remoteRelay.error && (
             <div className="rounded-lg bg-red-50 px-2.5 py-1.5 text-[11px] text-red-700 dark:bg-red-950/40 dark:text-red-400">
@@ -238,9 +202,69 @@ export function McpPanel({ open, onClose, remoteRelay, webMcpSupported = false, 
             </div>
           )}
 
-          {/* Config sections */}
-          {hasSession ? (
+          {/* Initial state — no session yet */}
+          {!hasSession && !isBusy && (
+            <div className="space-y-3">
+              {/* What this does */}
+              <div className="rounded-xl bg-muted/50 px-3.5 py-3 space-y-2">
+                <p className="text-[11px] font-medium text-foreground">How it works</p>
+                <div className="space-y-1.5">
+                  {[
+                    { n: '1', text: 'Click "Start session" to get a unique MCP URL for this tab' },
+                    { n: '2', text: 'Add the URL to Claude Code, Cursor, or any MCP client in one command' },
+                    { n: '3', text: 'Ask your AI agent to create, edit, or export diagrams — they appear here live' },
+                  ].map(({ n, text }) => (
+                    <div key={n} className="flex gap-2 items-start">
+                      <span className="flex-shrink-0 w-4 h-4 rounded-full bg-primary/10 text-primary text-[9px] font-bold flex items-center justify-center mt-px">{n}</span>
+                      <span className="text-[11px] text-muted-foreground leading-snug">{text}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+              <Button
+                className="w-full h-8 text-xs gap-1.5"
+                onClick={() => void remoteRelay.createHostedSession()}
+              >
+                <PlugsConnected className="h-3.5 w-3.5" />
+                Start session
+              </Button>
+            </div>
+          )}
+
+          {/* Loading state */}
+          {isBusy && (
+            <div className="flex items-center gap-2 py-2">
+              <ArrowsClockwise className="h-3.5 w-3.5 animate-spin text-muted-foreground" />
+              <span className="text-[11px] text-muted-foreground">Creating session…</span>
+            </div>
+          )}
+
+          {/* Session active: status + tabs */}
+          {hasSession && (
             <>
+              {/* Status row */}
+              <div className="flex items-center justify-between gap-2">
+                <div className="flex items-center gap-1.5 min-w-0">
+                  <StatusDot status={remoteRelay.status} />
+                  <span className="text-xs font-medium">{statusLabel}</span>
+                  {remoteRelay.displayId && (
+                    <span className="truncate rounded bg-muted px-1 py-0.5 font-mono text-[9px] text-muted-foreground">
+                      {remoteRelay.displayId}
+                    </span>
+                  )}
+                </div>
+                <div className="flex items-center gap-1 shrink-0">
+                  {!isConnected && !isBusy && (
+                    <Button size="sm" variant="ghost" className="h-6 w-6 p-0" onClick={() => void remoteRelay.connect()} title="Reconnect">
+                      <ArrowsClockwise className="h-3 w-3" />
+                    </Button>
+                  )}
+                  <Button size="sm" variant="outline" className="h-6 px-2 text-[11px]" onClick={() => void remoteRelay.createHostedSession()} disabled={isBusy}>
+                    New session
+                  </Button>
+                </div>
+              </div>
+
               <div className="h-px bg-border" />
 
               {/* Tabs */}
@@ -354,14 +378,7 @@ export function McpPanel({ open, onClose, remoteRelay, webMcpSupported = false, 
                 </div>
               )}
             </>
-          ) : !isBusy ? (
-            <>
-              <div className="h-px bg-border" />
-              <p className="text-[11px] text-muted-foreground">
-                Generate a session to get your MCP config.
-              </p>
-            </>
-          ) : null}
+          )}
         </div>
       </div>
     </>
