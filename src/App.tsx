@@ -98,6 +98,7 @@ export default function App() {
   const activeSvg = activeDiagram?.render?.svg ?? ''
   const panelSurfaceClass = chromeGlassPanelClass(mode)
   const remoteAgentRelay = useRemoteAgentRelay({
+    activePageId,
     state,
     getState: controller.getState,
     createPageWithName,

@@ -8,11 +8,14 @@ import type { AppState } from '@/types'
 const DEFAULT_RELAY_URL = ((import.meta as ImportMeta & { env?: Record<string, string> }).env?.VITE_PRETTYFISH_RELAY_URL || 'https://prettyfish-relay.binalgo.workers.dev').replace(/\/$/, '')
 
 const RELAY_URL_KEY = 'prettyfish:relay-url'
-const RELAY_SESSION_ID_KEY = 'prettyfish:relay-session-id'
-const RELAY_BROWSER_TOKEN_KEY = 'prettyfish:relay-browser-token'
-const RELAY_AGENT_TOKEN_KEY = 'prettyfish:relay-agent-token'
+
+// Per-page session keys — parameterised by pageId
+function sessionIdKey(pageId: string) { return `prettyfish:relay-session-id:${pageId}` }
+function browserTokenKey(pageId: string) { return `prettyfish:relay-browser-token:${pageId}` }
+function agentTokenKey(pageId: string) { return `prettyfish:relay-agent-token:${pageId}` }
 
 interface RemoteAgentRelayOptions {
+  activePageId: string
   state: AppStoreState
   getState: () => AppState
   createPageWithName: (name?: string, code?: string) => string
@@ -83,19 +86,22 @@ function buildHostedConfigSnippet(mcpUrl: string): string {
 }
 
 export function useRemoteAgentRelay(options: RemoteAgentRelayOptions): RemoteAgentRelayControls {
+  const { activePageId } = options
   const [status, setStatus] = useState<RemoteAgentRelayControls['status']>('disconnected')
   const [relayUrl, setRelayUrlState] = useState(() => readStoredValue(RELAY_URL_KEY, DEFAULT_RELAY_URL))
-  const [sessionId, setSessionIdState] = useState(() => readStoredValue(RELAY_SESSION_ID_KEY))
-  const [browserToken, setBrowserTokenState] = useState(() => readStoredValue(RELAY_BROWSER_TOKEN_KEY))
-  const [agentToken, setAgentTokenState] = useState(() => readStoredValue(RELAY_AGENT_TOKEN_KEY))
+  const [sessionId, setSessionIdState] = useState(() => readStoredValue(sessionIdKey(activePageId)))
+  const [browserToken, setBrowserTokenState] = useState(() => readStoredValue(browserTokenKey(activePageId)))
+  const [agentToken, setAgentTokenState] = useState(() => readStoredValue(agentTokenKey(activePageId)))
   const [browserAttachUrl, setBrowserAttachUrl] = useState('')
   const [mcpUrl, setMcpUrl] = useState('')
   const [error, setError] = useState<string | null>(null)
   const socketRef = useRef<WebSocket | null>(null)
   const attemptedAutoConnectRef = useRef(false)
+  const activePageIdRef = useRef(activePageId)
   const { executeCommand } = useAgentCommandExecutor(options)
 
   const applySession = useCallback((session: PublicRelaySessionResponse) => {
+    const pageId = activePageIdRef.current
     setRelayUrlState(session.relayUrl)
     setSessionIdState(session.sessionId)
     setBrowserTokenState(session.browserToken)
@@ -103,33 +109,34 @@ export function useRemoteAgentRelay(options: RemoteAgentRelayOptions): RemoteAge
     setBrowserAttachUrl(session.browserAttachUrl)
     setMcpUrl(session.mcpUrl)
     persistValue(RELAY_URL_KEY, session.relayUrl)
-    persistValue(RELAY_SESSION_ID_KEY, session.sessionId)
-    persistValue(RELAY_BROWSER_TOKEN_KEY, session.browserToken)
-    persistValue(RELAY_AGENT_TOKEN_KEY, session.agentToken)
+    persistValue(sessionIdKey(pageId), session.sessionId)
+    persistValue(browserTokenKey(pageId), session.browserToken)
+    persistValue(agentTokenKey(pageId), session.agentToken)
   }, [])
 
+  // On page switch: disconnect old WS, load stored session for the new page, auto-reconnect if one exists
   useEffect(() => {
-    try {
-      const url = new URL(window.location.href)
-      const relayUrlParam = url.searchParams.get('relayUrl')
-      const relaySessionIdParam = url.searchParams.get('relaySessionId')
-      const relayBrowserTokenParam = url.searchParams.get('relayBrowserToken')
-      if (relayUrlParam) {
-        setRelayUrlState(relayUrlParam)
-        persistValue(RELAY_URL_KEY, relayUrlParam)
-      }
-      if (relaySessionIdParam) {
-        setSessionIdState(relaySessionIdParam)
-        persistValue(RELAY_SESSION_ID_KEY, relaySessionIdParam)
-      }
-      if (relayBrowserTokenParam) {
-        setBrowserTokenState(relayBrowserTokenParam)
-        persistValue(RELAY_BROWSER_TOKEN_KEY, relayBrowserTokenParam)
-      }
-    } catch {
-      // ignore
-    }
-  }, [])
+    if (activePageIdRef.current === activePageId && attemptedAutoConnectRef.current) return
+
+    activePageIdRef.current = activePageId
+    attemptedAutoConnectRef.current = false
+
+    // Disconnect any existing socket from the previous page
+    socketRef.current?.close()
+    socketRef.current = null
+    setStatus('disconnected')
+    setError(null)
+
+    // Load session for this page from localStorage
+    const nextSessionId = readStoredValue(sessionIdKey(activePageId))
+    const nextBrowserToken = readStoredValue(browserTokenKey(activePageId))
+    const nextAgentToken = readStoredValue(agentTokenKey(activePageId))
+    setSessionIdState(nextSessionId)
+    setBrowserTokenState(nextBrowserToken)
+    setAgentTokenState(nextAgentToken)
+    setBrowserAttachUrl('')
+    setMcpUrl('')
+  }, [activePageId])
 
   useEffect(() => {
     if (!relayUrl || !sessionId || !agentToken) {
@@ -156,17 +163,17 @@ export function useRemoteAgentRelay(options: RemoteAgentRelayOptions): RemoteAge
 
   const setSessionId = useCallback((value: string) => {
     setSessionIdState(value)
-    persistValue(RELAY_SESSION_ID_KEY, value)
+    persistValue(sessionIdKey(activePageIdRef.current), value)
   }, [])
 
   const setBrowserToken = useCallback((value: string) => {
     setBrowserTokenState(value)
-    persistValue(RELAY_BROWSER_TOKEN_KEY, value)
+    persistValue(browserTokenKey(activePageIdRef.current), value)
   }, [])
 
   const setAgentToken = useCallback((value: string) => {
     setAgentTokenState(value)
-    persistValue(RELAY_AGENT_TOKEN_KEY, value)
+    persistValue(agentTokenKey(activePageIdRef.current), value)
   }, [])
 
   const disconnect = useCallback(() => {
@@ -253,15 +260,16 @@ export function useRemoteAgentRelay(options: RemoteAgentRelayOptions): RemoteAge
   }, [executeCommand])
 
   const resetSession = useCallback(() => {
+    const pageId = activePageIdRef.current
     disconnect()
     setSessionIdState('')
     setBrowserTokenState('')
     setAgentTokenState('')
     setBrowserAttachUrl('')
     setMcpUrl('')
-    persistValue(RELAY_SESSION_ID_KEY, '')
-    persistValue(RELAY_BROWSER_TOKEN_KEY, '')
-    persistValue(RELAY_AGENT_TOKEN_KEY, '')
+    persistValue(sessionIdKey(pageId), '')
+    persistValue(browserTokenKey(pageId), '')
+    persistValue(agentTokenKey(pageId), '')
   }, [disconnect])
 
   const connect = useCallback(async () => {
@@ -314,12 +322,13 @@ export function useRemoteAgentRelay(options: RemoteAgentRelayOptions): RemoteAge
     socketRef.current?.close()
   }, [])
 
+  // Auto-reconnect when a stored session is loaded (on mount or page switch)
   useEffect(() => {
     if (attemptedAutoConnectRef.current) return
     if (!relayUrl || !sessionId || !browserToken) return
     attemptedAutoConnectRef.current = true
-    void connect()
-  }, [browserToken, connect, relayUrl, sessionId])
+    void connectWithSession(relayUrl, sessionId, browserToken)
+  }, [browserToken, connectWithSession, relayUrl, sessionId])
 
   const displayId = sessionId ? sessionId.slice(0, 8) : null
 
