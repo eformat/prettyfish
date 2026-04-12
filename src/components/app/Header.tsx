@@ -228,9 +228,7 @@ export function Header({
         style={!isMobile ? (sidebarWidth ? { width: `${sidebarWidth}px` } : { width: 'clamp(320px, 34vw, 480px)' }) : undefined}
         data-testid="header-logo-pill"
       >
-        <div className="flex items-center justify-center w-5 h-5 rounded-md bg-primary/15 shrink-0">
-          <img src="/favicon.svg" alt="" className="w-4 h-4" />
-        </div>
+        <img src="/favicon.svg" alt="" className="w-6 h-6 shrink-0" />
         <span className="text-sm tracking-tight pl-0.5 shrink-0">
           <span className="font-semibold">Pretty</span><span className="font-medium text-primary ml-0.5">Fish</span>
         </span>

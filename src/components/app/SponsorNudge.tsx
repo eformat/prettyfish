@@ -51,7 +51,7 @@ export function recordNudgeShown() {
 
 // Rotating messages — human, whimsical, not needy
 const MESSAGES = [
-  "Pretty Fish lives rent-free in your browser. If it's been useful, a small sponsorship keeps the lights on (and the fish swimming 🐟).",
+  "Pretty Fish lives rent-free in your browser. If it's been useful, throwing a few bucks our way keeps the lights on (and the fish swimming).",
   "Built with too much coffee and genuine love for good diagrams. If Pretty Fish saved you some time, consider tossing a coin to your developer.",
   "Pretty Fish is free, open-source, and powered by stubbornness. If you've enjoyed it, GitHub Sponsors is a lovely way to say so.",
 ]
@@ -96,7 +96,7 @@ export function SponsorNudge({ visible, onDismiss, showCount }: SponsorNudgeProp
       <div className="p-3.5">
         <div className="flex items-start justify-between gap-2 mb-2">
           <div className="flex items-center gap-1.5">
-            <Heart className="w-3.5 h-3.5 text-pink-500 dark:text-pink-400 shrink-0" weight="fill" />
+            <img src="/favicon.svg" alt="" className="w-4 h-4 shrink-0" />
             <span className="text-xs font-semibold text-foreground">Support Pretty Fish</span>
           </div>
           <button
