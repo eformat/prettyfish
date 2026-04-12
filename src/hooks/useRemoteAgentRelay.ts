@@ -8,10 +8,17 @@ import type { AppState } from '@/types'
 
 // Same-origin: relay routes (/relay/*, /mcp/*) are served by the same Worker as the SPA.
 
+/**
+ * Returns the relay base URL.
+ * Priority:
+ *   1. VITE_PRETTYFISH_RELAY_URL env var (set via .env.local for local split-origin dev)
+ *   2. window.location.origin — app and relay are always same-origin in production
+ *
+ * No hardcoded hostnames. No localhost special-casing in shipped code.
+ */
 export function resolveRelayBaseUrlForHost(hostname: string, envUrl?: string, origin?: string): string {
   if (envUrl) return envUrl.replace(/\/$/, '')
-  if (/^(localhost|127\.0\.0\.1)$/.test(hostname)) return 'https://prettyfish.binalgo.workers.dev'
-  return (origin || 'https://pretty.fish').replace(/\/$/, '')
+  return (origin || `https://${hostname}`).replace(/\/$/, '')
 }
 
 function getRelayBaseUrl(): string {

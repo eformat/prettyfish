@@ -2,9 +2,9 @@ import { describe, expect, it } from 'vitest'
 import { resolveRelayBaseUrlForHost } from '@/hooks/useRemoteAgentRelay'
 
 describe('resolveRelayBaseUrlForHost', () => {
-  it('uses hosted worker fallback only on localhost', () => {
-    expect(resolveRelayBaseUrlForHost('localhost', undefined, 'http://localhost:4175')).toBe('https://prettyfish.binalgo.workers.dev')
-    expect(resolveRelayBaseUrlForHost('127.0.0.1', undefined, 'http://127.0.0.1:4175')).toBe('https://prettyfish.binalgo.workers.dev')
+  it('falls back to origin even on localhost (env var must be used for local dev split-origin)', () => {
+    expect(resolveRelayBaseUrlForHost('localhost', undefined, 'http://localhost:4175')).toBe('http://localhost:4175')
+    expect(resolveRelayBaseUrlForHost('127.0.0.1', undefined, 'http://127.0.0.1:4175')).toBe('http://127.0.0.1:4175')
   })
 
   it('uses window origin on non-local hosts', () => {
