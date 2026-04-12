@@ -49,14 +49,15 @@ export function recordNudgeShown() {
   writeState({ showCount: s.showCount + 1, lastShownAt: Date.now() })
 }
 
-// Rotating messages — human, whimsical, not needy
-const MESSAGES = [
-  "Pretty Fish lives rent-free in your browser. If it's been useful, throwing a few bucks our way keeps the lights on (and the fish swimming).",
-  "Built with too much coffee and genuine love for good diagrams. If Pretty Fish saved you some time, consider tossing a coin to your developer.",
-  "Pretty Fish is free, open-source, and powered by stubbornness. If you've enjoyed it, GitHub Sponsors is a lovely way to say so.",
+// Rotating messages — [before logo, after logo]
+// The Pretty Fish pink logo is rendered inline between the two parts.
+const MESSAGES: [string, string][] = [
+  ["Pretty ", " lives rent-free in your browser. If it's been useful, throwing a few bucks our way keeps the lights on (and the fish swimming)."],
+  ["Built with too much coffee and genuine love for good diagrams. If Pretty ", " saved you some time, consider tossing a coin to your developer."],
+  ["Pretty ", " is free, open-source, and powered by stubbornness. If you've enjoyed it, GitHub Sponsors is a lovely way to say so."],
 ]
 
-function getMessage(showCount: number): string {
+function getMessage(showCount: number): [string, string] {
   return MESSAGES[showCount % MESSAGES.length]!
 }
 
@@ -93,23 +94,27 @@ export function SponsorNudge({ visible, onDismiss, showCount }: SponsorNudgeProp
         mounted ? 'opacity-100 translate-y-0' : 'opacity-0 -translate-y-2',
       )}
     >
-      <div className="p-3.5">
-        <div className="flex items-start justify-between gap-2 mb-2">
-          <div className="flex items-center gap-1.5">
-            <img src="/favicon.svg" alt="" className="w-4 h-4 shrink-0" />
-            <span className="text-xs font-semibold text-foreground">Support Pretty Fish</span>
-          </div>
+      <div className="p-4">
+        <div className="flex items-start justify-between gap-2 mb-2.5">
+          <span className="text-[13px] font-semibold text-foreground">Support Pretty Fish</span>
           <button
             type="button"
             aria-label="Dismiss"
             onClick={onDismiss}
-            className="text-muted-foreground hover:text-foreground transition-colors -mt-0.5 -mr-0.5 p-0.5 rounded"
+            className="text-muted-foreground hover:text-foreground transition-colors -mt-0.5 -mr-0.5 p-0.5 rounded shrink-0"
           >
-            <X className="w-3 h-3" />
+            <X className="w-3.5 h-3.5" />
           </button>
         </div>
-        <p className="text-xs text-muted-foreground leading-relaxed mb-3">
-          {getMessage(showCount)}
+        <p className="text-[12px] text-muted-foreground leading-relaxed mb-3.5">
+          {(() => {
+            const [before, after] = getMessage(showCount)
+            return (
+              <>
+                {before}<img src="/favicon-pink.svg" alt="Pretty Fish" className="inline w-4 h-4 mx-0.5 align-middle" />{after}
+              </>
+            )
+          })()}
         </p>
         <a
           href="https://github.com/sponsors/pastelsky"
@@ -117,11 +122,11 @@ export function SponsorNudge({ visible, onDismiss, showCount }: SponsorNudgeProp
           rel="noopener noreferrer"
           onClick={onDismiss}
           className={cn(
-            'inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-colors',
+            'inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[12px] font-medium transition-colors',
             'bg-pink-500 hover:bg-pink-600 text-white',
           )}
         >
-          <Heart className="w-3 h-3" weight="fill" />
+          <Heart className="w-3.5 h-3.5" weight="fill" />
           Sponsor on GitHub
         </a>
       </div>
