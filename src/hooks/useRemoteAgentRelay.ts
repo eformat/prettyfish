@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 
 import { useAgentCommandExecutor, type BrowserCommandEnvelope } from '@/hooks/useAgentCommandExecutor'
+import { hmacSign, hmacVerify } from '@/lib/hmac'
 import type { PublicRelaySessionResponse, RelayEnvelope } from '@/relay/protocol'
 import type { AppStoreState } from '@/state/appStore'
 import type { AppState } from '@/types'
@@ -13,6 +14,22 @@ const RELAY_URL_KEY = 'prettyfish:relay-url'
 function sessionIdKey(pageId: string) { return `prettyfish:relay-session-id:${pageId}` }
 function browserTokenKey(pageId: string) { return `prettyfish:relay-browser-token:${pageId}` }
 function agentTokenKey(pageId: string) { return `prettyfish:relay-agent-token:${pageId}` }
+// clientSecret is per-page and never sent to the server — only its HMAC proof is
+function clientSecretKey(pageId: string) { return `prettyfish:relay-client-secret:${pageId}` }
+
+/** Get or generate the per-page client secret (never leaves the browser) */
+function getOrCreateClientSecret(pageId: string): string {
+  const key = clientSecretKey(pageId)
+  try {
+    const existing = localStorage.getItem(key)
+    if (existing) return existing
+    const fresh = crypto.randomUUID()
+    localStorage.setItem(key, fresh)
+    return fresh
+  } catch {
+    return crypto.randomUUID()
+  }
+}
 
 interface RemoteAgentRelayOptions {
   activePageId: string
@@ -230,27 +247,48 @@ export function useRemoteAgentRelay(options: RemoteAgentRelayOptions): RemoteAge
         }
 
         if (message.type === 'command') {
-          void executeCommand({
-            id: message.id,
-            type: message.command as BrowserCommandEnvelope['type'],
-            args: message.args,
-          })
-            .then((result) => {
+          void (async () => {
+            // sig = HMAC-SHA256(browserProof, commandId) — the relay signs using
+            // browserProof from session creation. An attacker with only agentToken
+            // cannot forge this since they never see browserProof.
+            const clientSecret = getOrCreateClientSecret(activePageIdRef.current)
+            const browserProof = await hmacSign(clientSecret, activePageIdRef.current)
+            const cmdSig = (message as { sig?: string }).sig
+            const sigValid = cmdSig
+              ? await hmacVerify(browserProof, message.id, cmdSig)
+              : false
+
+            if (!sigValid) {
+              socket.send(JSON.stringify({
+                type: 'command_result',
+                id: message.id,
+                ok: false,
+                error: 'Command signature verification failed — rejecting',
+              } satisfies RelayEnvelope))
+              return
+            }
+
+            try {
+              const result = await executeCommand({
+                id: message.id,
+                type: message.command as BrowserCommandEnvelope['type'],
+                args: message.args,
+              })
               socket.send(JSON.stringify({
                 type: 'command_result',
                 id: message.id,
                 ok: true,
                 result,
               } satisfies RelayEnvelope))
-            })
-            .catch((commandError) => {
+            } catch (commandError) {
               socket.send(JSON.stringify({
                 type: 'command_result',
                 id: message.id,
                 ok: false,
                 error: commandError instanceof Error ? commandError.message : 'Unknown relay command error',
               } satisfies RelayEnvelope))
-            })
+            }
+          })()
         } else if (message.type === 'error') {
           setStatus('error')
           setError(message.message)
@@ -283,6 +321,12 @@ export function useRemoteAgentRelay(options: RemoteAgentRelayOptions): RemoteAge
 
     let session: PublicRelaySessionResponse
     try {
+      const pageId = activePageIdRef.current
+      const clientSecret = getOrCreateClientSecret(pageId)
+      // Compute browserProof = HMAC-SHA256(clientSecret, pageId).
+      // The raw secret never leaves the browser — only this proof is sent.
+      const browserProof = await hmacSign(clientSecret, pageId)
+
       const response = await fetch(`${relayUrl.replace(/\/$/, '')}/api/relay/public/sessions`, {
         method: 'POST',
         // Use text/plain to avoid a CORS preflight (simple request).
@@ -290,7 +334,7 @@ export function useRemoteAgentRelay(options: RemoteAgentRelayOptions): RemoteAge
         headers: {
           'content-type': 'text/plain;charset=UTF-8',
         },
-        body: JSON.stringify({ createdBy: 'prettyfish-web' }),
+        body: JSON.stringify({ createdBy: 'prettyfish-web', browserProof }),
       })
 
       if (!response.ok) {

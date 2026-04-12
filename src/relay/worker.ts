@@ -170,12 +170,36 @@ function textResult(payload: unknown, isError = false) {
   }
 }
 
+/** HMAC-SHA256(key, message) → hex — Cloudflare Workers Web Crypto */
+async function hmacSign(key: string, message: string): Promise<string> {
+  const enc = new TextEncoder()
+  const cryptoKey = await crypto.subtle.importKey(
+    'raw', enc.encode(key), { name: 'HMAC', hash: 'SHA-256' }, false, ['sign'],
+  )
+  const sig = await crypto.subtle.sign('HMAC', cryptoKey, enc.encode(message))
+  return Array.from(new Uint8Array(sig)).map(b => b.toString(16).padStart(2, '0')).join('')
+}
+
 async function initializeRelaySession(request: Request, env: RelayWorkerEnv) {
   const sessionId = crypto.randomUUID()
+
+  // Read browserProof from request body if provided.
+  // The browser sends HMAC-SHA256(clientSecret, pageId) — stored so the relay
+  // can sign forwarded commands. The raw clientSecret never transits the network.
+  let browserProof = ''
+  try {
+    const body = await request.clone().text()
+    if (body) {
+      const parsed = JSON.parse(body) as Record<string, unknown>
+      if (typeof parsed.browserProof === 'string') browserProof = parsed.browserProof
+    }
+  } catch { /* ignore — browserProof is optional */ }
+
   const session: RelaySessionRecord = {
     sessionId,
     browserToken: makeToken(),
     agentToken: makeToken(),
+    browserProof,
     createdAt: new Date().toISOString(),
   }
 
@@ -326,6 +350,14 @@ export class RelaySessionDurableObject {
     }
 
     const id = crypto.randomUUID()
+
+    // Sign the command with HMAC-SHA256(browserProof, commandId) so the browser
+    // can verify it originated from this trusted relay session.
+    const session = await this.ensureSessionLoaded()
+    const sig = session?.browserProof
+      ? await hmacSign(session.browserProof, id)
+      : ''
+
     const response = await new Promise<JsonRpcResponse>((resolve, reject) => {
       const timer = setTimeout(() => {
         this.pendingHttpCommands.delete(id)
@@ -338,6 +370,7 @@ export class RelaySessionDurableObject {
         id,
         command,
         args,
+        sig,
       } satisfies RelayEnvelope))
     })
 
