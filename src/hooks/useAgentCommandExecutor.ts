@@ -27,6 +27,7 @@ export interface BrowserCommandEnvelope {
 interface AgentCommandExecutorOptions {
   state: AppStoreState
   getState: () => AppState
+  setDiagramTheme: (diagramId: string, theme: MermaidTheme) => void
   createDiagramWithOptions: (options?: {
     pageId?: string
     name?: string
