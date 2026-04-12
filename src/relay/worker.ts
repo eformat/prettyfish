@@ -154,14 +154,10 @@ function getWorkerBaseUrl(request: Request): string {
 }
 
 function buildPublicRelaySessionResponse(request: Request, session: RelaySessionRecord): PublicRelaySessionResponse {
-  const relayUrl = getWorkerBaseUrl(request)
-  const mcpUrl = new URL(`${relayUrl}/mcp/${session.sessionId}`)
-  mcpUrl.searchParams.set('token', session.agentToken)
-
+  const baseUrl = getWorkerBaseUrl(request)
   return {
     ...session,
-    relayUrl,
-    mcpUrl: mcpUrl.toString(),
+    mcpUrl: `${baseUrl}/mcp/${session.sessionId}`,
   }
 }
 
@@ -171,12 +167,6 @@ function requireBootstrapAuth(request: Request, env: RelayWorkerEnv): Response |
     return jsonResponse({ error: 'Unauthorized' }, 401)
   }
   return null
-}
-
-function parseAuthToken(request: Request): string {
-  return request.headers.get('authorization')?.replace(/^Bearer\s+/i, '')
-    || new URL(request.url).searchParams.get('token')
-    || ''
 }
 
 function textResult(payload: unknown, isError = false) {
@@ -219,7 +209,6 @@ async function initializeRelaySession(request: Request, env: RelayWorkerEnv) {
   const session: RelaySessionRecord = {
     sessionId,
     browserToken: makeToken(),
-    agentToken: makeToken(),
     browserProof,
     createdAt: new Date().toISOString(),
   }
@@ -291,9 +280,8 @@ export async function handleRelayRequest(request: Request, env: RelayWorkerEnv):
     if (request.method !== 'POST') {
       return jsonResponse({ error: 'Method not allowed' }, 405)
     }
-    const token = parseAuthToken(request)
     const stub = getSessionStub(env, sessionId)
-    return stub.fetch(`https://relay.internal/mcp?token=${encodeURIComponent(token)}`, {
+    return stub.fetch('https://relay.internal/mcp', {
       method: 'POST',
       headers: { 'content-type': 'application/json' },
       body: await request.text(),
@@ -574,10 +562,11 @@ export class RelaySessionDurableObject {
       }
 
       const role = connectMatch[1] as RelayPeerRole
-      const token = url.searchParams.get('token') || ''
-      const expectedToken = role === 'browser' ? session.browserToken : session.agentToken
-      if (!token || token !== expectedToken) {
-        return jsonResponse({ error: 'Invalid relay token' }, 403)
+      if (role === 'browser') {
+        const token = url.searchParams.get('token') || ''
+        if (!token || token !== session.browserToken) {
+          return jsonResponse({ error: 'Invalid relay token' }, 403)
+        }
       }
 
       const pair = new WebSocketPair()
@@ -603,11 +592,6 @@ export class RelaySessionDurableObject {
     }
 
     if (request.method === 'POST' && url.pathname === '/mcp') {
-      const token = parseAuthToken(request)
-      if (!token || token !== session.agentToken) {
-        return jsonResponse({ error: 'Invalid relay token' }, 403)
-      }
-
       let body: JsonRpcRequest
       try {
         body = await request.json() as JsonRpcRequest

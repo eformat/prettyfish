@@ -3,13 +3,11 @@ export type RelayPeerRole = 'browser' | 'agent'
 export interface RelaySessionRecord {
   sessionId: string
   browserToken: string
-  agentToken: string
-  browserProof: string   // HMAC-SHA256(clientSecret, sessionId) — stored server-side, never sent to agent
+  browserProof: string   // HMAC-SHA256(clientSecret, pageId) — stored server-side, never sent to agent
   createdAt: string
 }
 
 export interface PublicRelaySessionResponse extends RelaySessionRecord {
-  relayUrl: string
   mcpUrl: string
 }
 

@@ -18,7 +18,6 @@ try { localStorage.removeItem('prettyfish:relay-url') } catch { /* ignore */ }
 // Per-page session keys — all scoped by pageId
 function sessionIdKey(pageId: string) { return `prettyfish:relay-session-id:${pageId}` }
 function browserTokenKey(pageId: string) { return `prettyfish:relay-browser-token:${pageId}` }
-function agentTokenKey(pageId: string) { return `prettyfish:relay-agent-token:${pageId}` }
 // clientSecret never leaves the browser — only its HMAC proof is sent to the relay
 function clientSecretKey(pageId: string) { return `prettyfish:relay-client-secret:${pageId}` }
 
@@ -91,7 +90,6 @@ export function useRemoteAgentRelay(options: RemoteAgentRelayOptions): RemoteAge
   const [status, setStatus] = useState<RemoteAgentRelayControls['status']>('disconnected')
   const [sessionId, setSessionId] = useState(() => readStored(sessionIdKey(activePageId)))
   const [browserToken, setBrowserToken] = useState(() => readStored(browserTokenKey(activePageId)))
-  const [agentToken, setAgentToken] = useState(() => readStored(agentTokenKey(activePageId)))
   const [mcpUrl, setMcpUrl] = useState('')
   const [error, setError] = useState<string | null>(null)
 
@@ -114,20 +112,16 @@ export function useRemoteAgentRelay(options: RemoteAgentRelayOptions): RemoteAge
 
     const nextSessionId = readStored(sessionIdKey(activePageId))
     const nextBrowserToken = readStored(browserTokenKey(activePageId))
-    const nextAgentToken = readStored(agentTokenKey(activePageId))
     setSessionId(nextSessionId)
     setBrowserToken(nextBrowserToken)
-    setAgentToken(nextAgentToken)
     setMcpUrl('')
   }, [activePageId])
 
   // ── Rebuild mcpUrl whenever session changes ────────────────────────────────
   useEffect(() => {
-    if (!sessionId || !agentToken) { setMcpUrl(''); return }
-    const url = new URL(`${DEFAULT_RELAY_URL}/mcp/${sessionId}`)
-    url.searchParams.set('token', agentToken)
-    setMcpUrl(url.toString())
-  }, [agentToken, sessionId])
+    if (!sessionId) { setMcpUrl(''); return }
+    setMcpUrl(`${DEFAULT_RELAY_URL}/mcp/${sessionId}`)
+  }, [sessionId])
 
   // ── Cleanup on unmount ─────────────────────────────────────────────────────
   useEffect(() => () => { socketRef.current?.close() }, [])
@@ -178,7 +172,6 @@ export function useRemoteAgentRelay(options: RemoteAgentRelayOptions): RemoteAge
         if (message.type === 'command') {
           void (async () => {
             // Verify HMAC signature before executing — prevents rogue commands
-            // from anyone who only has the agentToken.
             const clientSecret = getOrCreateClientSecret(activePageIdRef.current)
             const browserProof = await hmacSign(clientSecret, activePageIdRef.current)
             const cmdSig = (message as { sig?: string }).sig
@@ -242,11 +235,9 @@ export function useRemoteAgentRelay(options: RemoteAgentRelayOptions): RemoteAge
     disconnect()
     setSessionId('')
     setBrowserToken('')
-    setAgentToken('')
     setMcpUrl('')
     persist(sessionIdKey(pageId), '')
     persist(browserTokenKey(pageId), '')
-    persist(agentTokenKey(pageId), '')
   }, [disconnect])
 
   const createHostedSession = useCallback(async () => {
@@ -275,10 +266,8 @@ export function useRemoteAgentRelay(options: RemoteAgentRelayOptions): RemoteAge
       // Persist per-page session
       setSessionId(session.sessionId)
       setBrowserToken(session.browserToken)
-      setAgentToken(session.agentToken)
       persist(sessionIdKey(pageId), session.sessionId)
       persist(browserTokenKey(pageId), session.browserToken)
-      persist(agentTokenKey(pageId), session.agentToken)
     } catch (sessionError) {
       setStatus('error')
       setError(sessionError instanceof Error ? sessionError.message : 'Failed to create hosted session')
