@@ -297,9 +297,11 @@ export function useAgentCommandExecutor({
           mermaidTheme: typeof args.theme === 'string' ? (args.theme as MermaidTheme) : undefined,
         })
         if (!diagramId) throw new Error('Unable to create diagram')
-        // Set description immediately after creation if provided
+        // Set description immediately after creation if provided — truncate to 10 words max
         if (typeof args.description === 'string' && args.description) {
-          updateDiagramDescriptionRef.current(diagramId, args.description)
+          const words = args.description.trim().split(/\s+/)
+          const truncated = words.length > 10 ? words.slice(0, 10).join(' ') + '…' : args.description.trim()
+          updateDiagramDescriptionRef.current(diagramId, truncated)
         }
         // Wait for diagram to exist in state, then wait for render to complete.
         // This ensures the agent gets back the actual render result (including any
