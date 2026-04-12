@@ -114,6 +114,37 @@ function makeToken() {
   return crypto.randomUUID().replaceAll('-', '') + crypto.randomUUID().replaceAll('-', '')
 }
 
+// ~200 short, friendly, visually distinct words for readable session IDs
+const WORDS = [
+  'amber','arch','azure','bay','birch','blaze','bloom','bolt','brook','canyon',
+  'cedar','cinder','cliff','cloud','cobalt','coral','crest','crisp','dawn','delta',
+  'dew','drift','dune','dusk','echo','elm','ember','fern','field','fjord',
+  'flame','flint','flux','foam','fog','fold','forge','frost','gale','glow',
+  'glyph','grove','gulf','haze','helm','herb','hill','hive','holt','horn',
+  'hue','hull','iris','isle','ivy','jade','jetty','kelp','knoll','lake',
+  'lark','latch','lava','leaf','ledge','linen','link','loch','lodge','loom',
+  'loop','lure','lynx','maple','marsh','mesa','mist','moat','moon','moss',
+  'moth','muse','mystic','nook','nord','nova','oak','opal','orbit','petal',
+  'pine','pixel','plum','pond','prism','pulse','quartz','quest','rain','reef',
+  'ridge','rift','rind','rook','rose','ruby','rune','rush','rust','sage',
+  'salt','sand','scribe','seam','shaft','shale','shoal','silk','slate','sleet',
+  'slope','smoke','snap','snow','solar','spark','spire','splay','spray','spur',
+  'staff','stag','star','stem','step','still','stone','storm','stray','stream',
+  'sun','surf','swirl','swift','thorn','tide','till','timber','trace','trail',
+  'tuft','tusk','twine','vale','vault','veil','velvet','vine','violet','volt',
+  'wake','wave','weld','wisp','wren','yard','yew','zinc','zone','zeal',
+]
+
+/** Generate a human-readable session ID: word-word-word-xxxx */
+function makeSessionId(): string {
+  const arr = new Uint32Array(3)
+  crypto.getRandomValues(arr)
+  const words = Array.from(arr).map(n => WORDS[n % WORDS.length]).join('-')
+  // 4-char hex suffix for extra collision resistance
+  const hash = crypto.randomUUID().replaceAll('-', '').slice(0, 4)
+  return `${words}-${hash}`
+}
+
 function getSessionStub(env: RelayWorkerEnv, sessionId: string): DurableObjectStubLike {
   const id = env.RELAY_SESSIONS.idFromName(sessionId)
   return env.RELAY_SESSIONS.get(id)
@@ -181,7 +212,7 @@ async function hmacSign(key: string, message: string): Promise<string> {
 }
 
 async function initializeRelaySession(request: Request, env: RelayWorkerEnv) {
-  const sessionId = crypto.randomUUID()
+  const sessionId = makeSessionId()
 
   // Read browserProof from request body if provided.
   // The browser sends HMAC-SHA256(clientSecret, pageId) — stored so the relay

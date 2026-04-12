@@ -374,7 +374,11 @@ export function useRemoteAgentRelay(options: RemoteAgentRelayOptions): RemoteAge
     void connectWithSession(relayUrl, sessionId, browserToken)
   }, [browserToken, connectWithSession, relayUrl, sessionId])
 
-  const displayId = sessionId ? sessionId.slice(0, 8) : null
+  // For readable IDs like "velvet-storm-fox-a3f2", show all but the hash suffix.
+  // For legacy UUID IDs, fall back to first 8 chars.
+  const displayId = sessionId
+    ? (sessionId.match(/^[a-z]+-[a-z]+-[a-z]+-[a-f0-9]{4}$/) ? sessionId : sessionId.slice(0, 8))
+    : null
 
   return useMemo(() => ({
     status,
