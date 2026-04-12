@@ -190,7 +190,7 @@ function textResult(payload: unknown, isError = false) {
     content: [
       {
         type: 'text',
-        text: typeof payload === 'string' ? payload : JSON.stringify(payload, null, 2),
+        text: typeof payload === 'string' ? payload : JSON.stringify(payload),
       },
     ],
     isError,
@@ -554,7 +554,7 @@ export class RelaySessionDurableObject {
                         fileName: pngPayload.fileName,
                         diagram: pngPayload.diagram,
                         mimeType: pngPayload.mimeType,
-                      }, null, 2),
+                      }),
                     },
                     {
                       type: 'image',
