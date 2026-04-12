@@ -459,14 +459,28 @@ function PagesDropdown({
   const [open, setOpen] = useState(false)
   const [renamingId, setRenamingId] = useState<string | null>(null)
   const [draftName, setDraftName] = useState('')
-  const ref = useRef<HTMLDivElement>(null)
+  const triggerRef = useRef<HTMLButtonElement>(null)
+  const dropdownRef = useRef<HTMLDivElement>(null)
+  const [dropdownPos, setDropdownPos] = useState<{ top: number; left: number } | null>(null)
   const pageById = useMemo(() => new Map(pages.map(p => [p.id, p])), [pages])
   const activePage = pageById.get(activePageId)
 
+  // Position portal below trigger
+  useEffect(() => {
+    if (!open || !triggerRef.current) return
+    const rect = triggerRef.current.getBoundingClientRect()
+    setDropdownPos({ top: rect.bottom + 8, left: rect.left })
+  }, [open])
+
+  // Close on outside click
   useEffect(() => {
     if (!open) return
     const handler = (e: MouseEvent) => {
-      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false)
+      const t = e.target as Node
+      if (
+        triggerRef.current && !triggerRef.current.contains(t) &&
+        dropdownRef.current && !dropdownRef.current.contains(t)
+      ) setOpen(false)
     }
     document.addEventListener('mousedown', handler, { passive: true })
     return () => document.removeEventListener('mousedown', handler)
@@ -488,107 +502,113 @@ function PagesDropdown({
     if (e.key === 'Escape') setRenamingId(null)
   }, [commitRename])
 
+  const dropdown = open && dropdownPos ? createPortal(
+    <div
+      ref={dropdownRef}
+      data-testid="pages-dropdown-list"
+      style={{ position: 'fixed', top: dropdownPos.top, left: dropdownPos.left, zIndex: 9999 }}
+      className={cn('w-56', chromeGlassPanelClass(isDark ? 'dark' : 'light'))}
+    >
+      <div className="py-1">
+        {pages.map((page) => {
+          const isActive = page.id === activePageId
+          const isRenaming = renamingId === page.id
+          return (
+            <div
+              key={page.id}
+              data-testid={isActive ? 'page-item-active' : 'page-item'}
+              data-page-id={page.id}
+              className={cn(
+                'group flex items-center gap-1 px-3 py-1.5 cursor-pointer transition-colors',
+                isActive
+                  ? chromeMenuItemClass(isDark ? 'dark' : 'light', { active: true })
+                  : chromeMenuItemClass(isDark ? 'dark' : 'light'),
+              )}
+              onClick={() => { if (!isRenaming) { onSelectPage(page.id); setOpen(false) } }}
+            >
+              {isRenaming ? (
+                <input
+                  autoFocus
+                  value={draftName}
+                  onChange={e => setDraftName(e.target.value)}
+                  onBlur={commitRename}
+                  onKeyDown={handleRenameKey}
+                  onClick={e => e.stopPropagation()}
+                  className="flex-1 min-w-0 bg-transparent border-none outline-none text-xs font-semibold"
+                />
+              ) : (
+                <span className="flex-1 min-w-0 truncate text-xs font-semibold" title={page.name}>
+                  {page.name}
+                </span>
+              )}
+              {/* Action buttons — only shown on hover, fixed width so they don't cause layout shift */}
+              {!isRenaming && (
+                <span className="flex items-center gap-0.5 shrink-0 opacity-0 group-hover:opacity-100 transition-opacity">
+                  <button
+                    type="button"
+                    data-testid="page-rename-button"
+                    aria-label={`Rename ${page.name}`}
+                    onClick={e => startRename(page.id, page.name, e)}
+                    className={cn(
+                      'inline-flex h-5 w-5 items-center justify-center rounded-md transition-colors',
+                      'text-ui-ink-muted hover:text-ui-ink-soft hover:bg-ui-surface-hover dark:hover:text-ui-ink-strong',
+                    )}
+                  >
+                    <PencilSimple className="w-3 h-3" />
+                  </button>
+                  {pages.length > 1 && (
+                    <button
+                      type="button"
+                      data-testid="page-delete-button"
+                      aria-label={`Delete ${page.name}`}
+                      onClick={e => { e.stopPropagation(); onDeletePage(page.id) }}
+                      className={cn(
+                        'inline-flex h-5 w-5 items-center justify-center rounded-md transition-colors',
+                        'text-ui-ink-muted hover:text-ui-danger hover:bg-ui-surface-hover dark:hover:text-ui-danger',
+                      )}
+                    >
+                      <X weight="bold" className="w-3 h-3" />
+                    </button>
+                  )}
+                </span>
+              )}
+            </div>
+          )
+        })}
+        <div className={cn('mx-2 my-1 h-px', chromeDividerClass())} />
+        <button
+          data-testid="page-add-button"
+          onClick={() => { captureEvent('page_added'); onAddPage(); setOpen(false) }}
+          className={cn(
+            'flex items-center gap-1.5 w-full px-3 py-1.5 text-xs cursor-pointer transition-colors',
+            chromeMenuItemClass(isDark ? 'dark' : 'light', { muted: true }),
+          )}
+        >
+          <Plus className="w-3 h-3" /> New page
+        </button>
+      </div>
+    </div>,
+    document.body
+  ) : null
+
   return (
-    <div ref={ref} className="relative flex-1 min-w-0">
+    <div className="flex-1 min-w-0">
       <button
+        ref={triggerRef}
         data-testid="pages-dropdown-trigger"
         onClick={() => setOpen(o => !o)}
         className={cn(
-          'flex items-center gap-1 h-6 px-2 rounded-lg text-xs font-medium cursor-pointer transition-colors w-full',
+          'flex items-center gap-1 h-6 px-2 rounded-lg text-xs font-medium cursor-pointer transition-colors w-full min-w-0',
           'hover:bg-ui-surface-hover text-ui-ink-soft dark:text-ui-ink-strong',
           open && 'bg-ui-surface-hover',
         )}
       >
-        <span className="truncate">{activePage?.name ?? 'Untitled'}</span>
-        <CaretDown className={cn('w-3 h-3 text-muted-foreground transition-transform', open && 'rotate-180')} />
+        <span className="flex-1 min-w-0 truncate text-left" title={activePage?.name}>
+          {activePage?.name ?? 'Untitled'}
+        </span>
+        <CaretDown className={cn('w-3 h-3 shrink-0 text-muted-foreground transition-transform', open && 'rotate-180')} />
       </button>
-
-      {open && (
-        <div
-          data-testid="pages-dropdown-list"
-          className={cn(
-          'absolute top-full mt-2 z-50 min-w-[200px] max-w-[calc(100vw-2rem)] left-0 right-auto',
-          chromeGlassPanelClass(isDark ? 'dark' : 'light'),
-        )}>
-          <div className="py-1">
-            {pages.map((page) => {
-              const isActive = page.id === activePageId
-              const isRenaming = renamingId === page.id
-              return (
-                <div
-                  key={page.id}
-                  data-testid={isActive ? 'page-item-active' : 'page-item'}
-                  data-page-id={page.id}
-                  className={cn(
-                    'group px-3 py-1.5 cursor-pointer transition-colors',
-                    isActive
-                      ? chromeMenuItemClass(isDark ? 'dark' : 'light', { active: true })
-                      : chromeMenuItemClass(isDark ? 'dark' : 'light'),
-                  )}
-                  onClick={() => { if (!isRenaming) { onSelectPage(page.id); setOpen(false) } }}
-                >
-                  <div className="flex items-center gap-2">
-                    {isRenaming ? (
-                      <input
-                        autoFocus
-                        value={draftName}
-                        onChange={e => setDraftName(e.target.value)}
-                        onBlur={commitRename}
-                        onKeyDown={handleRenameKey}
-                        onClick={e => e.stopPropagation()}
-                        className="flex-1 bg-transparent border-none outline-none text-xs font-semibold min-w-0"
-                      />
-                    ) : (
-                      <span className="flex-1 truncate text-xs font-semibold" title={page.name}>
-                        {page.name}
-                      </span>
-                    )}
-                    {!isRenaming && (
-                      <button
-                        type="button"
-                        data-testid="page-rename-button"
-                        aria-label={`Rename ${page.name}`}
-                        onClick={e => startRename(page.id, page.name, e)}
-                        className={cn(
-                          'opacity-0 group-hover:opacity-100 inline-flex h-5 w-5 items-center justify-center rounded-md transition-all',
-                          'text-ui-ink-muted hover:text-ui-ink-soft hover:bg-ui-surface-hover dark:hover:text-ui-ink-strong',
-                        )}
-                      >
-                        <PencilSimple className="w-3 h-3" />
-                      </button>
-                    )}
-                    {!isRenaming && pages.length > 1 && (
-                      <button
-                        type="button"
-                        data-testid="page-delete-button"
-                        aria-label={`Delete ${page.name}`}
-                        onClick={e => { e.stopPropagation(); onDeletePage(page.id) }}
-                        className={cn(
-                          'opacity-0 group-hover:opacity-100 inline-flex h-5 w-5 items-center justify-center rounded-md transition-all',
-                          'text-ui-ink-muted hover:text-ui-danger hover:bg-ui-surface-hover dark:hover:text-ui-danger',
-                        )}
-                      >
-                        <X weight="bold" className="w-3 h-3" />
-                      </button>
-                    )}
-                  </div>
-                </div>
-              )
-            })}
-            <div className={cn('mx-2 my-1 h-px', chromeDividerClass())} />
-            <button
-              data-testid="page-add-button"
-              onClick={() => { captureEvent('page_added'); onAddPage(); setOpen(false) }}
-              className={cn(
-                'flex items-center gap-1.5 w-full px-3 py-1.5 text-xs cursor-pointer transition-colors',
-                chromeMenuItemClass(isDark ? 'dark' : 'light', { muted: true }),
-              )}
-            >
-              <Plus className="w-3 h-3" /> New page
-            </button>
-          </div>
-        </div>
-      )}
+      {dropdown}
     </div>
   )
 }

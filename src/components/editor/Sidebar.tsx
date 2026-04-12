@@ -240,55 +240,55 @@ export function Sidebar({
 
       {/* Title bar */}
       <div data-testid="editor-header" className="flex items-center gap-1 px-2 py-1.5 border-b border-border/40 shrink-0">
+        {/* Name area — truncates so action buttons never get pushed off screen */}
         <div className="min-w-0 flex-1 px-1 flex items-center gap-2 overflow-hidden">
           <span className="text-[11px] font-semibold tracking-wide uppercase text-ui-ink-muted shrink-0">
             Editor
           </span>
           <span className="text-ui-ink-faint shrink-0">•</span>
-          <span className="text-sm font-medium text-foreground truncate">
+          <span className="min-w-0 truncate text-sm font-medium text-foreground" title={diagram?.name ?? 'Diagram'}>
             {diagram?.name ?? 'Diagram'}
           </span>
         </div>
 
-        {/* Error indicator */}
-        {error && (
-          <div className="flex items-center gap-1 mr-0.5">
-            <WarningCircle className={cn('w-3 h-3', chromeStatusClass('danger'))} />
-          </div>
-        )}
+        {/* Right-side actions — always shrink-0 so they're never displaced */}
+        <div className="flex items-center gap-0.5 shrink-0">
+          {/* Error indicator */}
+          {error && (
+            <WarningCircle className={cn('w-3 h-3 mr-0.5', chromeStatusClass('danger'))} />
+          )}
 
-        <div className="ml-auto" />
+          {/* Copy code */}
+          {code.trim() !== '' && (
+            <Button
+              data-testid="copy-code-button"
+              variant="ghost"
+              size="icon-sm"
+              aria-label={codeCopied ? 'Code copied' : 'Copy code'}
+              title={codeCopied ? 'Copied!' : 'Copy code'}
+              onClick={() => {
+                navigator.clipboard.writeText(code)
+                setCodeCopied(true)
+                if (copyTimerRef.current) clearTimeout(copyTimerRef.current)
+                copyTimerRef.current = setTimeout(() => setCodeCopied(false), 1500)
+              }}
+              className={cn('rounded-lg', codeCopied ? chromeStatusClass('success') : 'text-muted-foreground hover:text-foreground')}
+            >
+              {codeCopied ? <Check className="w-3.5 h-3.5" /> : <CopySimple className="w-3.5 h-3.5" />}
+            </Button>
+          )}
 
-        {/* Copy code */}
-        {code.trim() !== '' && (
           <Button
-            data-testid="copy-code-button"
             variant="ghost"
             size="icon-sm"
-            aria-label={codeCopied ? 'Code copied' : 'Copy code'}
-            title={codeCopied ? 'Copied!' : 'Copy code'}
-            onClick={() => {
-              navigator.clipboard.writeText(code)
-              setCodeCopied(true)
-              if (copyTimerRef.current) clearTimeout(copyTimerRef.current)
-              copyTimerRef.current = setTimeout(() => setCodeCopied(false), 1500)
-            }}
-            className={cn('shrink-0 rounded-lg', codeCopied ? chromeStatusClass('success') : 'text-muted-foreground hover:text-foreground')}
+            aria-label={collapsed ? 'Expand editor panel' : 'Collapse editor panel'}
+            title={collapsed ? 'Expand' : 'Collapse'}
+            onClick={toggleCollapsed}
+            className="rounded-lg"
           >
-            {codeCopied ? <Check className="w-3.5 h-3.5" /> : <CopySimple className="w-3.5 h-3.5" />}
+            {collapsed ? <CaretUp className="w-3.5 h-3.5" /> : <CaretDown className="w-3.5 h-3.5" />}
           </Button>
-        )}
-
-        <Button
-          variant="ghost"
-          size="icon-sm"
-          aria-label={collapsed ? 'Expand editor panel' : 'Collapse editor panel'}
-          title={collapsed ? 'Expand' : 'Collapse'}
-          onClick={toggleCollapsed}
-          className="shrink-0 rounded-lg"
-        >
-          {collapsed ? <CaretUp className="w-3.5 h-3.5" /> : <CaretDown className="w-3.5 h-3.5" />}
-        </Button>
+        </div>
       </div>
 
       {!collapsed && (
