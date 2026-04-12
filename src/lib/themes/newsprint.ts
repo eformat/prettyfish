@@ -5,9 +5,10 @@ const newsprint: ThemePresetDef = {
   description: 'Editorial serif palette inspired by quality broadsheets',
   configOverrides: {
     look: 'classic' as const,
-    // Newsprint: high-contrast editorial serif — Playfair Display reads like a newspaper headline.
-    // Roboto Condensed for body text gives the dense, ink-efficient newspaper column feel.
-    fontFamily: '"Playfair Display", "Georgia", serif',
+    // Newsprint: Newsreader was designed specifically by Google for editorial/news reading.
+    // High contrast, narrow proportions, optical sizing — genuinely newspaper-ish.
+    // Unlike Playfair Display, it's not overused and reads better at small sizes.
+    fontFamily: '"Newsreader", "Georgia", serif',
     fontSize: 14,
     flowchart: { curve: 'monotoneX' as const, nodeSpacing: 55, rankSpacing: 58, padding: 18, diagramPadding: 12 },
     sequence: { showSequenceNumbers: false, mirrorActors: false, actorMargin: 55, messageMargin: 36, width: 155 },
@@ -27,7 +28,7 @@ const newsprint: ThemePresetDef = {
       tertiaryBorderColor: '#b0a898',
       lineColor: '#4a4540',
       titleColor: '#1a1a1a',
-      fontFamily: '"Playfair Display", "Georgia", serif',
+      fontFamily: '"Newsreader", "Georgia", serif',
     },
     flowchart: {
       mainBkg: '#f0ece4',
