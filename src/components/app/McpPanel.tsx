@@ -28,7 +28,7 @@ function CopyBtn({ value, label }: { value: string; label?: string }) {
         if (!value) return
         await navigator.clipboard.writeText(value)
         setCopied(true)
-        captureEvent('mcp_config_copied', { tab: label ?? 'unknown' })
+        captureEvent('mcp_config_copied', { target: label ?? 'unknown' })
         window.setTimeout(() => setCopied(false), 1500)
       }}
       title={copied ? 'Copied!' : 'Copy'}
@@ -157,7 +157,11 @@ export function McpPanel({ open, onClose, remoteRelay, webMcpSupported = false, 
 
   return (
     <>
-      <div className="absolute inset-0 z-40" onClick={onClose} aria-hidden="true" />
+      <div
+        className="absolute inset-0 z-40"
+        onClick={() => { captureEvent('mcp_panel_closed', { method: 'backdrop' }); onClose() }}
+        aria-hidden="true"
+      />
 
       <div
         ref={panelRef}
@@ -186,7 +190,7 @@ export function McpPanel({ open, onClose, remoteRelay, webMcpSupported = false, 
           </div>
           <button
             type="button"
-            onClick={onClose}
+            onClick={() => { captureEvent('mcp_panel_closed', { method: 'button' }); onClose() }}
             className="rounded-md p-0.5 text-muted-foreground hover:bg-muted hover:text-foreground transition-colors shrink-0"
             aria-label="Close"
           >
@@ -256,15 +260,32 @@ export function McpPanel({ open, onClose, remoteRelay, webMcpSupported = false, 
                   )}
                 </div>
                 <div className="flex items-center gap-1 shrink-0">
+                  {isConnected && !isBusy && (
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      className="h-6 w-6 p-0"
+                      onClick={() => { captureEvent('mcp_session_resync'); void remoteRelay.connect() }}
+                      title="Refresh connection"
+                    >
+                      <ArrowsClockwise className="h-3 w-3" />
+                    </Button>
+                  )}
                   {!isConnected && !isBusy && (
-                    <Button size="sm" variant="ghost" className="h-6 w-6 p-0" onClick={() => { captureEvent('mcp_session_reconnect'); void remoteRelay.connect() }} title="Reconnect">
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      className="h-6 w-6 p-0"
+                      onClick={() => { captureEvent('mcp_session_reconnect'); void remoteRelay.connect() }}
+                      title="Reconnect"
+                    >
                       <ArrowsClockwise className="h-3 w-3" />
                     </Button>
                   )}
                   <Button size="sm" variant="outline" className="h-6 px-2 text-[11px]" onClick={() => { captureEvent('mcp_session_new'); void remoteRelay.createHostedSession() }} disabled={isBusy}>
                     New session
                   </Button>
-                </div>
+                </div> 
               </div>
 
               <div className="h-px bg-border" />
@@ -314,7 +335,7 @@ export function McpPanel({ open, onClose, remoteRelay, webMcpSupported = false, 
                     <p className="text-[10px] text-muted-foreground">
                       Run this command to auto-configure Claude Code, Cursor, VS Code, Codex, and more.
                     </p>
-                    <CopyBtn value={addMcpCmd} label="Copy" />
+                    <CopyBtn value={addMcpCmd} label="install_command" />
                   </div>
                   <div className="rounded-lg px-3 py-2 bg-[#0d1117] dark:bg-[#0d1117]">
                     <code className="whitespace-pre-wrap break-all font-mono text-[11px] leading-relaxed">
@@ -332,7 +353,7 @@ export function McpPanel({ open, onClose, remoteRelay, webMcpSupported = false, 
                     <p className="text-[10px] text-muted-foreground">
                       Paste into your MCP client config file.
                     </p>
-                    <CopyBtn value={configSnippet} label="Copy" />
+                    <CopyBtn value={configSnippet} label="config_snippet" />
                   </div>
                   <div className="overflow-hidden rounded-lg border border-black/8 text-[11px] dark:border-white/10">
                     <CodeMirror
@@ -359,7 +380,7 @@ export function McpPanel({ open, onClose, remoteRelay, webMcpSupported = false, 
                     <p className="text-[10px] text-muted-foreground">
                       Paste into any AI chat. No MCP setup needed.
                     </p>
-                    <CopyBtn value={promptText} label="Copy" />
+                    <CopyBtn value={promptText} label="prompt_text" />
                   </div>
                   <div className="max-h-48 overflow-hidden rounded-lg border border-black/8 text-[11px] dark:border-white/10">
                     <CodeMirror
