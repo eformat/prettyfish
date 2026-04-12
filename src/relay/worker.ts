@@ -1,3 +1,6 @@
+import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js'
+import { WebStandardStreamableHTTPServerTransport } from '@modelcontextprotocol/sdk/server/webStandardStreamableHttp.js'
+import { z } from 'zod'
 import {
   type PublicRelaySessionResponse,
   type RelayEnvelope,
@@ -33,21 +36,12 @@ interface DurableObjectStateLike {
   setHibernatableWebSocketEventTimeout: (timeout?: number) => void
 }
 
-interface JsonRpcRequest {
-  jsonrpc?: '2.0'
-  id?: string | number | null
-  method: string
-  params?: Record<string, unknown>
-}
 
 interface JsonRpcResponse {
   jsonrpc: '2.0'
   id: string | number | null
   result?: unknown
-  error?: {
-    code: number
-    message: string
-  }
+  error?: { code: number; message: string }
 }
 
 declare const WebSocketPair: {
@@ -69,8 +63,6 @@ export interface RelayWorkerEnv {
 }
 
 const SESSION_KEY = 'relay-session-record'
-const MCP_PROTOCOL_VERSION = '2025-03-26'
-const MCP_SERVER_INFO = { name: 'prettyfish-remote-relay', version: '0.1.0' }
 const PUBLIC_ORIGIN_PATTERNS = [
   /^https:\/\/pretty\.fish$/,
   /^https:\/\/www\.pretty\.fish$/,
@@ -78,19 +70,6 @@ const PUBLIC_ORIGIN_PATTERNS = [
   /^http:\/\/localhost:\d+$/,
   /^http:\/\/127\.0\.0\.1:\d+$/,
 ]
-const MCP_TOOL_DEFINITIONS = [
-  { name: 'session_info', description: 'Return the current relay session details.', inputSchema: { type: 'object', properties: {} } },
-  { name: 'list_diagrams', description: 'List all diagrams on the current page. Returns each diagram\'s ID and name. Use include_code to also return the Mermaid source.', inputSchema: { type: 'object', properties: { include_code: { type: 'boolean', description: 'Include Mermaid source code for each diagram. Defaults to false.' } } } },
-  { name: 'get_diagram', description: 'Get a single diagram by ID or name. Returns the diagram\'s details and Mermaid source code. If not found, suggests using list_diagrams.', inputSchema: { type: 'object', properties: { diagramId: { type: 'string', description: 'Diagram ID (exact match).' }, name: { type: 'string', description: 'Diagram name (case-insensitive fuzzy match).' } } } },
-  { name: 'list_diagram_types', description: 'List all supported Mermaid diagram types (flowchart, sequence, class, ER, etc.).', inputSchema: { type: 'object', properties: {} } },
-  { name: 'get_diagram_reference', description: 'Get the full syntax reference for a Mermaid diagram type, including all elements and examples. Call this before writing diagram code to ensure correct syntax.', inputSchema: { type: 'object', properties: { type: { type: 'string', description: 'Diagram type ID (e.g. "flowchart", "sequence", "classDiagram"). Use list_diagram_types to see all.' } }, required: ['type'] } },
-  { name: 'list_themes', description: 'List all available themes for diagrams (builtin and custom).', inputSchema: { type: 'object', properties: {} } },
-  { name: 'set_theme', description: 'Set the theme of an existing diagram. Use list_themes to see available themes.', inputSchema: { type: 'object', properties: { diagramId: { type: 'string' }, theme: { type: 'string', description: 'Theme ID (e.g. "blueprint", "dark", "neon"). Use list_themes to see all.' } }, required: ['theme'] } },
-  { name: 'create_diagram', description: 'Create a new Mermaid diagram on the current page and wait for it to render. Returns render status and any syntax errors — if render.status is "error", fix the Mermaid syntax and call set_diagram_code with the corrected code. Always provide a short, descriptive name based on the diagram content.', inputSchema: { type: 'object', properties: { name: { type: 'string', description: 'A short descriptive name for the diagram (e.g. "User Auth Flow", "DB Schema").' }, description: { type: 'string', description: 'Optional short caption (8–10 words max) describing what the diagram shows. Displayed below the diagram.' }, code: { type: 'string', description: 'Mermaid diagram source code.' }, width: { type: 'number' }, theme: { type: 'string', description: 'Optional theme ID (e.g. "blueprint", "neon"). Defaults to page theme if not set.' } } } },
-  { name: 'set_diagram_code', description: 'Replace a diagram\'s Mermaid source code and wait for render. Returns render status and any syntax errors in render.error — if render.status is "error", the code has a syntax problem that must be fixed.', inputSchema: { type: 'object', properties: { diagramId: { type: 'string' }, code: { type: 'string' }, timeoutMs: { type: 'number' }, select: { type: 'boolean' } }, required: ['diagramId', 'code'] } },
-  { name: 'export_svg', description: 'Export a diagram as SVG.', inputSchema: { type: 'object', properties: { diagramId: { type: 'string' }, timeoutMs: { type: 'number' } } } },
-  { name: 'export_png', description: 'Export a diagram as PNG.', inputSchema: { type: 'object', properties: { diagramId: { type: 'string' }, background: { type: 'string' }, scale: { type: 'number' }, timeoutMs: { type: 'number' } } } },
-] as const
 
 function normalizeOrigin(origin: string | null): string | null {
   if (!origin) return null
@@ -185,17 +164,6 @@ function requireBootstrapAuth(request: Request, env: RelayWorkerEnv): Response |
   return null
 }
 
-function textResult(payload: unknown, isError = false) {
-  return {
-    content: [
-      {
-        type: 'text',
-        text: typeof payload === 'string' ? payload : JSON.stringify(payload),
-      },
-    ],
-    isError,
-  }
-}
 
 /** HMAC-SHA256(key, message) → hex — Cloudflare Workers Web Crypto */
 async function hmacSign(key: string, message: string): Promise<string> {
@@ -484,112 +452,110 @@ export class RelaySessionDurableObject {
 
   // ── MCP request handler ────────────────────────────────────────────────────
 
-  private async handleMcpRequest(request: JsonRpcRequest): Promise<JsonRpcResponse> {
-    const session = await this.ensureSessionLoaded()
-    const id = request.id ?? null
+  // ── MCP SDK setup ──────────────────────────────────────────────────────────
+  private mcpServer: McpServer | null = null
 
-    if (request.method === 'initialize') {
-      return {
-        jsonrpc: '2.0',
-        id,
-        result: {
-          protocolVersion: MCP_PROTOCOL_VERSION,
-          capabilities: { tools: { listChanged: false } },
-          serverInfo: MCP_SERVER_INFO,
-          instructions: 'Use this server to drive Pretty Fish through the hosted relay.',
-        },
-      }
+  private getMcpServer(): McpServer {
+    if (this.mcpServer) return this.mcpServer
+
+    const server = new McpServer({
+      name: 'prettyfish',
+      version: '1.0.0',
+    })
+
+    // Helper: send command to browser and wrap result as MCP text content
+    const cmd = async (toolName: string, args: Record<string, unknown> = {}, timeoutMs?: number) => {
+      const result = await this.sendCommandToBrowser(toolName, args, timeoutMs)
+      return { content: [{ type: 'text' as const, text: JSON.stringify(result) }] }
     }
 
-    if (request.method === 'notifications/initialized' || request.method === 'ping') {
-      return { jsonrpc: '2.0', id, result: {} }
-    }
+    server.tool('list_diagrams', 'List all diagrams across all pages in the current workspace.', {},
+      async () => cmd('list_diagrams'),
+    )
 
-    if (request.method === 'tools/list') {
-      return { jsonrpc: '2.0', id, result: { tools: MCP_TOOL_DEFINITIONS } }
-    }
+    server.tool('get_diagram', 'Get the current Mermaid source code and metadata for a specific diagram.',
+      { diagramId: z.string().describe('The diagram ID to retrieve.') },
+      async (args) => cmd('get_diagram', args),
+    )
 
-    if (request.method === 'tools/call') {
-      const toolName = typeof request.params?.name === 'string' ? request.params.name : ''
-      const args = (request.params?.arguments && typeof request.params.arguments === 'object')
-        ? request.params.arguments as Record<string, unknown>
-        : {}
+    server.tool(
+      'create_diagram',
+      'Create a new Mermaid diagram on the current page and wait for it to render. Returns render status and any syntax errors — if render.status is "error", fix the Mermaid syntax and call set_diagram_code with the corrected code. Always provide a short, descriptive name based on the diagram content.',
+      {
+        name: z.string().optional().describe('A short descriptive name for the diagram (e.g. "User Auth Flow", "DB Schema").'),
+        description: z.string().optional().describe('Optional short caption (8–10 words max) describing what the diagram shows. Displayed below the diagram.'),
+        code: z.string().optional().describe('Mermaid diagram source code.'),
+        width: z.number().optional(),
+        theme: z.string().optional().describe('Optional theme ID (e.g. "blueprint", "neon"). Defaults to page theme if not set.'),
+      },
+      async (args) => cmd('create_diagram', args),
+    )
 
-      try {
-        switch (toolName) {
-          case 'session_info':
-            return {
-              jsonrpc: '2.0',
-              id,
-              result: textResult({
-                sessionId: session?.sessionId ?? null,
-                browserAttached: Boolean(this.getBrowserSocket()?.readyState === WebSocket.OPEN),
-              }),
-            }
-          case 'list_diagrams':
-          case 'get_diagram':
-          case 'list_diagram_types':
-          case 'get_diagram_reference':
-          case 'list_themes':
-          case 'set_theme':
-          case 'create_diagram': {
-            const payload = await this.sendCommandToBrowser(toolName, args)
-            return { jsonrpc: '2.0', id, result: textResult(payload) }
-          }
-          case 'set_diagram_code':
-          case 'export_svg':
-          case 'export_png': {
-            const timeoutMs = typeof args.timeoutMs === 'number' ? args.timeoutMs + 2_000 : 22_000
-            const payload = await this.sendCommandToBrowser(toolName, args, timeoutMs)
-            if (toolName === 'export_png' && payload && typeof payload === 'object' && 'data' in payload) {
-              const pngPayload = payload as { data?: string; fileName?: string; diagram?: unknown; mimeType?: string }
-              return {
-                jsonrpc: '2.0',
-                id,
-                result: {
-                  content: [
-                    {
-                      type: 'text',
-                      text: JSON.stringify({
-                        fileName: pngPayload.fileName,
-                        diagram: pngPayload.diagram,
-                        mimeType: pngPayload.mimeType,
-                      }),
-                    },
-                    {
-                      type: 'image',
-                      data: pngPayload.data ?? '',
-                      mimeType: pngPayload.mimeType || 'image/png',
-                    },
-                  ],
-                  isError: false,
-                },
-              }
-            }
-            return { jsonrpc: '2.0', id, result: textResult(payload) }
-          }
-          default:
-            return {
-              jsonrpc: '2.0',
-              id,
-              error: { code: -32601, message: `Unknown tool: ${toolName}` },
-            }
+    server.tool(
+      'set_diagram_code',
+      "Replace a diagram's Mermaid source code and wait for render. Returns render status and any syntax errors in render.error — if render.status is \"error\", the code has a syntax problem that must be fixed.",
+      { diagramId: z.string(), code: z.string(), timeoutMs: z.number().optional(), select: z.boolean().optional() },
+      async ({ diagramId, code, timeoutMs, select }) => {
+        const resolvedTimeout = typeof timeoutMs === 'number' ? timeoutMs + 2_000 : 22_000
+        return cmd('set_diagram_code', { diagramId, code, timeoutMs, select }, resolvedTimeout)
+      },
+    )
+
+    server.tool('set_diagram_theme', 'Change the visual theme of a specific diagram.',
+      { diagramId: z.string(), theme: z.string().describe('Theme ID (e.g. "blueprint", "neon", "wireframe", "rosepine", "brutalist").') },
+      async (args) => cmd('set_theme', args),
+    )
+
+    server.tool('export_png', 'Export a diagram as a PNG image and return it as base64.',
+      { diagramId: z.string() },
+      async ({ diagramId }) => {
+        const result = await this.sendCommandToBrowser('export_png', { diagramId }, 22_000) as {
+          fileName?: string; diagram?: string; mimeType?: string
         }
-      } catch (error) {
+        if (!result?.diagram) {
+          return { content: [{ type: 'text' as const, text: JSON.stringify(result) }], isError: true }
+        }
         return {
-          jsonrpc: '2.0',
-          id,
-          result: textResult(error instanceof Error ? error.message : 'Tool call failed', true),
+          content: [
+            { type: 'text' as const, text: JSON.stringify({ fileName: result.fileName, mimeType: result.mimeType }) },
+            { type: 'image' as const, data: result.diagram, mimeType: (result.mimeType || 'image/png') as 'image/png' },
+          ],
         }
-      }
-    }
+      },
+    )
 
-    return {
-      jsonrpc: '2.0',
-      id,
-      error: { code: -32601, message: `Method not found: ${request.method}` },
-    }
+    server.tool('delete_diagram', 'Delete a diagram by ID.',
+      { diagramId: z.string() },
+      async (args) => cmd('delete_diagram', args),
+    )
+
+    server.tool('select_diagram', 'Bring a specific diagram into focus/view.',
+      { diagramId: z.string() },
+      async (args) => cmd('select_diagram', args),
+    )
+
+    server.tool('list_themes', 'List all available visual themes.',
+      {},
+      async () => cmd('list_themes'),
+    )
+
+    server.tool('session_info', 'Get current relay session info and browser attachment status.',
+      {},
+      async () => {
+        const session = await this.ensureSessionLoaded()
+        return {
+          content: [{ type: 'text' as const, text: JSON.stringify({
+            sessionId: session?.sessionId ?? null,
+            browserAttached: this.getBrowserSocket()?.readyState === WebSocket.OPEN,
+          }) }],
+        }
+      },
+    )
+
+    this.mcpServer = server
+    return server
   }
+
 
   // ── fetch ──────────────────────────────────────────────────────────────────
 
@@ -643,72 +609,23 @@ export class RelaySessionDurableObject {
       } as ResponseInit & { webSocket: WebSocket })
     }
 
-    if (request.method === 'POST' && url.pathname === '/mcp') {
-      let body: JsonRpcRequest
-      try {
-        body = await request.json() as JsonRpcRequest
-      } catch {
-        return jsonResponse({
-          jsonrpc: '2.0',
-          id: null,
-          error: { code: -32700, message: 'Parse error' },
-        }, 400)
-      }
-
-      // MCP Streamable HTTP spec §6.1:
-      // Notifications (id absent or method starts with 'notifications/') MUST be
-      // acknowledged with 202 Accepted and an empty body — NOT a JSON-RPC response.
-      // Sending any body confuses MCP clients (rmcp, etc.) during the handshake.
-      const isNotification = body.id == null || (typeof body.method === 'string' && body.method.startsWith('notifications/'))
-      if (isNotification) {
-        // Still process the notification (e.g. store initialized state) but don't respond
-        await this.handleMcpRequest(body).catch(() => {})
-        return new Response(null, { status: 202 })
-      }
-
-      const result = await this.handleMcpRequest(body)
-      const accept = request.headers.get('accept') || ''
-
-      // MCP Streamable HTTP: if client accepts SSE, wrap response as SSE event stream.
-      // We send a single event then close — Worker becomes idle immediately (no duration charge).
-      if (accept.includes('text/event-stream')) {
-        const sseData = `data: ${JSON.stringify(result)}\n\n`
-        return new Response(sseData, {
-          status: 200,
-          headers: {
-            'content-type': 'text/event-stream',
-            'cache-control': 'no-cache',
-          },
-        })
-      }
-
-      return jsonResponse(result)
-    }
-
-    // SSE GET endpoint — required by MCP Streamable HTTP spec for server-initiated messages.
-    // We close the stream immediately after the initial comment:
-    // - Per the 2022 Cloudflare optimization, the Worker becomes idle as soon as response
-    //   headers are sent and the body is a passthrough stream — so we don't incur duration
-    //   charges for the time the client holds the SSE connection open.
-    // - MCP clients that rely on server-push will retry the SSE connection as needed.
-    if (request.method === 'GET' && url.pathname === '/mcp/sse') {
-      const encoder = new TextEncoder()
-      const stream = new ReadableStream({
-        start(controller) {
-          // Send initial comment to establish the SSE handshake, then close.
-          // Worker becomes idle immediately after headers are flushed — no duration charges.
-          controller.enqueue(encoder.encode(': connected\n\n'))
-          controller.close()
-        },
+    // ── MCP Streamable HTTP (all methods handled by SDK) ─────────────────────
+    if (url.pathname === '/mcp' || url.pathname === '/mcp/sse') {
+      const mcpServer = this.getMcpServer()
+      const transport = new WebStandardStreamableHTTPServerTransport({
+        // stateless mode per request — DO handles state persistence
+        sessionIdGenerator: undefined,
+        enableJsonResponse: false,
       })
-      return new Response(stream, {
-        status: 200,
-        headers: {
-          'content-type': 'text/event-stream',
-          'cache-control': 'no-cache',
-          'connection': 'keep-alive',
-        },
-      })
+      await mcpServer.connect(transport)
+      // Re-write the URL to /mcp for the SDK (it expects a single endpoint)
+      const mcpRequest = url.pathname === '/mcp/sse'
+        ? new Request(request.url.replace('/mcp/sse', '/mcp'), { method: 'GET', headers: request.headers })
+        : request
+      const response = await transport.handleRequest(mcpRequest)
+      // Disconnect transport after each request (stateless mode)
+      await transport.close()
+      return response
     }
 
     return jsonResponse({ error: 'Not found' }, 404)
