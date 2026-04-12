@@ -204,8 +204,10 @@ async function connectPeer(request: Request, env: RelayWorkerEnv, sessionId: str
   // Rebuilding from raw headers can lead to a half-open handshake where frames arrive
   // but the browser never reaches a stable OPEN state.
   const doRequest = new Request(doUrl, request)
+  console.log('[relay] connectPeer', JSON.stringify({ sessionId, role, reqUrl: request.url, doUrl }))
   return stub.fetch(doRequest)
-} 
+}
+ 
 
 export async function handleRelayRequest(request: Request, env: RelayWorkerEnv): Promise<Response> {
   const url = new URL(request.url)
@@ -436,6 +438,7 @@ export class RelaySessionDurableObject {
       // Cloudflare strips the Upgrade header on this internal hop, so we do NOT
       // re-check it here. The main Worker has already verified it was a WS upgrade.
       const role = connectMatch[1] as RelayPeerRole
+      console.log('[relay-do] connect', JSON.stringify({ role, path: url.pathname, token: url.searchParams.get('token') ? 'present' : 'missing' }))
 
       // NOTE: Because this route is exclusively used for WS attach after the main
       // worker validated the upgrade, returning 101 here is safe and correct.
@@ -453,6 +456,7 @@ export class RelaySessionDurableObject {
       // Return the 101 upgrade response first, then send the initial hello on the
       // next turn. Sending immediately during attach can produce a half-open state
       // where the browser receives a frame but never reaches stable OPEN.
+      console.log('[relay-do] accepted websocket', JSON.stringify({ role, sessionId: session.sessionId }))
       const response = new Response(null, {
         status: 101,
         // @ts-expect-error Cloudflare-specific
@@ -479,8 +483,11 @@ export class RelaySessionDurableObject {
       const mcpServer = this.createMcpServer()
       const transport = new WebStandardStreamableHTTPServerTransport({
         sessionIdGenerator: undefined,
-        enableJsonResponse: false,
-      })
+        // For one-shot POST requests like initialize and tools/call, return a concrete
+        // JSON body instead of an empty SSE stream. This is required by clients like
+        // Codex/rmcp that expect an initialize result body on the transport response.
+        enableJsonResponse: true,
+      }) 
       await mcpServer.connect(transport)
       const mcpRequest = url.pathname === '/mcp/sse'
         ? new Request(request.url.replace('/mcp/sse', '/mcp'), { method: 'GET', headers: request.headers })
