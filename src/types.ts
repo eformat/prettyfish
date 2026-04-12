@@ -1,6 +1,6 @@
 export type AppMode = 'light' | 'dark'
 export type MermaidBuiltinTheme = 'default' | 'neutral' | 'dark' | 'forest' | 'base'
-export type MermaidTheme = MermaidBuiltinTheme | 'wireframe' | 'corporate' | 'amethyst' | 'neon' | 'blueprint' | 'newsprint' | 'dataviz' | 'evergreen' | 'rosepine' | 'bauhaus' | 'terracotta' | 'midnight' | 'ocean'
+export type MermaidTheme = MermaidBuiltinTheme | 'wireframe' | 'corporate' | 'amethyst' | 'neon' | 'blueprint' | 'newsprint' | 'dataviz' | 'evergreen' | 'rosepine' | 'bauhaus' | 'terracotta' | 'midnight' | 'ocean' | 'brutalist'
 
 export type DiagramConfigOverrides = {
   [K in keyof DiagramConfig]?: DiagramConfig[K] extends object ? Partial<DiagramConfig[K]> : DiagramConfig[K]
@@ -81,6 +81,7 @@ export const MERMAID_THEMES: { value: MermaidTheme; label: string; group: 'built
   { value: 'blueprint', label: 'Blueprint', group: 'custom' },
   { value: 'newsprint', label: 'Newsprint', group: 'custom' },
   { value: 'rosepine', label: 'Rosé Pine', group: 'custom' },
+  { value: 'brutalist', label: 'Brutalist', group: 'custom' },
   // The following themes are disabled and hidden from the UI.
   // They remain in MERMAID_THEMES only for rendering backwards-compatible saved documents.
   // { value: 'amethyst', label: 'Amethyst', group: 'custom' },
