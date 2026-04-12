@@ -57,6 +57,12 @@ declare const WebSocketPair: {
   }
 }
 
+declare class WebSocketRequestResponsePair {
+  constructor(request: string, response: string)
+  getRequest(): string
+  getResponse(): string
+}
+
 export interface RelayWorkerEnv {
   RELAY_SESSIONS: DurableObjectNamespaceLike
   RELAY_BOOTSTRAP_TOKEN: string
