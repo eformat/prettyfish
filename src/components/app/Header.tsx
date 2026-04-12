@@ -108,14 +108,32 @@ interface HeaderProps {
 
 // ── MCP Button ────────────────────────────────────────────────────────────────
 
-function McpButton({ onOpenMcp, mcpConnected }: { onOpenMcp: () => void; mcpConnected: boolean }) {
+function McpButton({ onOpenMcp, mcpConnected, onTripleClick }: { onOpenMcp: () => void; mcpConnected: boolean; onTripleClick?: () => void }) {
+  const clickCountRef = useRef(0)
+  const clickTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+
+  const handleClick = () => {
+    clickCountRef.current += 1
+    if (clickTimerRef.current) clearTimeout(clickTimerRef.current)
+    if (clickCountRef.current >= 3) {
+      clickCountRef.current = 0
+      onTripleClick?.()
+      return
+    }
+    clickTimerRef.current = setTimeout(() => {
+      const count = clickCountRef.current
+      clickCountRef.current = 0
+      if (count === 1) onOpenMcp()
+    }, 300)
+  }
+
   return (
     <div className={chromePillClass()}>
       <ChromeTextButton
         data-testid="open-mcp-button"
         aria-label={mcpConnected ? 'AI Agent Connected — click to manage' : 'Connect AI Agent'}
         title={mcpConnected ? 'AI Agent Connected — click to manage' : 'Connect a local AI agent to create diagrams via MCP'}
-        onClick={onOpenMcp}
+        onClick={handleClick}
         className={cn(mcpConnected && chromeStatusClass('success'))}
       >
         <PlugsConnected className="w-3.5 h-3.5" />
@@ -430,7 +448,16 @@ export function Header({
       {!isMobile && (
         <div className="flex flex-col items-end gap-2 pointer-events-none">
           <div className="pointer-events-auto">
-            <McpButton onOpenMcp={onOpenMcp} mcpConnected={mcpConnected} />
+            <McpButton
+              onOpenMcp={onOpenMcp}
+              mcpConnected={mcpConnected}
+              onTripleClick={onSponsorNudgeDismiss ? () => {
+                // Triple-click: reset nudge state for testing then show it
+                try { localStorage.removeItem('prettyfish:sponsor-nudge') } catch { /* ignore */ }
+                onSponsorNudgeDismiss()
+                setTimeout(() => window.dispatchEvent(new CustomEvent('prettyfish:show-nudge')), 50)
+              } : undefined}
+            />
           </div>
           <SponsorNudge
             visible={showSponsorNudge}

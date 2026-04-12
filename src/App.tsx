@@ -207,6 +207,17 @@ export default function App() {
     root.dataset.theme = mode
   }, [mode])
 
+  // Triple-click on "Connect AI Agent" button shows nudge immediately (for testing)
+  useEffect(() => {
+    const handler = () => {
+      setSponsorNudgeShowCount(0)
+      setSponsorNudgeVisible(true)
+      nudgeTriggeredRef.current = true
+    }
+    window.addEventListener('prettyfish:show-nudge', handler)
+    return () => window.removeEventListener('prettyfish:show-nudge', handler)
+  }, [])
+
   // Trigger sponsor nudge 2s after first successful diagram render
   const hasSvgRef = useRef(false)
   useEffect(() => {
