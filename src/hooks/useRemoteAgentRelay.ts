@@ -10,7 +10,7 @@ import type { AppState } from '@/types'
 // Override via VITE_PRETTYFISH_RELAY_URL for local dev.
 const DEFAULT_RELAY_URL = (
   (import.meta as ImportMeta & { env?: Record<string, string> }).env?.VITE_PRETTYFISH_RELAY_URL
-  || (typeof window !== 'undefined' ? window.location.origin : 'https://pretty.fish')
+  || 'https://mcp.pretty.fish'
 ).replace(/\/$/, '')
 
 // Migrate: clear any stale relay URL previously stored in localStorage
