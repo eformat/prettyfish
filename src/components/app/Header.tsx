@@ -132,13 +132,13 @@ function McpButton({ onOpenMcp, mcpConnected, mcpSessionReady, onTripleClick }: 
     <div className={chromePillClass()}>
       <ChromeTextButton
         data-testid="open-mcp-button"
-        aria-label={mcpConnected ? 'AI Agent Connected — click to manage' : mcpSessionReady ? 'Browser attached — waiting for agent' : 'Connect AI Agent'}
-        title={mcpConnected ? 'AI Agent is connected and active' : mcpSessionReady ? 'Browser is attached — paste the MCP URL into your AI agent' : 'Connect a local AI agent to create diagrams via MCP'}
+        aria-label={mcpConnected ? 'AI Agent Connected — click to manage' : mcpSessionReady ? 'Waiting for agent — paste the MCP URL into your AI agent' : 'Connect AI Agent'}
+        title={mcpConnected ? 'AI Agent is connected and active' : mcpSessionReady ? 'Session open — paste the MCP URL into your AI agent to connect' : 'Connect a local AI agent to create diagrams via MCP'}
         onClick={handleClick}
         className={cn(mcpConnected ? chromeStatusClass('success') : mcpSessionReady ? chromeStatusClass('warning') : '')}
       >
         <PlugsConnected className="w-3.5 h-3.5" />
-        <span className="hidden lg:inline">{mcpConnected ? 'Agent Connected' : mcpSessionReady ? 'Browser Ready' : 'Connect AI Agent'}</span> 
+        <span className="hidden lg:inline">{mcpConnected ? 'Agent Connected' : mcpSessionReady ? 'Waiting for Agent' : 'Connect AI Agent'}</span>
       </ChromeTextButton>
     </div>
   )
