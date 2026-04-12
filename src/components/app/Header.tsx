@@ -506,7 +506,7 @@ function PagesDropdown({
         <div
           data-testid="pages-dropdown-list"
           className={cn(
-          'absolute top-full mt-2 z-50 min-w-[200px] max-w-[calc(100vw-2rem)] overflow-hidden',
+          'absolute top-full mt-2 z-50 min-w-[200px] max-w-[calc(100vw-2rem)]',
           'left-0 right-auto',
           chromeGlassPanelClass(isDark ? 'dark' : 'light'),
         )}>
@@ -637,7 +637,7 @@ function ThemeDropdown({ value, onChange, isDark }: { value: MermaidTheme; onCha
         <div
           data-testid="theme-dropdown-list"
           className={cn(
-          'absolute top-full left-0 mt-2 z-50 min-w-[190px] overflow-hidden',
+          'absolute top-full left-0 mt-2 z-50 min-w-[190px]',
           chromeGlassPanelClass(isDark ? 'dark' : 'light'),
         )}>
           <div className="py-1 max-h-[70vh] overflow-y-auto">

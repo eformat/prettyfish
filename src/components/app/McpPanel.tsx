@@ -50,35 +50,69 @@ function StatusDot({ status }: { status: 'disconnected' | 'connecting' | 'connec
 type TabId = 'install' | 'config' | 'prompt'
 
 function buildPromptText(mcpUrl: string): string {
-  return `You have access to a Mermaid diagram tool via HTTP POST to ${mcpUrl}
+  return `# Pretty Fish: Mermaid Diagram Canvas
 
-Every request is a JSON-RPC call. Format:
-  curl -X POST ${mcpUrl} -H "content-type: application/json" -d '{"jsonrpc":"2.0","id":1,"method":"tools/call","params":{"name":"TOOL","arguments":{...}}}'
+Whenever you need to render a Mermaid diagram, you can create and manage them on the Pretty Fish canvas. Your diagrams will appear live in the user's browser.
 
-Available tools:
+## Endpoint
+\`POST ${mcpUrl}\`
 
-1. create_diagram — Create a new diagram
-   args: { "name": "short title", "code": "flowchart TD; A-->B" }
+All requests use JSON-RPC. Format:
+\`\`\`
+curl -X POST ${mcpUrl} \\
+  -H "content-type: application/json" \\
+  -d '{"jsonrpc":"2.0","id":1,"method":"tools/call","params":{"name":"TOOL","arguments":{...}}}'
+\`\`\`
 
-2. set_diagram_code — Update an existing diagram
-   args: { "diagramId": "id", "code": "new mermaid code" }
+## Tools
 
-3. list_diagrams — List all diagrams on the page
-   args: {} or { "include_code": true }
+### create_diagram
+Create a new diagram. Always give it a descriptive name.
+\`\`\`json
+{"name":"create_diagram","arguments":{"name":"User Auth Flow","code":"flowchart TD\\n  A[Login] --> B{Valid?}\\n  B -->|Yes| C[Dashboard]\\n  B -->|No| D[Error]"}}
+\`\`\`
 
-4. get_diagram — Get a diagram by ID or name
-   args: { "diagramId": "id" } or { "name": "fuzzy name" }
+### set_diagram_code
+Update an existing diagram's code. Use \`list_diagrams\` first to find the ID.
+\`\`\`json
+{"name":"set_diagram_code","arguments":{"diagramId":"abc-123","code":"flowchart LR\\n  A --> B --> C"}}
+\`\`\`
 
-5. list_diagram_types — List supported Mermaid types
-   args: {}
+### list_diagrams
+List all diagrams on the current page. Pass \`include_code: true\` to also get source.
+\`\`\`json
+{"name":"list_diagrams","arguments":{}}
+\`\`\`
 
-6. get_diagram_reference — Syntax reference for a diagram type
-   args: { "type": "flowchart" }
+### get_diagram
+Get a single diagram by exact ID or fuzzy name match.
+\`\`\`json
+{"name":"get_diagram","arguments":{"name":"auth flow"}}
+\`\`\`
 
-7. export_svg / export_png — Export a diagram
-   args: { "diagramId": "id" }
+### list_diagram_types
+List all supported Mermaid diagram types (flowchart, sequence, class, ER, etc.).
+\`\`\`json
+{"name":"list_diagram_types","arguments":{}}
+\`\`\`
 
-Workflow: call list_diagram_types to see what's available, get_diagram_reference for syntax, then create_diagram or set_diagram_code. Always give diagrams descriptive names.`
+### get_diagram_reference
+Get the full syntax reference for a diagram type before writing code.
+\`\`\`json
+{"name":"get_diagram_reference","arguments":{"type":"sequence"}}
+\`\`\`
+
+### export_svg / export_png
+Export a diagram as SVG or PNG image.
+\`\`\`json
+{"name":"export_png","arguments":{"diagramId":"abc-123","scale":2}}
+\`\`\`
+
+## Workflow
+1. Call \`list_diagram_types\` to see what's available
+2. Call \`get_diagram_reference\` for the syntax of the type you need
+3. Call \`create_diagram\` with a descriptive name and valid Mermaid code
+4. Call \`list_diagrams\` to see existing diagrams, \`set_diagram_code\` to update them`
 }
 
 export function McpPanel({ open, onClose, remoteRelay, isDark = false }: McpPanelProps) {
@@ -110,8 +144,8 @@ export function McpPanel({ open, onClose, remoteRelay, isDark = false }: McpPane
         : 'No session'
 
   const tabs: { id: TabId; label: string }[] = [
-    { id: 'install', label: 'Quick install' },
-    { id: 'config', label: 'JSON config' },
+    { id: 'install', label: 'Install MCP' },
+    { id: 'config', label: 'MCP config' },
     { id: 'prompt', label: 'Copy prompt' },
   ]
 
@@ -226,26 +260,29 @@ export function McpPanel({ open, onClose, remoteRelay, isDark = false }: McpPane
 
               {/* Tab content */}
               {activeTab === 'install' && (
-                <div className="space-y-1">
-                  <div className="flex items-center justify-end">
+                <div className="space-y-1.5">
+                  <div className="flex items-center justify-between">
+                    <p className="text-[10px] text-muted-foreground">
+                      Run this command to auto-configure Claude Code, Cursor, VS Code, Codex, and more.
+                    </p>
                     <CopyBtn value={addMcpCmd} label="Copy" />
                   </div>
-                  <div className="overflow-x-auto rounded-lg px-3 py-2 bg-[#0d1117] dark:bg-[#0d1117]">
-                    <code className="whitespace-nowrap font-mono text-[11px] leading-relaxed">
+                  <div className="rounded-lg px-3 py-2 bg-[#0d1117] dark:bg-[#0d1117]">
+                    <code className="whitespace-pre-wrap break-all font-mono text-[11px] leading-relaxed">
                       <span className="text-[#ff7b72]">npx</span>{' '}
                       <span className="text-[#c9d1d9]">add-mcp</span>{' '}
                       <span className="text-[#79c0ff]">{remoteRelay.mcpUrl}</span>
                     </code>
                   </div>
-                  <p className="text-[10px] text-muted-foreground">
-                    Auto-configures Claude Code, Cursor, VS Code, Codex, and more.
-                  </p>
                 </div>
               )}
 
               {activeTab === 'config' && (
-                <div className="space-y-1">
-                  <div className="flex items-center justify-end">
+                <div className="space-y-1.5">
+                  <div className="flex items-center justify-between">
+                    <p className="text-[10px] text-muted-foreground">
+                      Paste into your MCP client config file.
+                    </p>
                     <CopyBtn value={configSnippet} label="Copy" />
                   </div>
                   <div className="overflow-hidden rounded-lg border border-black/8 text-[11px] dark:border-white/10">
@@ -259,19 +296,20 @@ export function McpPanel({ open, onClose, remoteRelay, isDark = false }: McpPane
                         foldGutter: false,
                         highlightActiveLine: false,
                         highlightActiveLineGutter: false,
+                        highlightSelectionMatches: false,
                       }}
                       style={{ fontSize: '11px' }}
                     />
                   </div>
-                  <p className="text-[10px] text-muted-foreground">
-                    Paste into your MCP client config file.
-                  </p>
                 </div>
               )}
 
               {activeTab === 'prompt' && (
-                <div className="space-y-1">
-                  <div className="flex items-center justify-end">
+                <div className="space-y-1.5">
+                  <div className="flex items-center justify-between">
+                    <p className="text-[10px] text-muted-foreground">
+                      Paste into any AI chat. No MCP setup needed.
+                    </p>
                     <CopyBtn value={promptText} label="Copy" />
                   </div>
                   <div className="max-h-48 overflow-y-auto rounded-lg px-3 py-2 bg-[#0d1117] dark:bg-[#0d1117]">
@@ -279,9 +317,6 @@ export function McpPanel({ open, onClose, remoteRelay, isDark = false }: McpPane
                       {promptText}
                     </pre>
                   </div>
-                  <p className="text-[10px] text-muted-foreground">
-                    Paste into any chat. No MCP setup needed.
-                  </p>
                 </div>
               )}
             </>

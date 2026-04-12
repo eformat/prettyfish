@@ -36,10 +36,13 @@ export function chromePopoverClass(): string {
 
 export function chromeGlassPanelClass(mode: ChromeMode): string {
   return cn(
-    'rounded-xl border backdrop-blur-xl',
+    // overflow-hidden clips children to rounded corners; backdrop-blur-xl on this same
+    // element is unaffected (overflow only breaks backdrop-filter on *descendants*).
+    'rounded-xl border backdrop-blur-xl overflow-hidden',
+    'supports-[not(backdrop-filter:blur(1px))]:bg-opacity-100',
     mode === 'dark'
-      ? 'bg-[oklch(0.16_0.015_280/.76)] border-white/8 [box-shadow:0_4px_24px_rgba(0,0,0,0.35)]'
-      : 'bg-white/76 border-black/6 [box-shadow:0_4px_24px_rgba(0,0,0,0.08)]',
+      ? 'bg-[oklch(0.16_0.015_280/0.88)] border-white/10 [box-shadow:0_8px_32px_rgba(0,0,0,0.40)]'
+      : 'bg-white/88 border-black/8 [box-shadow:0_8px_32px_rgba(0,0,0,0.12)]',
   )
 }
 

@@ -7,7 +7,6 @@ import type {
   MermaidRenderError,
   MermaidTheme,
 } from '../types'
-import { DEFAULT_DIAGRAM_CONFIG } from '../types'
 import { getDiagramRenderHash } from '../lib/render'
 
 export interface ContextMenuState {
@@ -127,11 +126,18 @@ function updateDiagram(pages: DiagramPage[], diagramId: string, updater: (diagra
 }
 
 function deriveConfigOverrides(config: DiagramConfig): DiagramConfigOverrides {
+  // Store every key that differs from the global default. We must store ALL values,
+  // including those that match the global default, if they were explicitly set by the user,
+  // because a theme preset may override the default and the user may want to revert to
+  // the global default (e.g. switching look from 'handDrawn' preset back to 'classic').
+  //
+  // IMPORTANT: We store the full config so user intent is always preserved over preset intent.
+  // resolveConfig applies: global default → preset override → user override (this).
+  // If we omit keys equal to the global default, the preset's value silently wins.
   const overrides: DiagramConfigOverrides = {}
   for (const key of Object.keys(config) as (keyof DiagramConfig)[]) {
-    const defaultVal = DEFAULT_DIAGRAM_CONFIG[key]
     const newVal = config[key]
-    if (JSON.stringify(newVal) !== JSON.stringify(defaultVal)) {
+    if (newVal !== undefined) {
       ;(overrides as Record<string, unknown>)[key] = newVal
     }
   }
