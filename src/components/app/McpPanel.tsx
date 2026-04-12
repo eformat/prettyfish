@@ -335,7 +335,8 @@ export function McpPanel({ open, onClose, remoteRelay, webMcpSupported = false, 
                     <p className="text-[10px] text-muted-foreground">
                       Run this command to auto-configure Claude Code, Cursor, VS Code, Codex, and more.
                     </p>
-                    <CopyBtn value={addMcpCmd} label="install_command" />
+                    <CopyBtn value={addMcpCmd} label="Copy command" />
+                    
                   </div>
                   <div className="rounded-lg px-3 py-2 bg-[#0d1117] dark:bg-[#0d1117]">
                     <code className="whitespace-pre-wrap break-all font-mono text-[11px] leading-relaxed">
@@ -353,7 +354,7 @@ export function McpPanel({ open, onClose, remoteRelay, webMcpSupported = false, 
                     <p className="text-[10px] text-muted-foreground">
                       Paste into your MCP client config file.
                     </p>
-                    <CopyBtn value={configSnippet} label="config_snippet" />
+                    <CopyBtn value={configSnippet} label="Copy config" />
                   </div>
                   <div className="overflow-hidden rounded-lg border border-black/8 text-[11px] dark:border-white/10">
                     <CodeMirror
@@ -380,7 +381,7 @@ export function McpPanel({ open, onClose, remoteRelay, webMcpSupported = false, 
                     <p className="text-[10px] text-muted-foreground">
                       Paste into any AI chat. No MCP setup needed.
                     </p>
-                    <CopyBtn value={promptText} label="prompt_text" />
+                    <CopyBtn value={promptText} label="Copy prompt" />
                   </div>
                   <div className="max-h-48 overflow-hidden rounded-lg border border-black/8 text-[11px] dark:border-white/10">
                     <CodeMirror

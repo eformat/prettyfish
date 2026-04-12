@@ -7,14 +7,20 @@ import type { AppStoreState } from '@/state/appStore'
 import type { AppState } from '@/types'
 
 // Same-origin: relay routes (/relay/*, /mcp/*) are served by the same Worker as the SPA.
-const DEFAULT_RELAY_URL = (
-  (import.meta as ImportMeta & { env?: Record<string, string> }).env?.VITE_PRETTYFISH_RELAY_URL
-  // In local/dev, the Vite app does not serve /relay or /mcp routes. Default to the
-  // deployed worker so Connect AI Agent works in local review unless explicitly overridden.
-  || (typeof window !== 'undefined' && /^(localhost|127\.0\.0\.1)$/.test(window.location.hostname)
-    ? 'https://prettyfish.binalgo.workers.dev'
-    : (typeof window !== 'undefined' ? window.location.origin : 'https://pretty.fish'))
-).replace(/\/$/, '')
+
+export function resolveRelayBaseUrlForHost(hostname: string, envUrl?: string, origin?: string): string {
+  if (envUrl) return envUrl.replace(/\/$/, '')
+  if (/^(localhost|127\.0\.0\.1)$/.test(hostname)) return 'https://prettyfish.binalgo.workers.dev'
+  return (origin || 'https://pretty.fish').replace(/\/$/, '')
+}
+
+function getRelayBaseUrl(): string {
+  const envUrl = (import.meta as ImportMeta & { env?: Record<string, string> }).env?.VITE_PRETTYFISH_RELAY_URL
+  if (typeof window !== 'undefined') {
+    return resolveRelayBaseUrlForHost(window.location.hostname, envUrl, window.location.origin)
+  }
+  return resolveRelayBaseUrlForHost('pretty.fish', envUrl, 'https://pretty.fish')
+}
 
 // Migrate: clear any stale relay URL previously stored in localStorage
 try { localStorage.removeItem('prettyfish:relay-url') } catch { /* ignore */ }
@@ -51,9 +57,10 @@ function getOrCreateClientSecret(pageId: string): string {
 
 
 function toWebSocketUrl(sessionId: string, browserToken: string): string {
-  const base = DEFAULT_RELAY_URL.startsWith('https://')
-    ? DEFAULT_RELAY_URL.replace(/^https:\/\//, 'wss://')
-    : DEFAULT_RELAY_URL.replace(/^http:\/\//, 'ws://')
+  const relayBase = getRelayBaseUrl()
+  const base = relayBase.startsWith('https://')
+    ? relayBase.replace(/^https:\/\//, 'wss://')
+    : relayBase.replace(/^http:\/\//, 'ws://')
   return `${base}/relay/sessions/${sessionId}/browser?token=${encodeURIComponent(browserToken)}`
 } 
 
@@ -135,7 +142,7 @@ export function useRemoteAgentRelay(options: RemoteAgentRelayOptions): RemoteAge
   // ── Rebuild mcpUrl whenever session changes ────────────────────────────────
   useEffect(() => {
     if (!sessionId) { setMcpUrl(''); return }
-    setMcpUrl(`${DEFAULT_RELAY_URL}/mcp/${sessionId}`)
+    setMcpUrl(`${getRelayBaseUrl()}/mcp/${sessionId}`)
   }, [sessionId])
 
   // ── Cleanup on unmount ─────────────────────────────────────────────────────
@@ -354,7 +361,7 @@ export function useRemoteAgentRelay(options: RemoteAgentRelayOptions): RemoteAge
     try {
       const pageId = activePageIdRef.current
 
-      const response = await fetch(`${DEFAULT_RELAY_URL}/relay/sessions/public`, {
+      const response = await fetch(`${getRelayBaseUrl()}/relay/sessions/public`, {
         method: 'POST',
         // text/plain avoids a CORS preflight (simple request)
         headers: { 'content-type': 'text/plain;charset=UTF-8' },
