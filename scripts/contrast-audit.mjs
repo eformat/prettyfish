@@ -307,12 +307,12 @@ const COLOR_PAIR_SCHEMA = [
 
   // ── Journey / Timeline / Mindmap ──────────────────────────────────────────
   // These diagram types use cScale0-11 as section/node backgrounds.
-  // scaleLabelColor is the text color used on top of cScale fills.
-  // If scaleLabelColor is not set, Mermaid uses a calculated contrasting color,
-  // but our themes should set it explicitly — we check all 12 cScale slots.
+  // Mermaid generates cScaleLabel0-11 per slot (falling back to scaleLabelColor).
+  // Our themes define per-slot label colors to ensure contrast on every background.
   ...expandIndexed(
     'journey', 'cScale', 0, 11,
-    (v, i) => v.scaleLabelColor || v.primaryTextColor,
+    // Use per-slot cScaleLabelN; fall back to scaleLabelColor, then primaryTextColor
+    (v, i) => v[`cScaleLabel${i}`] || v.scaleLabelColor || v.primaryTextColor,
     (v, i) => v[`cScale${i}`],
     i => `Section/node label on cScale${i} bg`,
   ),
@@ -370,23 +370,18 @@ const COLOR_PAIR_SCHEMA = [
     text: v => v.titleColor || v.primaryTextColor,
     bg: BG,
   },
-  // Architecture group labels appear on the group border area (background color)
+  // Architecture group labels use titleColor (same as diagram title) on background
   {
     diagram: 'architecture',
     label: 'Group label on background',
-    text: v => v.primaryTextColor,
+    text: v => v.titleColor || v.primaryTextColor,
     bg: BG,
   },
 
-  // ── C4 / Person diagrams ──────────────────────────────────────────────────
-  {
-    diagram: 'c4',
-    label: 'Person text on person bg',
-    // C4 person shapes use personBkg
-    text: v => v.primaryTextColor,
-    bg: v => v.personBkg || v.primaryColor,
-  },
 ]
+// Note: C4 diagrams use personBkg which Mermaid derives internally from primaryColor
+// and is not exposed as a themeable variable in our ThemeVariablesByDiagram schema,
+// so it is not audited here.
 
 // ── Run audit ─────────────────────────────────────────────────────────────────
 

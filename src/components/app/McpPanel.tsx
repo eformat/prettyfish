@@ -15,12 +15,12 @@ interface McpPanelProps {
   isDark?: boolean
 }
 
-function CopyBtn({ value }: { value: string }) {
+function CopyBtn({ value, label }: { value: string; label?: string }) {
   const [copied, setCopied] = useState(false)
   return (
     <button
       type="button"
-      className="shrink-0 rounded-md p-1 text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
+      className="shrink-0 rounded-md p-1 text-muted-foreground hover:bg-muted hover:text-foreground transition-colors inline-flex items-center gap-1"
       onClick={async () => {
         if (!value) return
         await navigator.clipboard.writeText(value)
@@ -29,7 +29,8 @@ function CopyBtn({ value }: { value: string }) {
       }}
       title={copied ? 'Copied!' : 'Copy'}
     >
-      {copied ? <Check className="h-3.5 w-3.5 text-green-500 dark:text-green-400" /> : <Copy className="h-3.5 w-3.5" />}
+      {copied ? <Check className="h-3 w-3 text-green-500 dark:text-green-400" /> : <Copy className="h-3 w-3" />}
+      {label && <span className="text-[10px]">{copied ? 'Copied' : label}</span>}
     </button>
   )
 }
@@ -46,8 +47,43 @@ function StatusDot({ status }: { status: 'disconnected' | 'connecting' | 'connec
   )
 }
 
+type TabId = 'install' | 'config' | 'prompt'
+
+function buildPromptText(mcpUrl: string): string {
+  return `You have access to a Mermaid diagram tool via HTTP POST to ${mcpUrl}
+
+Every request is a JSON-RPC call. Format:
+  curl -X POST ${mcpUrl} -H "content-type: application/json" -d '{"jsonrpc":"2.0","id":1,"method":"tools/call","params":{"name":"TOOL","arguments":{...}}}'
+
+Available tools:
+
+1. create_diagram — Create a new diagram
+   args: { "name": "short title", "code": "flowchart TD; A-->B" }
+
+2. set_diagram_code — Update an existing diagram
+   args: { "diagramId": "id", "code": "new mermaid code" }
+
+3. list_diagrams — List all diagrams on the page
+   args: {} or { "include_code": true }
+
+4. get_diagram — Get a diagram by ID or name
+   args: { "diagramId": "id" } or { "name": "fuzzy name" }
+
+5. list_diagram_types — List supported Mermaid types
+   args: {}
+
+6. get_diagram_reference — Syntax reference for a diagram type
+   args: { "type": "flowchart" }
+
+7. export_svg / export_png — Export a diagram
+   args: { "diagramId": "id" }
+
+Workflow: call list_diagram_types to see what's available, get_diagram_reference for syntax, then create_diagram or set_diagram_code. Always give diagrams descriptive names.`
+}
+
 export function McpPanel({ open, onClose, remoteRelay, isDark = false }: McpPanelProps) {
   const panelRef = useRef<HTMLDivElement>(null)
+  const [activeTab, setActiveTab] = useState<TabId>('install')
 
   const hasSession = Boolean(remoteRelay.sessionId && remoteRelay.mcpUrl)
   const isConnected = remoteRelay.status === 'connected'
@@ -64,6 +100,7 @@ export function McpPanel({ open, onClose, remoteRelay, isDark = false }: McpPane
 
   const configSnippet = remoteRelay.getHostedConfigSnippet()
   const addMcpCmd = `npx add-mcp ${remoteRelay.mcpUrl}`
+  const promptText = remoteRelay.mcpUrl ? buildPromptText(remoteRelay.mcpUrl) : ''
   const statusLabel = isConnected
     ? 'Connected'
     : isBusy
@@ -71,6 +108,12 @@ export function McpPanel({ open, onClose, remoteRelay, isDark = false }: McpPane
       : hasSession
         ? 'Ready'
         : 'No session'
+
+  const tabs: { id: TabId; label: string }[] = [
+    { id: 'install', label: 'Quick install' },
+    { id: 'config', label: 'JSON config' },
+    { id: 'prompt', label: 'Copy prompt' },
+  ]
 
   return (
     <>
@@ -162,45 +205,85 @@ export function McpPanel({ open, onClose, remoteRelay, isDark = false }: McpPane
             <>
               <div className="h-px bg-border" />
 
-              {/* Quick install */}
-              <div className="space-y-1">
-                <div className="flex items-center justify-between">
-                  <p className="text-[10px] font-medium uppercase tracking-wider text-muted-foreground">Quick install</p>
-                  <CopyBtn value={addMcpCmd} />
-                </div>
-                <div className="overflow-x-auto rounded-lg px-3 py-2 bg-[#0d1117] dark:bg-[#0d1117]">
-                  <code className="whitespace-nowrap font-mono text-[11px] leading-relaxed">
-                    <span className="text-[#ff7b72]">npx</span>{' '}
-                    <span className="text-[#c9d1d9]">add-mcp</span>{' '}
-                    <span className="text-[#79c0ff]">{remoteRelay.mcpUrl}</span>
-                  </code>
-                </div>
+              {/* Tabs */}
+              <div className="flex gap-0.5 rounded-lg bg-muted/60 p-0.5 dark:bg-muted/40">
+                {tabs.map((tab) => (
+                  <button
+                    key={tab.id}
+                    type="button"
+                    className={cn(
+                      'flex-1 rounded-md px-2 py-1 text-[10px] font-medium transition-colors',
+                      activeTab === tab.id
+                        ? 'bg-background text-foreground shadow-sm'
+                        : 'text-muted-foreground hover:text-foreground',
+                    )}
+                    onClick={() => setActiveTab(tab.id)}
+                  >
+                    {tab.label}
+                  </button>
+                ))}
               </div>
 
-              <div className="h-px bg-border" />
+              {/* Tab content */}
+              {activeTab === 'install' && (
+                <div className="space-y-1">
+                  <div className="flex items-center justify-end">
+                    <CopyBtn value={addMcpCmd} label="Copy" />
+                  </div>
+                  <div className="overflow-x-auto rounded-lg px-3 py-2 bg-[#0d1117] dark:bg-[#0d1117]">
+                    <code className="whitespace-nowrap font-mono text-[11px] leading-relaxed">
+                      <span className="text-[#ff7b72]">npx</span>{' '}
+                      <span className="text-[#c9d1d9]">add-mcp</span>{' '}
+                      <span className="text-[#79c0ff]">{remoteRelay.mcpUrl}</span>
+                    </code>
+                  </div>
+                  <p className="text-[10px] text-muted-foreground">
+                    Auto-configures Claude Code, Cursor, VS Code, Codex, and more.
+                  </p>
+                </div>
+              )}
 
-              {/* JSON config */}
-              <div className="space-y-1">
-                <div className="flex items-center justify-between">
-                  <p className="text-[10px] font-medium uppercase tracking-wider text-muted-foreground">JSON config</p>
-                  <CopyBtn value={configSnippet} />
+              {activeTab === 'config' && (
+                <div className="space-y-1">
+                  <div className="flex items-center justify-end">
+                    <CopyBtn value={configSnippet} label="Copy" />
+                  </div>
+                  <div className="overflow-hidden rounded-lg border border-black/8 text-[11px] dark:border-white/10">
+                    <CodeMirror
+                      value={configSnippet}
+                      extensions={[json()]}
+                      theme={isDark ? githubDark : githubLight}
+                      editable={false}
+                      basicSetup={{
+                        lineNumbers: false,
+                        foldGutter: false,
+                        highlightActiveLine: false,
+                        highlightActiveLineGutter: false,
+                      }}
+                      style={{ fontSize: '11px' }}
+                    />
+                  </div>
+                  <p className="text-[10px] text-muted-foreground">
+                    Paste into your MCP client config file.
+                  </p>
                 </div>
-                <div className="overflow-hidden rounded-lg border border-black/8 text-[11px] dark:border-white/10">
-                  <CodeMirror
-                    value={configSnippet}
-                    extensions={[json()]}
-                    theme={isDark ? githubDark : githubLight}
-                    editable={false}
-                    basicSetup={{
-                      lineNumbers: false,
-                      foldGutter: false,
-                      highlightActiveLine: false,
-                      highlightActiveLineGutter: false,
-                    }}
-                    style={{ fontSize: '11px' }}
-                  />
+              )}
+
+              {activeTab === 'prompt' && (
+                <div className="space-y-1">
+                  <div className="flex items-center justify-end">
+                    <CopyBtn value={promptText} label="Copy" />
+                  </div>
+                  <div className="max-h-48 overflow-y-auto rounded-lg px-3 py-2 bg-[#0d1117] dark:bg-[#0d1117]">
+                    <pre className="whitespace-pre-wrap font-mono text-[10px] leading-relaxed text-[#c9d1d9]">
+                      {promptText}
+                    </pre>
+                  </div>
+                  <p className="text-[10px] text-muted-foreground">
+                    Paste into any chat. No MCP setup needed.
+                  </p>
                 </div>
-              </div>
+              )}
             </>
           ) : !isBusy ? (
             <>

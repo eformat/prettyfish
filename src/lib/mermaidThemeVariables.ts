@@ -180,20 +180,38 @@ export interface ArchitectureVars {
   archGroupBorderColor: string
 }
 
-/** Journey / timeline — section scale colors. */
+/** Journey / timeline / mindmap — section scale colors and per-slot label colors. */
 export interface JourneyVars {
+  /**
+   * Fallback label color for all cScale slots. Mermaid also generates per-slot
+   * cScaleLabel0-11 which override this. We use per-slot labels so each cScale
+   * background can have a properly contrasting text color.
+   */
+  scaleLabelColor: string
   cScale0: string
+  cScaleLabel0: string
   cScale1: string
+  cScaleLabel1: string
   cScale2: string
+  cScaleLabel2: string
   cScale3: string
+  cScaleLabel3: string
   cScale4: string
+  cScaleLabel4: string
   cScale5: string
+  cScaleLabel5: string
   cScale6: string
+  cScaleLabel6: string
   cScale7: string
+  cScaleLabel7: string
   cScale8: string
+  cScaleLabel8: string
   cScale9: string
+  cScaleLabel9: string
   cScale10: string
+  cScaleLabel10: string
   cScale11: string
+  cScaleLabel11: string
 }
 
 // ── Composite structured type ────────────────────────────────────────────────
