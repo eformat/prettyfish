@@ -48,7 +48,7 @@ function StatusDot({ status }: { status: 'disconnected' | 'connecting' | 'connec
   )
 }
 
-type TabId = 'install' | 'config' | 'prompt'
+type TabId = 'webmcp' | 'install' | 'config' | 'prompt'
 
 function buildPromptText(mcpUrl: string): string {
   return `# Pretty Fish: Mermaid Diagram Canvas
@@ -118,7 +118,7 @@ Export a diagram as SVG or PNG image.
 
 export function McpPanel({ open, onClose, remoteRelay, webMcpSupported = false, webMcpToolCount = 0 }: McpPanelProps) {
   const panelRef = useRef<HTMLDivElement>(null)
-  const [activeTab, setActiveTab] = useState<TabId>('install')
+  const [activeTab, setActiveTab] = useState<TabId>(webMcpSupported ? 'webmcp' : 'install')
   const isDark = document.documentElement.classList.contains('dark')
 
   const hasSession = Boolean(remoteRelay.sessionId && remoteRelay.mcpUrl)
@@ -146,6 +146,7 @@ export function McpPanel({ open, onClose, remoteRelay, webMcpSupported = false, 
         : 'No session'
 
   const tabs: { id: TabId; label: string }[] = [
+    ...(webMcpSupported ? [{ id: 'webmcp' as const, label: 'WebMCP' }] : []),
     { id: 'install', label: 'Install MCP' },
     { id: 'config', label: 'MCP config' },
     { id: 'prompt', label: 'Copy prompt' },
@@ -192,30 +193,6 @@ export function McpPanel({ open, onClose, remoteRelay, webMcpSupported = false, 
 
         {/* Body */}
         <div className="space-y-2.5 p-3.5">
-
-          {/* WebMCP banner */}
-          {webMcpSupported && (
-            <div className="space-y-1 rounded-lg bg-green-50 px-2.5 py-2 dark:bg-green-950/30">
-              <div className="flex items-center gap-1.5">
-                <StatusDot status="connected" />
-                <span className="text-[11px] font-medium text-green-800 dark:text-green-300">
-                  WebMCP active
-                </span>
-              </div>
-              <p className="text-[10px] text-green-700 dark:text-green-400">
-                {webMcpToolCount} tools registered on this page. Use the{' '}
-                <a
-                  href="https://chromewebstore.google.com/detail/model-context-tool-inspec/gbpdfapgefenggkahomfgkhfehlcenpd"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="underline hover:text-green-900 dark:hover:text-green-200"
-                >
-                  Model Context Tool Inspector
-                </a>{' '}
-                extension to test tools, or connect any browser agent.
-              </p>
-            </div>
-          )}
 
           {/* Session row */}
           <div className="flex items-center justify-between gap-2">
@@ -285,6 +262,34 @@ export function McpPanel({ open, onClose, remoteRelay, webMcpSupported = false, 
               </div>
 
               {/* Tab content */}
+              {activeTab === 'webmcp' && (
+                <div className="space-y-1.5">
+                  <div className="space-y-1 rounded-lg bg-green-50 px-2.5 py-2 dark:bg-green-950/30">
+                    <div className="flex items-center gap-1.5">
+                      <StatusDot status="connected" />
+                      <span className="text-[11px] font-medium text-green-800 dark:text-green-300">
+                        WebMCP active
+                      </span>
+                    </div>
+                    <p className="text-[10px] text-green-700 dark:text-green-400">
+                      {webMcpToolCount} tools registered on this page. Any browser agent can discover and call them directly.
+                    </p>
+                  </div>
+                  <p className="text-[10px] text-muted-foreground">
+                    Install the{' '}
+                    <a
+                      href="https://chromewebstore.google.com/detail/model-context-tool-inspec/gbpdfapgefenggkahomfgkhfehlcenpd"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="underline hover:text-foreground"
+                    >
+                      Model Context Tool Inspector
+                    </a>{' '}
+                    extension to test tools manually or with Gemini.
+                  </p>
+                </div>
+              )}
+
               {activeTab === 'install' && (
                 <div className="space-y-1.5">
                   <div className="flex items-center justify-between">
