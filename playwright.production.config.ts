@@ -11,7 +11,6 @@ import { defineConfig, devices } from '@playwright/test'
  */
 export default defineConfig({
   testDir: './tests/e2e/mcp',
-  testMatch: '*production*',
   fullyParallel: false,
   retries: 1,
   workers: 1,
