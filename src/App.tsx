@@ -14,6 +14,7 @@ import { useWebMcp, isWebMcpSupported, WEB_MCP_TOOL_COUNT } from './hooks/useWeb
 import type { MermaidTheme } from './types'
 import { captureEvent } from './lib/analytics'
 import { cn } from './lib/utils'
+import { maybeShowSponsorNudge, recordNudgeShown } from './components/app/SponsorNudge'
 import { Button } from '@/components/ui/button'
 import {
   chromeFloatingActionClass,
@@ -43,6 +44,23 @@ export default function App() {
   const referenceDocsRef = useRef<ReferenceDocsHandle>(null)
   const [mobileSidebarCollapsed, setMobileSidebarCollapsed] = useState(true)
   const [mcpOpen, setMcpOpen] = useState(false)
+  const [sponsorNudgeVisible, setSponsorNudgeVisible] = useState(false)
+  const [sponsorNudgeShowCount, setSponsorNudgeShowCount] = useState(0)
+  const nudgeTriggeredRef = useRef(false)
+
+  // Trigger sponsor nudge after first diagram render or export — max 3×, ≥1 week apart
+  const triggerSponsorNudge = useCallback(() => {
+    if (nudgeTriggeredRef.current || sponsorNudgeVisible) return
+    if (!maybeShowSponsorNudge()) return
+    nudgeTriggeredRef.current = true
+    // Small delay so it doesn't appear at the exact moment of action
+    setTimeout(() => {
+      const s = JSON.parse(localStorage.getItem('prettyfish:sponsor-nudge') ?? '{"showCount":0}')
+      setSponsorNudgeShowCount(s.showCount ?? 0)
+      setSponsorNudgeVisible(true)
+      recordNudgeShown()
+    }, 2000)
+  }, [sponsorNudgeVisible])
 
   const {
     state,
@@ -189,6 +207,17 @@ export default function App() {
     root.dataset.theme = mode
   }, [mode])
 
+  // Trigger sponsor nudge 2s after first successful diagram render
+  const hasSvgRef = useRef(false)
+  useEffect(() => {
+    if (hasSvgRef.current) return
+    const svg = activeSvg
+    if (svg && svg.length > 100) {
+      hasSvgRef.current = true
+      triggerSponsorNudge()
+    }
+  }, [activeSvg, triggerSponsorNudge])
+
   useEffect(() => {
     if (!contextMenu) return
 
@@ -304,6 +333,9 @@ export default function App() {
       </main>
 
       <Header
+        showSponsorNudge={sponsorNudgeVisible}
+        onSponsorNudgeDismiss={() => { setSponsorNudgeVisible(false); nudgeTriggeredRef.current = false }}
+        sponsorNudgeShowCount={sponsorNudgeShowCount}
         mode={mode}
         mermaidTheme={mermaidTheme}
         sidebarOpen={sidebarOpen}

@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect, useCallback, useMemo } from 'react'
 import { createPortal } from 'react-dom'
+import { SponsorNudge } from './SponsorNudge'
 import { Button } from '@/components/ui/button'
 import {
   chromePillClass,
@@ -72,6 +73,9 @@ for (const [key, preset] of Object.entries(ACTIVE_THEME_PRESETS)) {
 // ── Props ─────────────────────────────────────────────────────────────────────
 
 interface HeaderProps {
+  showSponsorNudge?: boolean
+  onSponsorNudgeDismiss?: () => void
+  sponsorNudgeShowCount?: number
   mode: AppMode
   mermaidTheme: MermaidTheme
   sidebarWidth?: number | null
@@ -108,13 +112,13 @@ function McpButton({ onOpenMcp, mcpConnected }: { onOpenMcp: () => void; mcpConn
     <div className={chromePillClass()}>
       <ChromeTextButton
         data-testid="open-mcp-button"
-        aria-label={mcpConnected ? 'MCP Connected — click to manage' : 'Connect MCP'}
-        title={mcpConnected ? 'MCP Connected — click to manage' : 'Connect any AI agent to create diagrams via MCP'}
+        aria-label={mcpConnected ? 'AI Agent Connected — click to manage' : 'Connect AI Agent'}
+        title={mcpConnected ? 'AI Agent Connected — click to manage' : 'Connect a local AI agent to create diagrams via MCP'}
         onClick={onOpenMcp}
         className={cn(mcpConnected && chromeStatusClass('success'))}
       >
         <PlugsConnected className="w-3.5 h-3.5" />
-        {mcpConnected ? 'MCP Connected' : 'Connect MCP'}
+        {mcpConnected ? 'Agent Connected' : 'Connect AI Agent'}
       </ChromeTextButton>
     </div>
   )
@@ -123,6 +127,9 @@ function McpButton({ onOpenMcp, mcpConnected }: { onOpenMcp: () => void; mcpConn
 // ── Main Header — floating pill layout ────────────────────────────────────────
 
 export function Header({
+  showSponsorNudge = false,
+  onSponsorNudgeDismiss,
+  sponsorNudgeShowCount = 0,
   mode,
   mermaidTheme,
   sidebarOpen,
@@ -405,7 +412,16 @@ export function Header({
       )}
 
       {!isMobile && (
-        <McpButton onOpenMcp={onOpenMcp} mcpConnected={mcpConnected} />
+        <div className="flex flex-col items-end gap-2 pointer-events-none">
+          <div className="pointer-events-auto">
+            <McpButton onOpenMcp={onOpenMcp} mcpConnected={mcpConnected} />
+          </div>
+          <SponsorNudge
+            visible={showSponsorNudge}
+            onDismiss={onSponsorNudgeDismiss ?? (() => {})}
+            showCount={sponsorNudgeShowCount}
+          />
+        </div>
       )}
     </header>
   )
