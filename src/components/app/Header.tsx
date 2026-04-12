@@ -36,6 +36,7 @@ import {
   PencilSimple,
   PlugsConnected,
   Trash,
+  GithubLogo,
   Heart,
 } from '@phosphor-icons/react'
 import { cn } from '@/lib/utils'
@@ -393,6 +394,21 @@ export function Header({
         </ChromeIconButton>
 
         <div className={chromeDividerClass()} />
+
+        {/* GitHub */}
+        <a
+          href="https://github.com/pastelsky/prettyfish"
+          target="_blank"
+          rel="noopener noreferrer"
+          aria-label="Pretty Fish on GitHub"
+          title="Star on GitHub"
+          className={cn(
+            'inline-flex items-center justify-center w-7 h-7 rounded-lg transition-colors cursor-pointer',
+            'text-ui-ink-muted hover:text-ui-ink-strong hover:bg-ui-surface-hover',
+          )}
+        >
+          <GithubLogo className="w-3.5 h-3.5" />
+        </a>
 
         {/* Sponsor */}
         <a
