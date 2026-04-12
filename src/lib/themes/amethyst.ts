@@ -10,7 +10,6 @@ const amethyst: ThemePresetDef = {
     fontSize: 14,
     flowchart: { curve: 'cardinal', nodeSpacing: 44, rankSpacing: 50, padding: 14 },
     sequence: { actorMargin: 45, messageMargin: 30, width: 140 },
-    xyChart: { plotColorPalette: '#7c3aed,#a78bfa,#6d28d9,#c4b5fd,#5b21b6,#ddd6fe' },
   },
   vars: {
     core: {
@@ -160,6 +159,10 @@ const amethyst: ThemePresetDef = {
       archEdgeArrowColor: '#7c3aed',
       archGroupBorderColor: '#a78bfa',
     },
+    xyChart: {
+      plotColorPalette: '#7c3aed,#a78bfa,#6d28d9,#c4b5fd,#5b21b6,#ddd6fe',
+    },
+
     journey: {
       scaleLabelColor: '#ffffff',
       cScale0: '#ede9fe', cScaleLabel0: '#1a1a1a',

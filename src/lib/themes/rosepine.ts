@@ -10,7 +10,6 @@ const rosepine: ThemePresetDef = {
     flowchart: { curve: 'cardinal' as const, nodeSpacing: 50, rankSpacing: 54, padding: 16, diagramPadding: 10 },
     sequence: { showSequenceNumbers: false, mirrorActors: false, actorMargin: 50, messageMargin: 34, width: 148 },
     gantt: { barHeight: 22, barGap: 5, topPadding: 48, axisFormat: '%b %d' },
-    xyChart: { plotColorPalette: '#eb6f92,#f6c177,#9ccfd8,#c4a7e7,#31748f,#e0def4' },
   },
   vars: {
     core: {
@@ -160,6 +159,10 @@ const rosepine: ThemePresetDef = {
       archEdgeArrowColor: '#797593',
       archGroupBorderColor: '#907aa9',
     },
+    xyChart: {
+      plotColorPalette: '#eb6f92,#f6c177,#9ccfd8,#c4a7e7,#31748f,#e0def4',
+    },
+
     journey: {
       scaleLabelColor: '#1a1a1a',
       cScale0: '#fffaf3', cScaleLabel0: '#1a1a1a',

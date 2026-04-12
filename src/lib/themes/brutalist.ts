@@ -212,6 +212,11 @@ const brutalistTheme: ThemePresetDef = {
       archGroupBorderColor: BLACK,
     },
 
+    xyChart: {
+      // Full brutalist palette — passed as themeVariables.xyChart (nested, not flat)
+      plotColorPalette: `${YELLOW},${RED},${BLUE},${GREEN},${ORANGE},${PURPLE},${CYAN},${AMBER}`,
+    },
+
     journey: {
       scaleLabelColor: BLACK,
       // Full brutalist palette across 12 slots — bold, distinct, each readable
@@ -252,10 +257,6 @@ const brutalistTheme: ThemePresetDef = {
       barGap: 6,
       topPadding: 60,
       axisFormat: '%Y-%m-%d',
-    },
-    // XY chart: full brutalist color palette for bar/line series
-    xyChart: {
-      plotColorPalette: `${YELLOW},${RED},${BLUE},${GREEN},${ORANGE},${PURPLE},${CYAN},${AMBER}`,
     },
   },
 }

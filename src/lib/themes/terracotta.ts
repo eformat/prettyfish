@@ -11,7 +11,6 @@ const terracotta: ThemePresetDef = {
     flowchart: { curve: 'natural' as const, nodeSpacing: 56, rankSpacing: 58, padding: 18, diagramPadding: 12 },
     sequence: { showSequenceNumbers: false, mirrorActors: false, actorMargin: 54, messageMargin: 36, width: 152 },
     gantt: { barHeight: 22, barGap: 5, topPadding: 50, axisFormat: '%b %d' },
-    xyChart: { plotColorPalette: '#c2654a,#6b7f5e,#b8926a,#8a5a3a,#4a6670,#a3785c' },
   },
   vars: {
     core: {
@@ -161,6 +160,10 @@ const terracotta: ThemePresetDef = {
       archEdgeArrowColor: '#7a6e62',
       archGroupBorderColor: '#c2654a',
     },
+    xyChart: {
+      plotColorPalette: '#c2654a,#6b7f5e,#b8926a,#8a5a3a,#4a6670,#a3785c',
+    },
+
     journey: {
       scaleLabelColor: '#ffffff',
       cScale0: '#f0e8de', cScaleLabel0: '#1a1a1a',

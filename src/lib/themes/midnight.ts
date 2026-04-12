@@ -11,7 +11,6 @@ const midnight: ThemePresetDef = {
     flowchart: { curve: 'basis' as const, nodeSpacing: 50, rankSpacing: 52, padding: 16, diagramPadding: 10 },
     sequence: { showSequenceNumbers: true, mirrorActors: false, actorMargin: 50, messageMargin: 32, width: 145 },
     gantt: { barHeight: 24, barGap: 4, topPadding: 48, axisFormat: '%b %d' },
-    xyChart: { plotColorPalette: '#e8927c,#7eb8da,#b5bd68,#cc99cc,#f0c674,#8abeb7' },
   },
   vars: {
     core: {
@@ -161,6 +160,10 @@ const midnight: ThemePresetDef = {
       archEdgeArrowColor: '#969896',
       archGroupBorderColor: '#5a5e63',
     },
+    xyChart: {
+      plotColorPalette: '#e8927c,#7eb8da,#b5bd68,#cc99cc,#f0c674,#8abeb7',
+    },
+
     journey: {
       scaleLabelColor: '#ffffff',
       cScale0: '#373b41', cScaleLabel0: '#ffffff',

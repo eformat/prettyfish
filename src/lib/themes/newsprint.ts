@@ -10,7 +10,6 @@ const newsprint: ThemePresetDef = {
     flowchart: { curve: 'monotoneX' as const, nodeSpacing: 55, rankSpacing: 58, padding: 18, diagramPadding: 12 },
     sequence: { showSequenceNumbers: false, mirrorActors: false, actorMargin: 55, messageMargin: 36, width: 155 },
     gantt: { barHeight: 22, barGap: 5, topPadding: 50, axisFormat: '%b %d' },
-    xyChart: { plotColorPalette: '#c41d1d,#1a1a1a,#6b6b6b,#7a6a52,#2e5d4b,#6b3a1a' },
   },
   vars: {
     core: {
@@ -160,6 +159,10 @@ const newsprint: ThemePresetDef = {
       archEdgeArrowColor: '#4a4540',
       archGroupBorderColor: '#1a1a1a',
     },
+    xyChart: {
+      plotColorPalette: '#c41d1d,#1a1a1a,#6b6b6b,#7a6a52,#2e5d4b,#6b3a1a',
+    },
+
     journey: {
       scaleLabelColor: '#1a1a1a',
       cScale0: '#f0ece4', cScaleLabel0: '#1a1a1a',

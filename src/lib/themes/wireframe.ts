@@ -158,6 +158,10 @@ const wireframe: ThemePresetDef = {
       archEdgeArrowColor: '#777777',
       archGroupBorderColor: '#888888',
     },
+    xyChart: {
+      plotColorPalette: '#555555,#777777,#999999,#333333,#888888,#444444',
+    },
+
     journey: {
       scaleLabelColor: '#1a1a1a',
       cScale0: '#f5f5f5', cScaleLabel0: '#1a1a1a',

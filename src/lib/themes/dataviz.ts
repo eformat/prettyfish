@@ -11,7 +11,6 @@ const dataviz: ThemePresetDef = {
     flowchart: { curve: 'basis' as const, nodeSpacing: 50, rankSpacing: 52, padding: 16, diagramPadding: 10 },
     sequence: { showSequenceNumbers: true, mirrorActors: false, actorMargin: 48, messageMargin: 32, width: 145 },
     gantt: { barHeight: 24, barGap: 4, topPadding: 48, axisFormat: '%b %d' },
-    xyChart: { plotColorPalette: '#e6550d,#3182bd,#31a354,#756bb1,#636363,#de9ed6' },
   },
   vars: {
     core: {
@@ -161,6 +160,10 @@ const dataviz: ThemePresetDef = {
       archEdgeArrowColor: '#636363',
       archGroupBorderColor: '#2171a5',
     },
+    xyChart: {
+      plotColorPalette: '#e6550d,#3182bd,#31a354,#756bb1,#636363,#de9ed6',
+    },
+
     journey: {
       scaleLabelColor: '#ffffff',
       cScale0: '#d0e2f0', cScaleLabel0: '#1a1a1a',

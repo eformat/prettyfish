@@ -11,7 +11,6 @@ const evergreen: ThemePresetDef = {
     flowchart: { curve: 'linear' as const, nodeSpacing: 42, rankSpacing: 46, padding: 12, diagramPadding: 8 },
     sequence: { showSequenceNumbers: true, mirrorActors: true, actorMargin: 42, messageMargin: 28, width: 130 },
     gantt: { barHeight: 20, barGap: 3, topPadding: 44, axisFormat: '%m/%d' },
-    xyChart: { plotColorPalette: '#d45b07,#1b7a4e,#2b6ca3,#7a5195,#6a6a6a,#c4962c' },
   },
   vars: {
     core: {
@@ -161,6 +160,10 @@ const evergreen: ThemePresetDef = {
       archEdgeArrowColor: '#555555',
       archGroupBorderColor: '#146340',
     },
+    xyChart: {
+      plotColorPalette: '#d45b07,#1b7a4e,#2b6ca3,#7a5195,#6a6a6a,#c4962c',
+    },
+
     journey: {
       scaleLabelColor: '#ffffff',
       cScale0: '#cce5d8', cScaleLabel0: '#1a1a1a',

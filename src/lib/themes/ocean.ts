@@ -11,7 +11,6 @@ const ocean: ThemePresetDef = {
     flowchart: { curve: 'monotoneX' as const, nodeSpacing: 50, rankSpacing: 52, padding: 16, diagramPadding: 10 },
     sequence: { showSequenceNumbers: false, mirrorActors: false, actorMargin: 50, messageMargin: 34, width: 148 },
     gantt: { barHeight: 22, barGap: 4, topPadding: 48, axisFormat: '%b %d' },
-    xyChart: { plotColorPalette: '#0d9488,#6366f1,#0284c7,#e11d48,#ca8a04,#7c3aed' },
   },
   vars: {
     core: {
@@ -161,6 +160,10 @@ const ocean: ThemePresetDef = {
       archEdgeArrowColor: '#64748b',
       archGroupBorderColor: '#0f766e',
     },
+    xyChart: {
+      plotColorPalette: '#0d9488,#6366f1,#0284c7,#e11d48,#ca8a04,#7c3aed',
+    },
+
     journey: {
       scaleLabelColor: '#ffffff',
       cScale0: '#ccfbf1', cScaleLabel0: '#1a1a1a',

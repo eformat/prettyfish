@@ -11,7 +11,6 @@ const bauhaus: ThemePresetDef = {
     flowchart: { curve: 'step' as const, nodeSpacing: 48, rankSpacing: 52, padding: 14, diagramPadding: 10 },
     sequence: { showSequenceNumbers: true, mirrorActors: false, actorMargin: 48, messageMargin: 32, width: 140 },
     gantt: { barHeight: 26, barGap: 3, topPadding: 46, axisFormat: '%b %d' },
-    xyChart: { plotColorPalette: '#d32f2f,#1565c0,#f9a825,#2e7d32,#212121,#6a1b9a' },
   },
   vars: {
     core: {
@@ -161,6 +160,10 @@ const bauhaus: ThemePresetDef = {
       archEdgeArrowColor: '#424242',
       archGroupBorderColor: '#0d47a1',
     },
+    xyChart: {
+      plotColorPalette: '#d32f2f,#1565c0,#f9a825,#2e7d32,#212121,#6a1b9a',
+    },
+
     journey: {
       scaleLabelColor: '#ffffff',
       cScale0: '#bbdefb', cScaleLabel0: '#1a1a1a',

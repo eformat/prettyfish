@@ -159,6 +159,10 @@ const blueprint: ThemePresetDef = {
       archEdgeArrowColor: '#1a4a9a',
       archGroupBorderColor: '#0a2d6b',
     },
+    xyChart: {
+      plotColorPalette: '#1a4a9a,#2563a8,#3878c0,#5090d8,#6baed6,#386ca8',
+    },
+
     journey: {
       scaleLabelColor: '#1a1a1a',
       cScale0: '#e8eef8', cScaleLabel0: '#1a1a1a',

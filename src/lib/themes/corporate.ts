@@ -10,7 +10,6 @@ const corporate: ThemePresetDef = {
     flowchart: { curve: 'monotoneX', nodeSpacing: 55, rankSpacing: 55, padding: 18 },
     sequence: { actorMargin: 55, messageMargin: 38, width: 160 },
     gantt: { barHeight: 24, barGap: 6 },
-    xyChart: { plotColorPalette: '#3b82f6,#0ea5e9,#06b6d4,#6366f1,#8b5cf6,#64748b' },
   },
   vars: {
     core: {
@@ -160,6 +159,10 @@ const corporate: ThemePresetDef = {
       archEdgeArrowColor: '#94a3b8',
       archGroupBorderColor: '#93c5fd',
     },
+    xyChart: {
+      plotColorPalette: '#3b82f6,#0ea5e9,#06b6d4,#6366f1,#8b5cf6,#64748b',
+    },
+
     journey: {
       scaleLabelColor: '#1a1a1a',
       cScale0: '#dbeafe', cScaleLabel0: '#1a1a1a',

@@ -230,6 +230,25 @@ export interface JourneyVars {
  * Every group is **required**. Adding a new group here will cause compile
  * errors in every ThemePreset until it's populated.
  */
+/**
+ * XY chart — plot color palette and axis colors.
+ * NOTE: Mermaid reads this as a NESTED object in themeVariables.xyChart,
+ * not as flat keys. flattenThemeVariables preserves this nesting.
+ */
+export interface XYChartVars {
+  /** Comma-separated hex colors for data series (bars, lines). */
+  plotColorPalette: string
+  backgroundColor?: string
+  titleColor?: string
+  xAxisTitleColor?: string
+  xAxisLabelColor?: string
+  xAxisLineColor?: string
+  yAxisTitleColor?: string
+  yAxisLabelColor?: string
+  yAxisLineColor?: string
+  dataLabelColor?: string
+}
+
 export interface ThemeVariablesByDiagram {
   core: CoreVars
   flowchart: FlowchartVars
@@ -244,6 +263,8 @@ export interface ThemeVariablesByDiagram {
   quadrant: QuadrantVars
   architecture: ArchitectureVars
   journey: JourneyVars
+  /** Passed as nested themeVariables.xyChart — NOT flattened into root. */
+  xyChart?: XYChartVars
 }
 
 /** All diagram group keys — useful for iteration. */
@@ -285,5 +306,8 @@ export function flattenThemeVariables(grouped: ThemeVariablesByDiagram): FlatMer
     grouped.quadrant,
     grouped.architecture,
     grouped.journey,
+    // xyChart is passed as a NESTED object (themeVariables.xyChart) because
+    // Mermaid's theme class reads this.xyChart?.plotColorPalette — not flat keys.
+    grouped.xyChart !== undefined ? { xyChart: grouped.xyChart } : {},
   ) as FlatMermaidThemeVariables
 }

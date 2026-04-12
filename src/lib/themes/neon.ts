@@ -11,7 +11,6 @@ const neon: ThemePresetDef = {
     flowchart: { curve: 'step', nodeSpacing: 45, rankSpacing: 50, padding: 10 },
     sequence: { showSequenceNumbers: true, actorMargin: 40, messageMargin: 30, width: 130 },
     gantt: { barHeight: 28, barGap: 2 },
-    xyChart: { plotColorPalette: '#2d2dff,#ff2d9b,#00cc44,#ff8800,#00cccc,#cc00ff,#ffcc00' },
   },
   vars: {
     core: {
@@ -161,6 +160,10 @@ const neon: ThemePresetDef = {
       archEdgeArrowColor: '#111111',
       archGroupBorderColor: '#000000',
     },
+    xyChart: {
+      plotColorPalette: '#2d2dff,#ff2d9b,#00cc44,#ff8800,#00cccc,#cc00ff,#ffcc00',
+    },
+
     journey: {
       scaleLabelColor: '#ffffff',
       cScale0: '#2d2dff', cScaleLabel0: '#ffffff',
