@@ -22,6 +22,15 @@ It is built for a workflow that sits somewhere between a text editor and a diagr
 - Share diagrams through URL-encoded state.
 - Run as a PWA with offline support.
 
+## OpenShift & Kubernetes
+
+Install using helm.
+
+```bash
+helm repo add eformat https://eformat.github.io/helm-charts
+helm upgrade --install prettyfish eformat/prettyfish --create-namespace --namespace=prettyfish
+```
+
 ## Getting Started
 
 ```bash

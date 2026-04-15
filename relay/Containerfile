@@ -1,0 +1,10 @@
+FROM registry.access.redhat.com/ubi9/nodejs-22-minimal
+
+COPY package*.json $HOME/
+RUN npm install --omit=dev
+COPY server.mjs $HOME/
+
+USER 1001
+EXPOSE 8081
+
+CMD ["node", "server.mjs"]

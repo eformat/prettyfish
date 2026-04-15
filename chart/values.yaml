@@ -1,0 +1,34 @@
+replicaCount: 1
+
+image:
+  repository: quay.io/eformat/prettyfish
+  tag: latest
+  pullPolicy: Always
+
+relay:
+  image:
+    repository: quay.io/eformat/prettyfish-relay
+    tag: latest
+    pullPolicy: Always
+  resources:
+    limits:
+      cpu: 200m
+      memory: 128Mi
+    requests:
+      cpu: 50m
+      memory: 64Mi
+
+route:
+  enabled: true
+  host: ""
+  tls:
+    termination: edge
+    insecureEdgeTerminationPolicy: Redirect
+
+resources:
+  limits:
+    cpu: 200m
+    memory: 128Mi
+  requests:
+    cpu: 50m
+    memory: 64Mi
