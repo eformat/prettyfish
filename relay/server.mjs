@@ -193,7 +193,18 @@ class RelaySession {
     )
     server.tool('export_svg', 'Export a diagram as SVG.',
       { diagramId: z.string(), timeoutMs: z.number().optional() },
-      async ({ diagramId, timeoutMs }) => cmd('export_svg', { diagramId, timeoutMs }, typeof timeoutMs === 'number' ? timeoutMs + 2000 : 22000),
+      async ({ diagramId, timeoutMs }) => {
+        const result = await this.sendCommandToBrowser('export_svg', { diagramId, timeoutMs }, typeof timeoutMs === 'number' ? timeoutMs + 2000 : 22000)
+        if (!result?.data) {
+          return { content: [{ type: 'text', text: JSON.stringify(result) }], isError: true }
+        }
+        return {
+          content: [
+            { type: 'text', text: JSON.stringify({ fileName: result.fileName, mimeType: result.mimeType }) },
+            { type: 'image', data: result.data, mimeType: result.mimeType || 'image/svg+xml' },
+          ],
+        }
+      },
     )
     server.tool('create_diagram', 'Create a new Mermaid diagram on the current page.',
       {
@@ -217,13 +228,13 @@ class RelaySession {
       { diagramId: z.string() },
       async ({ diagramId }) => {
         const result = await this.sendCommandToBrowser('export_png', { diagramId }, 22000)
-        if (!result?.diagram) {
+        if (!result?.data) {
           return { content: [{ type: 'text', text: JSON.stringify(result) }], isError: true }
         }
         return {
           content: [
             { type: 'text', text: JSON.stringify({ fileName: result.fileName, mimeType: result.mimeType }) },
-            { type: 'image', data: result.diagram, mimeType: result.mimeType || 'image/png' },
+            { type: 'image', data: result.data, mimeType: result.mimeType || 'image/png' },
           ],
         }
       },

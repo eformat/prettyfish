@@ -362,7 +362,18 @@ export class RelaySessionDurableObject {
       { diagramId: z.string(), timeoutMs: z.number().optional() },
       async ({ diagramId, timeoutMs }) => {
         const resolvedTimeout = typeof timeoutMs === 'number' ? timeoutMs + 2_000 : 22_000
-        return cmd('export_svg', { diagramId, timeoutMs }, resolvedTimeout)
+        const result = await this.sendCommandToBrowser('export_svg', { diagramId, timeoutMs }, resolvedTimeout) as {
+          fileName?: string; data?: string; mimeType?: string
+        }
+        if (!result?.data) {
+          return { content: [{ type: 'text' as const, text: JSON.stringify(result) }], isError: true }
+        }
+        return {
+          content: [
+            { type: 'text' as const, text: JSON.stringify({ fileName: result.fileName, mimeType: result.mimeType }) },
+            { type: 'image' as const, data: result.data, mimeType: (result.mimeType || 'image/svg+xml') as 'image/png' },
+          ],
+        }
       },
     )
     server.tool('create_diagram', 'Create a new Mermaid diagram on the current page and wait for it to render. Returns render status and any syntax errors — if render.status is "error", fix the Mermaid syntax and call set_diagram_code with the corrected code. Always provide a short, descriptive name based on the diagram content.',
@@ -390,15 +401,15 @@ export class RelaySessionDurableObject {
       { diagramId: z.string() },
       async ({ diagramId }) => {
         const result = await this.sendCommandToBrowser('export_png', { diagramId }, 22_000) as {
-          fileName?: string; diagram?: string; mimeType?: string
+          fileName?: string; data?: string; mimeType?: string
         }
-        if (!result?.diagram) {
+        if (!result?.data) {
           return { content: [{ type: 'text' as const, text: JSON.stringify(result) }], isError: true }
         }
         return {
           content: [
             { type: 'text' as const, text: JSON.stringify({ fileName: result.fileName, mimeType: result.mimeType }) },
-            { type: 'image' as const, data: result.diagram, mimeType: (result.mimeType || 'image/png') as 'image/png' },
+            { type: 'image' as const, data: result.data, mimeType: (result.mimeType || 'image/png') as 'image/png' },
           ],
         }
       },
